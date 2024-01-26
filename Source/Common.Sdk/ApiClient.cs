@@ -19,44 +19,47 @@ namespace Common.Sdk
         private HttpClient _client;
         private Pagination _pagination;
 
-        public ApiClient(string apiUrl)
+        public ApiClient(string url)
         {
-            _apiUrl = apiUrl;
+            _apiUrl = url;
             _client = new HttpClient();
         }
 
-        public ApiClient(string apiUrl, string developerSecret)
+        public ApiClient(string url, string secret)
         {
-            _apiUrl = apiUrl;
+            _apiUrl = url;
             _client = new HttpClient();
 
-            var token = GetApiToken(developerSecret);
+            var token = GetApiToken(secret);
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
 
-        private string GetApiToken(string secret)
+        public string GetApiToken(string secret)
         {
             var provider = new ApiTokenProvider(_client);
-            var token = Task.Run(() => provider.GetTokenAsync(secret, _apiUrl))
+            var token = Task.Run(() => provider.GetTokenAsync(_apiUrl, secret))
                 .GetAwaiter().GetResult();
             return token;
         }
 
-        private void SetApiToken(string token)
+        public void SetApiToken(string token)
         {
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
 
-        public T HttpGet<T>(string endpoint, string id)
+        public T HttpGet<T>(string endpoint, string item)
         {
-            return HttpGet<T>(endpoint, new[] { id });
+            return HttpGet<T>(endpoint, new[] { item });
         }
 
-        public T HttpGet<T>(string endpoint, string[] ids)
+        public T HttpGet<T>(string endpoint, string[] item)
         {
+            if (!_apiUrl.EndsWith("/") && !endpoint.StartsWith("/"))
+                endpoint = "/" + endpoint;
+
             var url = _apiUrl + endpoint;
-            if (ids != null && ids.Length > 0)
-                url += "/" + string.Join("/", ids);
+            if (item != null && item.Length > 0)
+                url += "/" + string.Join("/", item);
 
             var http = Task.Run(() => _client.GetAsync(url)).GetAwaiter().GetResult();
             var json = Task.Run(() => http.Content.ReadAsStringAsync()).GetAwaiter().GetResult();
@@ -67,6 +70,9 @@ namespace Common.Sdk
 
         public IEnumerable<T> HttpGet<T>(string endpoint, Dictionary<string, string> variables)
         {
+            if (!_apiUrl.EndsWith("/") && !endpoint.StartsWith("/"))
+                endpoint = "/" + endpoint;
+
             var url = _apiUrl + endpoint + "?";
             foreach (var kvp in variables)
                 url += $"{kvp.Key}={kvp.Value}&";
@@ -88,6 +94,9 @@ namespace Common.Sdk
 
         public T HttpPost<T>(string endpoint, object payload)
         {
+            if (!_apiUrl.EndsWith("/") && !endpoint.StartsWith("/"))
+                endpoint = "/" + endpoint;
+
             var url = _apiUrl + endpoint;
             var data = JsonSerializer.Serialize(payload);
             var content = new StringContent(data, Encoding.UTF8, "application/json");
@@ -100,6 +109,9 @@ namespace Common.Sdk
 
         public void HttpPost(string endpoint, object payload)
         {
+            if (!_apiUrl.EndsWith("/") && !endpoint.StartsWith("/"))
+                endpoint = "/" + endpoint;
+
             var url = _apiUrl + endpoint;
             var data = JsonSerializer.Serialize(payload);
             var content = new StringContent(data, Encoding.UTF8, "application/json");
@@ -107,9 +119,20 @@ namespace Common.Sdk
             Task.Run(() => http.Content.ReadAsStringAsync()).GetAwaiter();
         }
 
-        public void HttpDelete(string endpoint, string selector)
+        public void HttpDelete(string endpoint, string item)
         {
-            var url = _apiUrl + endpoint + "/" + selector;
+            HttpDelete(endpoint, new[] { item });
+        }
+
+        public void HttpDelete(string endpoint, string[] item)
+        {
+            if (!_apiUrl.EndsWith("/") && !endpoint.StartsWith("/"))
+                endpoint = "/" + endpoint;
+
+            var url = _apiUrl + endpoint;
+            if (item != null && item.Length > 0)
+                url += "/" + string.Join("/", item);
+
             var http = Task.Run(() => _client.DeleteAsync(url)).GetAwaiter().GetResult();
             Task.Run(() => http.Content.ReadAsStringAsync()).GetAwaiter();
         }

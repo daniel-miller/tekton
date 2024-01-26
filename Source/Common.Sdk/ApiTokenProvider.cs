@@ -20,7 +20,7 @@ namespace Common.Sdk
             _httpClient = httpClient;
         }
 
-        public async Task<string> GetTokenAsync(string secret, string endpoint)
+        public async Task<string> GetTokenAsync(string endpoint, string secret)
         {
             if (!string.IsNullOrEmpty(_cachedToken))
             {

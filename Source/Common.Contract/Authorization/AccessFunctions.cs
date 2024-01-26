@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Common.Contract.Security
+namespace Common.Contract
 {
     [Flags]
     public enum AccessFunctions 

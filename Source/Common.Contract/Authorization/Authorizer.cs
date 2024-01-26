@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Common.Contract.Security
+namespace Common.Contract
 {
     public class Authorizer
     {
@@ -14,14 +14,14 @@ namespace Common.Contract.Security
             _root = root;
         }
 
-        public void Add(Guid function, Guid resource, Guid role)
+        public void Add(Function function, Guid resource, Guid role)
         {
-            if (IsGranted(function, resource, role))
+            if (IsGranted(function.Identifier, resource, role))
                 return;
 
             var permission = new Permission
             {
-                Function = new Function { Identifier = function },
+                Function = function,
                 Resource = new Resource { Identifier = resource },
                 Role = new Role { Identifier = role }
             };
@@ -29,8 +29,32 @@ namespace Common.Contract.Security
             _permissions.Add(permission);
         }
 
+        public void Add(Guid function, Guid resource, Guid role)
+        {
+            Add(new Function { Identifier = function }, resource, role);
+        }
+
+        public bool IsGranted(string function, string resource, IEnumerable<Guid> roles)
+        {
+            if (IsRoot(roles))
+                return true;
+
+            return _permissions.Any(rule => rule.Function.Slug == function && rule.Resource.Slug == resource && roles.Any(role => rule.Role.Identifier == role));
+        }
+
+        public bool IsGranted(string function, string resource, Guid role)
+        {
+            if (IsRoot(role))
+                return true;
+
+            return _permissions.Any(rule => rule.Function.Slug == function && rule.Resource.Slug == resource && rule.Role.Identifier == role);
+        }
+
         public bool IsGranted(Guid function, Guid resource, Guid role)
         {
+            if (IsRoot(role))
+                return true;
+
             return _permissions.Any(rule => rule.Function.Identifier == function && rule.Resource.Identifier == resource && rule.Role.Identifier == role);
         }
 
@@ -47,6 +71,11 @@ namespace Common.Contract.Security
                 .Select(rule => rule.Role.Identifier);
 
             return roles.Intersect(grants).Any();
+        }
+
+        private bool IsRoot(Guid role)
+        {
+            return role == _root;
         }
 
         private bool IsRoot(IEnumerable<Guid> roles)

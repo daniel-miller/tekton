@@ -1,6 +1,6 @@
-﻿namespace Common.Contract.Security
+﻿namespace Common.Contract
 {
-    public enum ResourceCategory 
+    public enum ResourceClassification 
     { 
         // Undefined
         None, 

@@ -1,4 +1,4 @@
-﻿namespace Common.Contract.Security
+﻿namespace Common.Contract
 {
     public enum ResourceLocation { None, API, Database, UI }
 }

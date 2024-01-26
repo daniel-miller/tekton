@@ -1,15 +1,15 @@
 ﻿using System;
 
-namespace Common.Contract.Security
+namespace Common.Contract
 {
     public class Function : Model
     {
-        public FunctionCategory ParseCategory()
+        public FunctionClassification ParseClassification()
         {
-            if (Enum.TryParse(Category, out FunctionCategory category))
-                return category;
+            if (Enum.TryParse(Classification, out FunctionClassification classification))
+                return classification;
 
-            return FunctionCategory.None;
+            return FunctionClassification.None;
         }
     }
 }

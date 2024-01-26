@@ -9,6 +9,7 @@ namespace Common.Sdk
     public class SdkClient
     {
         private readonly SdkConfiguration _configuration;
+
         private Pagination _pagination;
 
         public Pagination Pagination
@@ -21,7 +22,7 @@ namespace Common.Sdk
 
         public IEnumerable<T> GetMany<T>(string endpoint, Dictionary<string,string> variables)
         {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.DeveloperSecret))
+            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
             {
                 var many = api.HttpGet<T>(endpoint, variables);
                 _pagination = api.Pagination;
@@ -31,7 +32,15 @@ namespace Common.Sdk
 
         public T GetOne<T>(string endpoint, string item)
         {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.DeveloperSecret))
+            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
+            {
+                return api.HttpGet<T>(endpoint, item);
+            }
+        }
+
+        public T GetOne<T>(string endpoint, string[] item)
+        {
+            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
             {
                 return api.HttpGet<T>(endpoint, item);
             }
@@ -40,9 +49,30 @@ namespace Common.Sdk
         public T GetOne<T>(string endpoint, Guid item)
             => GetOne<T>(endpoint, item.ToString());
 
+        public T GetOne<T>(string endpoint, Guid item1, Guid item2)
+            => GetOne<T>(endpoint, new[] { item1.ToString(), item2.ToString() });
+
+        public T GetOne<T>(string endpoint, Guid item1, Guid item2, Guid item3)
+            => GetOne<T>(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
+
+        public T GetOne<T>(string endpoint, Guid item1, Guid item2, int item3)
+            => GetOne<T>(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
+
+        public T GetOne<T>(string endpoint, Guid item1, int item2)
+            => GetOne<T>(endpoint, new[] { item1.ToString(), item2.ToString() });
+
+        public T GetOne<T>(string endpoint, Guid item1, string item2)
+            => GetOne<T>(endpoint, new[] { item1.ToString(), item2 });
+
+        public T GetOne<T>(string endpoint, Guid item1, string item2, int item3)
+            => GetOne<T>(endpoint, new[] { item1.ToString(), item2, item3.ToString() });
+
+        public T GetOne<T>(string endpoint, int item)
+            => GetOne<T>(endpoint, item.ToString());
+
         public T Post<T>(string endpoint, object payload)
         {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.DeveloperSecret))
+            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
             {
                 return api.HttpPost<T>(endpoint, payload);
             }
@@ -50,7 +80,7 @@ namespace Common.Sdk
 
         public void Post(string endpoint, object payload)
         {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.DeveloperSecret))
+            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
             {
                 api.HttpPost(endpoint, payload);
             }
@@ -58,13 +88,42 @@ namespace Common.Sdk
 
         public void Delete(string endpoint, string item)
         {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.DeveloperSecret))
+            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
+            {
+                api.HttpDelete(endpoint, item);
+            }
+        }
+
+        public void Delete(string endpoint, string[] item)
+        {
+            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
             {
                 api.HttpDelete(endpoint, item);
             }
         }
 
         public void Delete(string endpoint, Guid item)
+            => Delete(endpoint, item.ToString());
+
+        public void Delete(string endpoint, Guid item1, Guid item2)
+            => Delete(endpoint, new[] { item1.ToString(), item2.ToString() });
+
+        public void Delete(string endpoint, Guid item1, Guid item2, Guid item3)
+            => Delete(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
+
+        public void Delete(string endpoint, Guid item1, Guid item2, int item3)
+            => Delete(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
+
+        public void Delete(string endpoint, Guid item1, int item2)
+            => Delete(endpoint, new[] { item1.ToString(), item2.ToString() });
+
+        public void Delete(string endpoint, Guid item1, string item2)
+            => Delete(endpoint, new[] { item1.ToString(), item2 });
+
+        public void Delete(string endpoint, Guid item1, string item2, int item3)
+            => Delete(endpoint, new[] { item1.ToString(), item2, item3.ToString() });
+
+        public void Delete(string endpoint, int item)
             => Delete(endpoint, item.ToString());
 
         public static Dictionary<string, string> ConvertToDictionary(object obj)

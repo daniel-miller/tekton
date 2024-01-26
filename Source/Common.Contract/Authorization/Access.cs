@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Common.Contract.Security
+namespace Common.Contract
 {
     public class Access
     {
@@ -212,7 +212,7 @@ namespace Common.Contract.Security
 
             foreach(var value in Metadata.Values)
             {
-                value.Category = FunctionCategory.Access.ToString();
+                value.Classification = FunctionClassification.Access.ToString();
             }
         }
     }

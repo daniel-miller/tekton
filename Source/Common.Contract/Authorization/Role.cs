@@ -1,15 +1,15 @@
 ﻿using System;
 
-namespace Common.Contract.Security
+namespace Common.Contract
 {
     public class Role : Model
     {
-        public RoleCategory ParseCategory()
+        public RoleClassification ParseClassification()
         {
-            if (Enum.TryParse(Category, out RoleCategory category))
-                return category;
+            if (Enum.TryParse(Classification, out RoleClassification classification))
+                return classification;
 
-            return RoleCategory.None;
+            return RoleClassification.None;
         }
     }
 }

@@ -1,17 +1,17 @@
 ﻿using System;
 
-namespace Common.Contract.Security
+namespace Common.Contract
 {
     public class Resource : Model
     {
         public ResourceLocation Location { get; set; }
 
-        public ResourceCategory ParseCategory()
+        public ResourceClassification ParseClassification()
         {
-            if (Enum.TryParse(Category, out ResourceCategory category))
-                return category;
+            if (Enum.TryParse(Classification, out ResourceClassification classification))
+                return classification;
 
-            return ResourceCategory.None;
+            return ResourceClassification.None;
         }
     }
 }
