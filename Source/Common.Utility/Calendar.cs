@@ -1,4 +1,7 @@
-﻿namespace Common.Utility
+﻿using System;
+using System.Linq;
+
+namespace Common.Utility
 {
     public class Calendar
     {

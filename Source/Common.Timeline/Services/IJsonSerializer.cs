@@ -1,9 +1,10 @@
 ﻿using System;
 
-namespace Common.Timeline.Assistants
+namespace Common.Timeline.Services
 {
     /// <summary>
-    /// Provides serialization and deserialization functionality to and from string values.
+    /// Provides serialization and deserialization functionality to and from string values. This allows client code to
+    /// use any JSON serialization mechanism you want: System.Text.Json, Newtonsoft.Json, etc.
     /// </summary>
     public interface IJsonSerializer
     {

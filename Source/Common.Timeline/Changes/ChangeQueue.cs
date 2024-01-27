@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Common.Timeline.Assistants;
 using Common.Timeline.Exceptions;
+using Common.Timeline.Services;
 
 namespace Common.Timeline.Changes
 {
@@ -12,6 +12,8 @@ namespace Common.Timeline.Changes
     /// </summary>
     public class ChangeQueue : IChangeQueue
     {
+        private readonly IJsonSerializer _serializer;
+
         /// <summary>
         /// An event's full class name is used as the key to a list of event-handling methods.
         /// </summary>
@@ -29,18 +31,17 @@ namespace Common.Timeline.Changes
         /// </summary>
         private readonly Dictionary<(string, Guid), Action<IChange>> _overriders;
 
-        private readonly IJsonSerializer _serializer;
-
         /// <summary>
         /// Constructs the queue.
         /// </summary>
-        public ChangeQueue(IJsonSerializer serializer)
+        public ChangeQueue()
         {
-            _serializer = serializer;
             _subscribers = new Dictionary<string, List<Action<IChange>>>();
             _precursors = new Dictionary<(string, Guid), Action<IChange>>();
             _extenders = new Dictionary<(string, Guid), Action<IChange>>();
             _overriders = new Dictionary<(string, Guid), Action<IChange>>();
+
+            _serializer = ServiceLocator.Instance.GetService<IJsonSerializer>();
         }
 
         /// <summary>

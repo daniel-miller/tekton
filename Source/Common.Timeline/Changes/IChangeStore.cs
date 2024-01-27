@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using Common.Timeline.Assistants;
-
 namespace Common.Timeline.Changes
 {
     /// <summary>
@@ -10,11 +8,6 @@ namespace Common.Timeline.Changes
     /// </summary>
     public interface IChangeStore
     {
-        /// <summary>
-        /// Utility for serializing and deserializing commands.
-        /// </summary>
-        IJsonSerializer Serializer { get; }
-
         /// <summary>
         /// Gets count of changes for an aggregate.
         /// </summary>

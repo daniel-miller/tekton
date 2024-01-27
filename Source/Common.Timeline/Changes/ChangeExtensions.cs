@@ -1,7 +1,5 @@
 ﻿using System;
 
-using Common.Timeline.Assistants;
-
 namespace Common.Timeline.Changes
 {
     /// <summary>
@@ -12,12 +10,13 @@ namespace Common.Timeline.Changes
         /// <summary>
         /// Returns a deserialized change.
         /// </summary>
-        public static IChange Deserialize(this SerializedChange x, IJsonSerializer serializer)
+        public static IChange Deserialize(this SerializedChange x)
         {
             var type = Registries.TypeRegistry.GetChangeType(x.ChangeType);
             if (type == null)
                 throw new ChangeNotFoundException(x.ChangeType);
 
+            var serializer = Services.ServiceLocator.Instance.GetService<Services.IJsonSerializer>();
             var data = serializer.Deserialize<IChange>(x.ChangeData, type, false);
 
             data.AggregateIdentifier = x.AggregateIdentifier;
@@ -32,8 +31,9 @@ namespace Common.Timeline.Changes
         /// <summary>
         /// Returns a serialized change.
         /// </summary>
-        public static SerializedChange Serialize(this IChange change, IJsonSerializer serializer, Guid aggregateIdentifier, int version)
+        public static SerializedChange Serialize(this IChange change, Guid aggregateIdentifier, int version)
         {
+            var serializer = Services.ServiceLocator.Instance.GetService<Services.IJsonSerializer>();
             var data = serializer.Serialize(change, new[] { "AggregateIdentifier", "AggregateState", "AggregateVersion", "ChangeTime", "OriginOrganization", "OriginUser" }, false);
 
             var serialized = new SerializedChange

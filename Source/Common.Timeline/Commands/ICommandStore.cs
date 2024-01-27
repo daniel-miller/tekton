@@ -1,7 +1,5 @@
 ﻿using System;
 
-using Common.Timeline.Assistants;
-
 namespace Common.Timeline.Commands
 {
     /// <summary>
@@ -9,11 +7,6 @@ namespace Common.Timeline.Commands
     /// </summary>
     public interface ICommandStore
     {
-        /// <summary>
-        /// Utility for serializing and deserializing commands.
-        /// </summary>
-        IJsonSerializer Serializer { get; }
-
         /// <summary>
         /// Returns true if a command exists.
         /// </summary>

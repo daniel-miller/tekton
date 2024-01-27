@@ -1,6 +1,6 @@
 ﻿using System;
 
-using Common.Timeline.Assistants;
+using Common.Timeline.Services;
 
 namespace Common.Timeline.Registries
 {
@@ -12,7 +12,9 @@ namespace Common.Timeline.Registries
 
         public AggregateChangeTypeInfo(Type t, IAggregateTypeInfo agg)
         {
-            ID = GuidGenerator.NewGuid(t);
+            var generator = ServiceLocator.Instance.GetService<IGuidGenerator>();
+
+            ID = generator.NewGuid(t);
             Type = t;
             Aggregate = agg;
         }

@@ -1,7 +1,5 @@
 ﻿using System;
 
-using Common.Timeline.Assistants;
-
 namespace Common.Timeline.Commands
 {
     /// <summary>
@@ -12,10 +10,11 @@ namespace Common.Timeline.Commands
         /// <summary>
         /// Returns a deserialized command.
         /// </summary>
-        public static ICommand Deserialize(this SerializedCommand x, IJsonSerializer serializer, bool ignoreAttributes)
+        public static ICommand Deserialize(this SerializedCommand x, bool ignoreAttributes)
         {
             try
             {
+                var serializer = Services.ServiceLocator.Instance.GetService<Services.IJsonSerializer>();
                 var data = serializer.Deserialize<ICommand>(x.CommandData, Type.GetType(x.CommandClass), ignoreAttributes);
 
                 data.AggregateIdentifier = x.AggregateIdentifier;
@@ -35,8 +34,9 @@ namespace Common.Timeline.Commands
         /// <summary>
         /// Returns a serialized command.
         /// </summary>
-        public static SerializedCommand Serialize(this ICommand command, IJsonSerializer serializer, bool ignoreAttributes)
+        public static SerializedCommand Serialize(this ICommand command, bool ignoreAttributes)
         {
+            var serializer = Services.ServiceLocator.Instance.GetService<Services.IJsonSerializer>();
             var data = serializer.Serialize(command, new[]
             {
                 nameof(ICommand.AggregateIdentifier),

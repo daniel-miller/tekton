@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Common.Timeline.Assistants;
+using Common.Timeline.Services;
 
 namespace Common.Timeline.Registries
 {
@@ -16,7 +16,9 @@ namespace Common.Timeline.Registries
 
         public AggregateCommandTypeInfo(Type t)
         {
-            ID = GuidGenerator.NewGuid(t);
+            var generator = ServiceLocator.Instance.GetService<IGuidGenerator>();
+            
+            ID = generator.NewGuid(t);
             Type = t;
             _aggregatesList = new List<IAggregateTypeInfo>();
         }

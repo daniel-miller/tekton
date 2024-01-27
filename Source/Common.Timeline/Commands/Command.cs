@@ -1,7 +1,5 @@
 ﻿using System;
 
-using Common.Timeline.Assistants;
-
 namespace Common.Timeline.Commands
 {
     /// <summary>
@@ -22,6 +20,11 @@ namespace Common.Timeline.Commands
         public Guid OriginUser { get; set; }
 
         public Guid CommandIdentifier { get; set; }
-        public Command() { CommandIdentifier = GuidGenerator.NewGuid(); }
+        
+        public Command() 
+        {
+            var generator = Services.ServiceLocator.Instance.GetService<Services.IGuidGenerator>();
+            CommandIdentifier = generator.NewGuid(); 
+        }
     }
 }

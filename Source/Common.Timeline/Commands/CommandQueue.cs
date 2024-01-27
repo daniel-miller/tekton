@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 using Common.Timeline.Exceptions;
+using Common.Timeline.Services;
 
 namespace Common.Timeline.Commands
 {
@@ -13,6 +14,8 @@ namespace Common.Timeline.Commands
     /// </summary>
     public class CommandQueue : ICommandQueue
     {
+        private readonly IJsonSerializer _serializer;
+
         /// <summary>
         /// A command's full class name is used as the key to find the method that handles it.
         /// </summary>
@@ -44,6 +47,8 @@ namespace Common.Timeline.Commands
             _overriders = new Dictionary<(string, Guid), Action<ICommand>>();
             _store = store;
             _saveAll = saveAll;
+
+            _serializer = ServiceLocator.Instance.GetService<IJsonSerializer>();
         }
 
         #region Methods (subscription)
@@ -53,7 +58,7 @@ namespace Common.Timeline.Commands
         /// </summary>
         public void Subscribe<T>(Action<T> action) where T : ICommand
         {
-            var name = _store.Serializer.GetClassName(typeof(T));
+            var name = _serializer.GetClassName(typeof(T));
 
             if (_subscribers.Any(x => x.Key == name))
                 throw new AmbiguousCommandHandlerException(name);
@@ -66,7 +71,7 @@ namespace Common.Timeline.Commands
         /// </summary>
         public void Override<T>(Action<T> action, Guid organization) where T : ICommand
         {
-            var name = _store.Serializer.GetClassName(typeof(T));
+            var name = _serializer.GetClassName(typeof(T));
 
             if (_overriders.Any(x => x.Key.Item1 == name && x.Key.Item2 == organization))
                 throw new AmbiguousCommandHandlerException(name);
@@ -91,7 +96,7 @@ namespace Common.Timeline.Commands
                 serialized.SendStarted = DateTimeOffset.UtcNow;
             }
 
-            Execute(command, _store.Serializer.GetClassName(command.GetType()));
+            Execute(command, _serializer.GetClassName(command.GetType()));
 
             if (_saveAll)
             {
@@ -261,7 +266,7 @@ namespace Common.Timeline.Commands
             // bool recur = serialized.RecurrenceInterval.HasValue && serialized.RecurrenceUnit != null;
             // bool skip = recur && !Shift.Utility.Calendar.WeekdaysContain(serialized.RecurrenceWeekdays, now.DayOfWeek);
             // if (!skip)
-                Execute(serialized.Deserialize(_store.Serializer, false), serialized.CommandClass);
+                Execute(serialized.Deserialize(false), serialized.CommandClass);
 
             serialized.SendCompleted = DateTimeOffset.UtcNow;
             serialized.SendStatus = "Completed";

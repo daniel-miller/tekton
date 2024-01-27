@@ -1,6 +1,6 @@
 ﻿using System;
 
-using Common.Timeline.Assistants;
+using Common.Timeline.Services;
 
 namespace Common.Timeline.Registries
 {
@@ -17,7 +17,9 @@ namespace Common.Timeline.Registries
         {
             const string postfix = "Aggregate";
 
-            ID = GuidGenerator.NewGuid(t);
+            var generator = ServiceLocator.Instance.GetService<IGuidGenerator>();
+
+            ID = generator.NewGuid(t);
             Type = t;
             Name = t.Name.EndsWith(postfix)
                 ? t.Name.Substring(0, t.Name.Length - postfix.Length)

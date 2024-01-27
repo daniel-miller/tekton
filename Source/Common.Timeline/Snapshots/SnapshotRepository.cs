@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 
-using Common.Timeline.Assistants;
 using Common.Timeline.Changes;
 using Common.Timeline.Exceptions;
+using Common.Timeline.Services;
 
 namespace Common.Timeline.Snapshots
 {
@@ -12,7 +12,8 @@ namespace Common.Timeline.Snapshots
     /// </summary>
     public class SnapshotRepository : IChangeRepository
     {
-        private readonly GuidCache<AggregateRoot> _cache = new GuidCache<AggregateRoot>();
+        private readonly IGuidCache<AggregateRoot> _cache;
+        private readonly IJsonSerializer _serializer;
 
         private readonly ISnapshotStore _snapshotStore;
         private readonly ISnapshotStrategy _snapshotStrategy;
@@ -32,6 +33,9 @@ namespace Common.Timeline.Snapshots
             _changeRepository = changeRepository ?? throw new ArgumentNullException(nameof(changeRepository));
             _snapshotStore = snapshotStore ?? throw new ArgumentNullException(nameof(snapshotStore));
             _snapshotStrategy = snapshotStrategy ?? throw new ArgumentNullException(nameof(snapshotStrategy));
+
+            _cache = ServiceLocator.Instance.GetService<IGuidCache<AggregateRoot>>();
+            _serializer = ServiceLocator.Instance.GetService<IJsonSerializer>();
         }
 
         /// <summary>
@@ -96,13 +100,13 @@ namespace Common.Timeline.Snapshots
 
                 aggregate.LockAndRun(() =>
                 {
-                    var originalState = _changeStore.Serializer.Serialize(aggregate.State);
+                    var originalState = _serializer.Serialize(aggregate.State);
 
                     clone = AggregateFactory<T>.CreateAggregate();
                     clone.AggregateIdentifier = aggregate.AggregateIdentifier;
                     clone.RootAggregateIdentifier = aggregate.RootAggregateIdentifier;
                     clone.AggregateVersion = aggregate.AggregateVersion;
-                    clone.State = _changeStore.Serializer.Deserialize<AggregateState>(originalState, aggregate.State.GetType(), false);
+                    clone.State = _serializer.Deserialize<AggregateState>(originalState, aggregate.State.GetType(), false);
                 });
 
                 return clone;
@@ -171,7 +175,7 @@ namespace Common.Timeline.Snapshots
 
             aggregate.AggregateIdentifier = snapshot.AggregateIdentifier;
             aggregate.AggregateVersion = snapshot.AggregateVersion;
-            aggregate.State = _changeStore.Serializer.Deserialize<AggregateState>(snapshot.AggregateState, aggregate.CreateState().GetType(), false);
+            aggregate.State = _serializer.Deserialize<AggregateState>(snapshot.AggregateState, aggregate.CreateState().GetType(), false);
 
             return snapshot.AggregateVersion;
         }
@@ -203,7 +207,7 @@ namespace Common.Timeline.Snapshots
         {
             try
             {
-                snapshot.AggregateState = _changeStore.Serializer.Serialize(aggregate.State);
+                snapshot.AggregateState = _serializer.Serialize(aggregate.State);
             }
             catch (InvalidOperationException ex)
             {
@@ -254,7 +258,7 @@ namespace Common.Timeline.Snapshots
             var aggregate = AggregateFactory<T>.CreateAggregate();
             aggregate.AggregateIdentifier = aggregateId;
             aggregate.AggregateVersion = 1;
-            aggregate.State = _changeStore.Serializer.Deserialize<AggregateState>(snapshot.AggregateState, aggregate.CreateState().GetType(), false);
+            aggregate.State = _serializer.Deserialize<AggregateState>(snapshot.AggregateState, aggregate.CreateState().GetType(), false);
             return aggregate;
         }
 
