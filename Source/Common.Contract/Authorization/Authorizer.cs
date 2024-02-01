@@ -14,19 +14,24 @@ namespace Common.Contract
             _root = root;
         }
 
-        public void Add(Function function, Guid resource, Guid role)
+        public void Add(Function function, Resource resource, Guid role)
         {
-            if (IsGranted(function.Identifier, resource, role))
+            if (IsGranted(function.Identifier, resource.Identifier, role))
                 return;
 
             var permission = new Permission
             {
                 Function = function,
-                Resource = new Resource { Identifier = resource },
+                Resource = resource,
                 Role = new Role { Identifier = role }
             };
 
             _permissions.Add(permission);
+        }
+
+        public void Add(Function function, Guid resource, Guid role)
+        {
+            Add(function, new Resource { Identifier = resource }, role);
         }
 
         public void Add(Guid function, Guid resource, Guid role)
