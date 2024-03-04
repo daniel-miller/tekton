@@ -26,7 +26,7 @@ namespace Common.Timeline.Changes
         /// <summary>
         /// Returns true if an aggregate exists.
         /// </summary>
-        bool Exists(Guid aggregate);
+        bool Exists<T>(Guid aggregate);
 
         /// <summary>
         /// Returns true if an aggregate with a specific version exists.
@@ -116,5 +116,12 @@ namespace Common.Timeline.Changes
         /// all the changes in an aggregate where the version number is greater than or equal to the input parameter.
         /// </summary>
         int Rollback(Guid id, int version);
+
+        /// <summary>
+        /// Allows to mark a change as an obsolete
+        /// ChangeStore doesn't try to deserialize an obsolete change and returns the change as SerializedChange
+        /// This is useful when a specific change is obsolete and we need either ignore it or transform to a new change
+        /// </summary>
+        void RegisterObsoleteChangeTypes(IEnumerable<string> changeTypes);
     }
 }

@@ -43,6 +43,6 @@ namespace Common.Contract
         public int? Total { get; set; }
 
         public int? Pages => Total.HasValue && Take.HasValue ? (int?)System.Math.Ceiling((double)Total.Value / Take.Value) : null;
-        public bool? More => (Page.HasValue && Pages.HasValue) ? Page < Pages : (bool?)null;
+        public bool More => (Page.HasValue && Pages.HasValue) ? Page < Pages : false;
     }
 }

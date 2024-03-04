@@ -24,7 +24,7 @@ namespace Common.Timeline.Changes
         /// <summary>
         /// Returns true if an aggregate exists.
         /// </summary>
-        bool Exists(Guid id);
+        bool Exists<T>(Guid id);
 
         /// <summary>
         /// Saves an aggregate.

@@ -87,7 +87,7 @@ namespace Common.Timeline.Changes
                     change.ChangeTime = DateTimeOffset.UtcNow;
                 }
 
-                AggregateVersion = AggregateVersion + changes.Length;
+                AggregateVersion += changes.Length;
 
                 _changes.Clear();
             });
