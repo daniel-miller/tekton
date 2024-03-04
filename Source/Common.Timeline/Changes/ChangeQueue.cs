@@ -59,16 +59,14 @@ namespace Common.Timeline.Changes
             if (_overriders.ContainsKey((name, change.OriginOrganization)))
             {
                 var overrider = _overriders[(name, change.OriginOrganization)];
-                if (overrider != null)
-                    overrider.Invoke(change);
+                overrider?.Invoke(change);
             }
             else if (precursorExists || subscriberExists || extenderExists)
             {
                 if (precursorExists)
                 {
                     var precursor = _precursors[(name, change.OriginOrganization)];
-                    if (precursor != null)
-                        precursor.Invoke(change);
+                    precursor?.Invoke(change);
                 }
 
                 if (subscriberExists)
@@ -81,8 +79,7 @@ namespace Common.Timeline.Changes
                 if (extenderExists)
                 {
                     var extender = _extenders[(name, change.OriginOrganization)];
-                    if (extender != null)
-                        extender.Invoke(change);
+                    extender?.Invoke(change);
                 }
             }
             else

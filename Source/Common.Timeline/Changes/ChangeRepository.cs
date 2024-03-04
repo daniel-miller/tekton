@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 
 using Common.Timeline.Exceptions;
 
@@ -46,9 +45,9 @@ namespace Common.Timeline.Changes
         /// <summary>
         /// Returns true if an aggregate exists.
         /// </summary>
-        public bool Exists(Guid aggregate)
+        public bool Exists<T>(Guid aggregate)
         {
-            return _store.Exists(aggregate);
+            return _store.Exists<T>(aggregate);
         }
 
         /// <summary>

@@ -12,20 +12,37 @@ namespace Common.Timeline.Changes
         /// </summary>
         public static IChange Deserialize(this SerializedChange x)
         {
-            var type = Registries.TypeRegistry.GetChangeType(x.ChangeType);
-            if (type == null)
-                throw new ChangeNotFoundException(x.ChangeType);
+            var type = Registries.TypeRegistry.GetChangeType(x.ChangeType)
+                ?? throw new ChangeNotFoundException(x.ChangeType);
 
             var serializer = Services.ServiceLocator.Instance.GetService<Services.IJsonSerializer>();
             var data = serializer.Deserialize<IChange>(x.ChangeData, type, false);
 
-            data.AggregateIdentifier = x.AggregateIdentifier;
-            data.AggregateVersion = x.AggregateVersion;
-            data.ChangeTime = x.ChangeTime;
-            data.OriginOrganization = x.OriginOrganization;
-            data.OriginUser = x.OriginUser;
+            CopyChangeProperties(x, data);
 
             return data;
+        }
+
+        /// <summary>
+        /// Returns a deserialized change.
+        /// </summary>
+        public static T Deserialize<T>(this SerializedChange x) where T: IChange
+        {
+            var serializer = Services.ServiceLocator.Instance.GetService<Services.IJsonSerializer>();
+            var data = serializer.Deserialize<T>(x.ChangeData, typeof(T), false);
+
+            CopyChangeProperties(x, data);
+
+            return data;
+        }
+
+        private static void CopyChangeProperties(SerializedChange source, IChange dest)
+        {
+            dest.AggregateIdentifier = source.AggregateIdentifier;
+            dest.AggregateVersion = source.AggregateVersion;
+            dest.ChangeTime = source.ChangeTime;
+            dest.OriginOrganization = source.OriginOrganization;
+            dest.OriginUser = source.OriginUser;
         }
 
         /// <summary>

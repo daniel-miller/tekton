@@ -155,9 +155,9 @@ namespace Common.Timeline.Snapshots
         /// <summary>
         /// Returns true if an aggregate exists.
         /// </summary>
-        public bool Exists(Guid aggregate)
+        public bool Exists<T>(Guid aggregate)
         {
-            return _changeRepository.Exists(aggregate);
+            return _changeRepository.Exists<T>(aggregate);
         }
 
         /// <summary>

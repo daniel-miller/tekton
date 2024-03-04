@@ -79,17 +79,23 @@ namespace Common.Sdk
 
             var http = Task.Run(() => _client.GetAsync(url)).GetAwaiter().GetResult();
             var json = Task.Run(() => http.Content.ReadAsStringAsync()).GetAwaiter().GetResult();
-            var response = JsonSerializer.Deserialize<IEnumerable<T>>(json);
 
-            if (http.StatusCode == HttpStatusCode.OK)
+            if (http.StatusCode != HttpStatusCode.OK)
+                throw new ApiException($"An unexpected HTTP response was received from {endpoint}: {(int)http.StatusCode} {http.StatusCode}. {http.RequestMessage}");
+
+            try
             {
-                if (http.Headers.TryGetValues(Pagination.HeaderKey, out IEnumerable<string> values))
-                {
-                    _pagination = JsonSerializer.Deserialize<Pagination>(values.First());
-                }
-            }
+                var response = JsonSerializer.Deserialize<IEnumerable<T>>(json);
 
-            return response;
+                if (http.Headers.TryGetValues(Pagination.HeaderKey, out IEnumerable<string> values))
+                    _pagination = JsonSerializer.Deserialize<Pagination>(values.First());
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                throw new ApiException($"An unexpected JSON deserialization error occurred on the response received from {endpoint}. {ex.Message}. JSON = {json}");
+            }
         }
 
         public T HttpPost<T>(string endpoint, object payload)
