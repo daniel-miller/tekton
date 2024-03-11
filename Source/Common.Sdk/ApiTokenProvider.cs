@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -22,25 +23,34 @@ namespace Common.Sdk
 
         public async Task<string> GetTokenAsync(string endpoint, string secret)
         {
-            if (!string.IsNullOrEmpty(_cachedToken))
-            {
-                var jwt = new JwtSecurityTokenHandler().ReadJwtToken(_cachedToken);
-                var expiryTimeText = jwt.Claims.Single(claim => claim.Type == "exp").Value;
-                var expiryDateTime = UnixTimeStampToDateTime(int.Parse(expiryTimeText));
-                if (expiryDateTime > DateTime.UtcNow)
-                {
-                    return _cachedToken;
-                }
-            }
+            if (ValidateCachedToken())
+                return _cachedToken;
 
+            return await GenerateNewToken(endpoint, secret);
+        }
+
+        private async Task<string> GenerateNewToken(string endpoint, string secret)
+        {
             string newToken = string.Empty;
             try
             {
                 await Lock.WaitAsync();
-                var json = JsonSerializer.Serialize(new { Secret = secret });
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await _httpClient.PostAsync($"{endpoint}/token", content);
-                newToken = await response.Content.ReadAsStringAsync();
+                
+                var requestData = JsonSerializer.Serialize(new { Secret = secret });
+                var requestContent = new StringContent(requestData, Encoding.UTF8, "application/json");
+                var requestMethod = $"{endpoint}/token";
+
+                var responseMessage = await _httpClient.PostAsync(requestMethod, requestContent);
+                var responseContent = await responseMessage.Content.ReadAsStringAsync();
+                
+                var status = responseMessage.StatusCode;
+                if (status != HttpStatusCode.OK)
+                {
+                    var error = $"{requestMethod} responded with HTTP {(int)status} {status}. {responseContent}";
+                    throw new ApiException(error);
+                }
+
+                newToken = responseContent;
                 _cachedToken = newToken;
             }
             finally
@@ -48,6 +58,20 @@ namespace Common.Sdk
                 Lock.Release();
             }
             return newToken;
+        }
+
+        private bool ValidateCachedToken()
+        {
+            if (string.IsNullOrEmpty(_cachedToken))
+                return false;
+            
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(_cachedToken);
+            var expiryTimeText = jwt.Claims.Single(claim => claim.Type == "exp").Value;
+            var expiryDateTime = UnixTimeStampToDateTime(int.Parse(expiryTimeText));
+            if (expiryDateTime > DateTime.UtcNow)
+                return true;
+            
+            return false;
         }
 
         private static DateTime UnixTimeStampToDateTime(int unixTimeStamp)

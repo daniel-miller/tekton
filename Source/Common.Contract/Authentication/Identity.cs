@@ -40,4 +40,9 @@ namespace Common.Contract
 
         #endregion
     }
+
+    public interface IIdentityContext
+    {
+        Identity Current { get; }
+    }
 }
