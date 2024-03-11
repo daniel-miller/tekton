@@ -20,7 +20,7 @@ namespace Common.Sdk
             _configuration = configuration;
         }
 
-        public IEnumerable<T> GetMany<T>(string endpoint, Dictionary<string,string> variables)
+        public IEnumerable<T> GetList<T>(string endpoint, Dictionary<string,string> variables)
         {
             using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
             {
@@ -30,7 +30,7 @@ namespace Common.Sdk
             }
         }
 
-        public T GetOne<T>(string endpoint, string item)
+        public T GetItem<T>(string endpoint, string item)
         {
             using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
             {
@@ -38,7 +38,7 @@ namespace Common.Sdk
             }
         }
 
-        public T GetOne<T>(string endpoint, string[] item)
+        public T GetItem<T>(string endpoint, string[] item)
         {
             using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
             {
@@ -46,29 +46,29 @@ namespace Common.Sdk
             }
         }
 
-        public T GetOne<T>(string endpoint, Guid item)
-            => GetOne<T>(endpoint, item.ToString());
+        public T GetItem<T>(string endpoint, Guid item)
+            => GetItem<T>(endpoint, item.ToString());
 
-        public T GetOne<T>(string endpoint, Guid item1, Guid item2)
-            => GetOne<T>(endpoint, new[] { item1.ToString(), item2.ToString() });
+        public T GetItem<T>(string endpoint, Guid item1, Guid item2)
+            => GetItem<T>(endpoint, new[] { item1.ToString(), item2.ToString() });
 
-        public T GetOne<T>(string endpoint, Guid item1, Guid item2, Guid item3)
-            => GetOne<T>(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
+        public T GetItem<T>(string endpoint, Guid item1, Guid item2, Guid item3)
+            => GetItem<T>(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
 
-        public T GetOne<T>(string endpoint, Guid item1, Guid item2, int item3)
-            => GetOne<T>(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
+        public T GetItem<T>(string endpoint, Guid item1, Guid item2, int item3)
+            => GetItem<T>(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
 
-        public T GetOne<T>(string endpoint, Guid item1, int item2)
-            => GetOne<T>(endpoint, new[] { item1.ToString(), item2.ToString() });
+        public T GetItem<T>(string endpoint, Guid item1, int item2)
+            => GetItem<T>(endpoint, new[] { item1.ToString(), item2.ToString() });
 
-        public T GetOne<T>(string endpoint, Guid item1, string item2)
-            => GetOne<T>(endpoint, new[] { item1.ToString(), item2 });
+        public T GetItem<T>(string endpoint, Guid item1, string item2)
+            => GetItem<T>(endpoint, new[] { item1.ToString(), item2 });
 
-        public T GetOne<T>(string endpoint, Guid item1, string item2, int item3)
-            => GetOne<T>(endpoint, new[] { item1.ToString(), item2, item3.ToString() });
+        public T GetItem<T>(string endpoint, Guid item1, string item2, int item3)
+            => GetItem<T>(endpoint, new[] { item1.ToString(), item2, item3.ToString() });
 
-        public T GetOne<T>(string endpoint, int item)
-            => GetOne<T>(endpoint, item.ToString());
+        public T GetItem<T>(string endpoint, int item)
+            => GetItem<T>(endpoint, item.ToString());
 
         public T Post<T>(string endpoint, object payload)
         {
