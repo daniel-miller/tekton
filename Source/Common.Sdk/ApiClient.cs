@@ -125,6 +125,33 @@ namespace Common.Sdk
             Task.Run(() => http.Content.ReadAsStringAsync()).GetAwaiter();
         }
 
+        public T HttpPut<T>(string endpoint, string item, object payload)
+        {
+            if (!_apiUrl.EndsWith("/") && !endpoint.StartsWith("/"))
+                endpoint = "/" + endpoint;
+
+            var url = _apiUrl + endpoint + "/" + item;
+            var data = JsonSerializer.Serialize(payload);
+            var content = new StringContent(data, Encoding.UTF8, "application/json");
+            var http = Task.Run(() => _client.PutAsync(url, content)).GetAwaiter().GetResult();
+            var json = Task.Run(() => http.Content.ReadAsStringAsync()).GetAwaiter().GetResult();
+            var response = JsonSerializer.Deserialize<T>(json);
+            var status = (int)http.StatusCode;
+            return response;
+        }
+
+        public void HttpPut(string endpoint, string item, object payload)
+        {
+            if (!_apiUrl.EndsWith("/") && !endpoint.StartsWith("/"))
+                endpoint = "/" + endpoint;
+
+            var url = _apiUrl + endpoint + "/" + item;
+            var data = JsonSerializer.Serialize(payload);
+            var content = new StringContent(data, Encoding.UTF8, "application/json");
+            var http = Task.Run(() => _client.PutAsync(url, content)).GetAwaiter().GetResult();
+            Task.Run(() => http.Content.ReadAsStringAsync()).GetAwaiter();
+        }
+
         public void HttpDelete(string endpoint, string item)
         {
             HttpDelete(endpoint, new[] { item });
