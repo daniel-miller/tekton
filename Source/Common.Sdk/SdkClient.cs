@@ -86,6 +86,23 @@ namespace Common.Sdk
             }
         }
 
+        public T Put<T>(string endpoint, Guid item, object payload)
+        {
+            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
+            {
+                return api.HttpPut<T>(endpoint, item.ToString(), payload);
+            }
+        }
+
+        public void Put(string endpoint, Guid item, object payload)
+        {
+            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
+            {
+                api.HttpPut(endpoint, item.ToString(), payload);
+            }
+        }
+
+
         public void Delete(string endpoint, string item)
         {
             using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
