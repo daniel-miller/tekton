@@ -152,6 +152,21 @@ namespace Common.Sdk
             Task.Run(() => http.Content.ReadAsStringAsync()).GetAwaiter();
         }
 
+        public void HttpPut(string endpoint, string[] item, object payload)
+        {
+            if (!_apiUrl.EndsWith("/") && !endpoint.StartsWith("/"))
+                endpoint = "/" + endpoint;
+
+            var url = _apiUrl + endpoint;
+            if (item != null && item.Length > 0)
+                url += "/" + string.Join("/", item);
+
+            var data = JsonSerializer.Serialize(payload);
+            var content = new StringContent(data, Encoding.UTF8, "application/json");
+            var http = Task.Run(() => _client.PutAsync(url, content)).GetAwaiter().GetResult();
+            Task.Run(() => http.Content.ReadAsStringAsync()).GetAwaiter();
+        }
+
         public void HttpDelete(string endpoint, string item)
         {
             HttpDelete(endpoint, new[] { item });
