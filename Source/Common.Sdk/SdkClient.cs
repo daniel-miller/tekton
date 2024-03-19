@@ -94,6 +94,18 @@ namespace Common.Sdk
             }
         }
 
+        public void Put(string endpoint, int item, object payload)
+        {
+            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
+                api.HttpPut(endpoint, item.ToString(), payload);
+        }
+
+        public void Put(string endpoint, string item, object payload)
+        {
+            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
+                api.HttpPut(endpoint, item, payload);
+        }
+
         public void Put(string endpoint, Guid item, object payload)
         {
             using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
@@ -102,6 +114,41 @@ namespace Common.Sdk
             }
         }
 
+        public void Put(string endpoint, Guid item1, Guid item2, object payload)
+        {
+            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
+                api.HttpPut(endpoint, new[] { item1.ToString(), item2.ToString() }, payload);
+        }
+
+        public void Put(string endpoint, Guid item1, Guid item2, Guid item3, object payload)
+        {
+            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
+                api.HttpPut(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() }, payload);
+        }
+
+        public void Put(string endpoint, Guid item1, Guid item2, int item3, object payload)
+        {
+            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
+                api.HttpPut(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() }, payload);
+        }
+
+        public void Put(string endpoint, Guid item1, int item2, object payload)
+        {
+            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
+                api.HttpPut(endpoint, new[] { item1.ToString(), item2.ToString() }, payload);
+        }
+
+        public void Put(string endpoint, Guid item1, string item2, object payload)
+        {
+            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
+                api.HttpPut(endpoint, new[] { item1.ToString(), item2 }, payload);
+        }
+
+        public void Put(string endpoint, Guid item1, string item2, int item3, object payload)
+        {
+            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
+                api.HttpPut(endpoint, new[] { item1.ToString(), item2, item3.ToString() }, payload);
+        }
 
         public void Delete(string endpoint, string item)
         {
