@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 
 using Common.Contract;
 
@@ -8,187 +9,48 @@ namespace Common.Sdk
 {
     public class SdkClient
     {
-        private readonly SdkConfiguration _configuration;
+        private ApiClient _api;
+        private IApiClientFactory _apiClientFactory;
 
-        private Pagination _pagination;
+        public Pagination Pagination { get; private set; }
 
-        public Pagination Pagination
-            => _pagination;
+        /// <remarks>
+        /// Force callers to use the static Build method to instantiate a new SDK Client.
+        /// </remarks>
+        private SdkClient() { }
 
-        public SdkClient(SdkConfiguration configuration)
+        /// <summary>
+        /// Construct a new SdkClient
+        /// </summary>
+        /// <remarks></returns>
+        static public async Task Build(IApiClientFactory factory)
         {
-            _configuration = configuration;
-        }
-
-        public IEnumerable<T> GetList<T>(string endpoint, Dictionary<string,string> variables)
-        {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
+            var sdk = new SdkClient
             {
-                var many = api.HttpGet<T>(endpoint, variables);
-                _pagination = api.Pagination;
-                return many;
-            }
+                _api = new ApiClient(factory),
+                _apiClientFactory = factory
+            };
+
+            if (factory.GetToken() != null)
+                return;
+
+            var secret = factory.GetSecret();
+
+            var token = await sdk.GetApiToken(secret);
+
+            factory.SetToken(token);
         }
 
-        public T GetItem<T>(string endpoint, string item)
+        public async Task<string> GetApiToken(string secret)
         {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
-            {
-                return api.HttpGet<T>(endpoint, item);
-            }
+            var client = _apiClientFactory.CreateClient();
+
+            var provider = new ApiTokenProvider(client);
+            
+            var token = await provider.GetTokenAsync(client.BaseAddress, secret);
+            
+            return token;
         }
-
-        public T GetItem<T>(string endpoint, string[] item)
-        {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
-            {
-                return api.HttpGet<T>(endpoint, item);
-            }
-        }
-
-        public T GetItem<T>(string endpoint, Guid item)
-            => GetItem<T>(endpoint, item.ToString());
-
-        public T GetItem<T>(string endpoint, Guid item1, Guid item2)
-            => GetItem<T>(endpoint, new[] { item1.ToString(), item2.ToString() });
-
-        public T GetItem<T>(string endpoint, Guid item1, Guid item2, Guid item3)
-            => GetItem<T>(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
-
-        public T GetItem<T>(string endpoint, Guid item1, Guid item2, int item3)
-            => GetItem<T>(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
-
-        public T GetItem<T>(string endpoint, Guid item1, int item2)
-            => GetItem<T>(endpoint, new[] { item1.ToString(), item2.ToString() });
-
-        public T GetItem<T>(string endpoint, Guid item1, string item2)
-            => GetItem<T>(endpoint, new[] { item1.ToString(), item2 });
-
-        public T GetItem<T>(string endpoint, Guid item1, string item2, int item3)
-            => GetItem<T>(endpoint, new[] { item1.ToString(), item2, item3.ToString() });
-
-        public T GetItem<T>(string endpoint, int item)
-            => GetItem<T>(endpoint, item.ToString());
-
-        public T Post<T>(string endpoint, object payload)
-        {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
-            {
-                return api.HttpPost<T>(endpoint, payload);
-            }
-        }
-
-        public void Post(string endpoint, object payload)
-        {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
-            {
-                api.HttpPost(endpoint, payload);
-            }
-        }
-
-        public T Put<T>(string endpoint, Guid item, object payload)
-        {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
-            {
-                return api.HttpPut<T>(endpoint, item.ToString(), payload);
-            }
-        }
-
-        public void Put(string endpoint, int item, object payload)
-        {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
-                api.HttpPut(endpoint, item.ToString(), payload);
-        }
-
-        public void Put(string endpoint, string item, object payload)
-        {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
-                api.HttpPut(endpoint, item, payload);
-        }
-
-        public void Put(string endpoint, Guid item, object payload)
-        {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
-            {
-                api.HttpPut(endpoint, item.ToString(), payload);
-            }
-        }
-
-        public void Put(string endpoint, Guid item1, Guid item2, object payload)
-        {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
-                api.HttpPut(endpoint, new[] { item1.ToString(), item2.ToString() }, payload);
-        }
-
-        public void Put(string endpoint, Guid item1, Guid item2, Guid item3, object payload)
-        {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
-                api.HttpPut(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() }, payload);
-        }
-
-        public void Put(string endpoint, Guid item1, Guid item2, int item3, object payload)
-        {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
-                api.HttpPut(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() }, payload);
-        }
-
-        public void Put(string endpoint, Guid item1, int item2, object payload)
-        {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
-                api.HttpPut(endpoint, new[] { item1.ToString(), item2.ToString() }, payload);
-        }
-
-        public void Put(string endpoint, Guid item1, string item2, object payload)
-        {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
-                api.HttpPut(endpoint, new[] { item1.ToString(), item2 }, payload);
-        }
-
-        public void Put(string endpoint, Guid item1, string item2, int item3, object payload)
-        {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
-                api.HttpPut(endpoint, new[] { item1.ToString(), item2, item3.ToString() }, payload);
-        }
-
-        public void Delete(string endpoint, string item)
-        {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
-            {
-                api.HttpDelete(endpoint, item);
-            }
-        }
-
-        public void Delete(string endpoint, string[] item)
-        {
-            using (var api = new ApiClient(_configuration.ApiUrl, _configuration.TokenSecret))
-            {
-                api.HttpDelete(endpoint, item);
-            }
-        }
-
-        public void Delete(string endpoint, Guid item)
-            => Delete(endpoint, item.ToString());
-
-        public void Delete(string endpoint, Guid item1, Guid item2)
-            => Delete(endpoint, new[] { item1.ToString(), item2.ToString() });
-
-        public void Delete(string endpoint, Guid item1, Guid item2, Guid item3)
-            => Delete(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
-
-        public void Delete(string endpoint, Guid item1, Guid item2, int item3)
-            => Delete(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
-
-        public void Delete(string endpoint, Guid item1, int item2)
-            => Delete(endpoint, new[] { item1.ToString(), item2.ToString() });
-
-        public void Delete(string endpoint, Guid item1, string item2)
-            => Delete(endpoint, new[] { item1.ToString(), item2 });
-
-        public void Delete(string endpoint, Guid item1, string item2, int item3)
-            => Delete(endpoint, new[] { item1.ToString(), item2, item3.ToString() });
-
-        public void Delete(string endpoint, int item)
-            => Delete(endpoint, item.ToString());
 
         public static Dictionary<string, string> ConvertToDictionary(object obj)
         {
@@ -210,5 +72,108 @@ namespace Common.Sdk
 
             return result;
         }
+
+        public async Task<T> Create<T>(string endpoint, object payload)
+            => await _api.HttpPost<T>(endpoint, payload);
+
+        public async Task Create(string endpoint, object payload)
+            => await _api.HttpPost(endpoint, payload);
+
+        public async Task Delete(string endpoint, Guid item)
+            => await Delete(endpoint, item.ToString());
+
+        public async Task Delete(string endpoint, Guid item1, Guid item2)
+            => await Delete(endpoint, new[] { item1.ToString(), item2.ToString() });
+
+        public async Task Delete(string endpoint, Guid item1, Guid item2, Guid item3)
+            => await Delete(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
+
+        public async Task Delete(string endpoint, Guid item1, Guid item2, int item3)
+            => await Delete(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
+
+        public async Task Delete(string endpoint, Guid item1, int item2)
+            => await Delete(endpoint, new[] { item1.ToString(), item2.ToString() });
+
+        public async Task Delete(string endpoint, Guid item1, string item2)
+            => await Delete(endpoint, new[] { item1.ToString(), item2 });
+
+        public async Task Delete(string endpoint, Guid item1, string item2, int item3)
+            => await Delete(endpoint, new[] { item1.ToString(), item2, item3.ToString() });
+
+        public async Task Delete(string endpoint, int item)
+            => await Delete(endpoint, item.ToString());
+
+        public async Task Delete(string endpoint, string item)
+            => await _api.HttpDelete(endpoint, item);
+
+        public async Task Delete(string endpoint, string[] item)
+            => await _api.HttpDelete(endpoint, item);
+
+        public async Task<T> GetItem<T>(string endpoint, string item)
+            => await _api.HttpGet<T>(endpoint, item);
+
+        public async Task<T> GetItem<T>(string endpoint, string[] item)
+            => await _api.HttpGet<T>(endpoint, item);
+
+        public async Task<T> GetItem<T>(string endpoint, Guid item)
+            => await GetItem<T>(endpoint, item.ToString());
+
+        public async Task<T> GetItem<T>(string endpoint, Guid item1, Guid item2)
+            => await GetItem<T>(endpoint, new[] { item1.ToString(), item2.ToString() });
+
+        public async Task<T> GetItem<T>(string endpoint, Guid item1, Guid item2, Guid item3)
+            => await GetItem<T>(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
+
+        public async Task<T> GetItem<T>(string endpoint, Guid item1, Guid item2, int item3)
+            => await GetItem<T>(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
+
+        public async Task<T> GetItem<T>(string endpoint, Guid item1, int item2)
+            => await GetItem<T>(endpoint, new[] { item1.ToString(), item2.ToString() });
+
+        public async Task<T> GetItem<T>(string endpoint, Guid item1, string item2)
+            => await GetItem<T>(endpoint, new[] { item1.ToString(), item2 });
+
+        public async Task<T> GetItem<T>(string endpoint, Guid item1, string item2, int item3)
+            => await GetItem<T>(endpoint, new[] { item1.ToString(), item2, item3.ToString() });
+
+        public async Task<T> GetItem<T>(string endpoint, int item)
+            => await GetItem<T>(endpoint, item.ToString());
+
+        public async Task<IEnumerable<T>> GetList<T>(string endpoint, Dictionary<string, string> variables)
+        {
+            var many = await _api.HttpGet<T>(endpoint, variables);
+            Pagination = _api.Pagination;
+            return many;
+        }
+
+        public async Task<T> Modify<T>(string endpoint, Guid item, object payload)
+            => await _api.HttpPut<T>(endpoint, item.ToString(), payload);
+
+        public async Task Modify(string endpoint, int item, object payload)
+            => await _api.HttpPut(endpoint, item.ToString(), payload);
+
+        public async Task Modify(string endpoint, string item, object payload)
+            => await _api.HttpPut(endpoint, item, payload);
+
+        public async Task Modify(string endpoint, Guid item, object payload)
+            => await _api.HttpPut(endpoint, item.ToString(), payload);
+
+        public async Task Modify(string endpoint, Guid item1, Guid item2, object payload)
+            => await _api.HttpPut(endpoint, new[] { item1.ToString(), item2.ToString() }, payload);
+
+        public async Task Modify(string endpoint, Guid item1, Guid item2, Guid item3, object payload)
+            => await _api.HttpPut(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() }, payload);
+
+        public async Task Modify(string endpoint, Guid item1, Guid item2, int item3, object payload)
+            => await _api.HttpPut(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() }, payload);
+
+        public async Task Modify(string endpoint, Guid item1, int item2, object payload)
+            => await _api.HttpPut(endpoint, new[] { item1.ToString(), item2.ToString() }, payload);
+
+        public async Task Modify(string endpoint, Guid item1, string item2, object payload)
+            => await _api.HttpPut(endpoint, new[] { item1.ToString(), item2 }, payload);
+
+        public async Task Modify(string endpoint, Guid item1, string item2, int item3, object payload)
+            => await _api.HttpPut(endpoint, new[] { item1.ToString(), item2, item3.ToString() }, payload);
     }
 }

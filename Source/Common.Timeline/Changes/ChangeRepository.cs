@@ -105,6 +105,9 @@ namespace Common.Timeline.Changes
             return aggregate;
         }
 
+        (AggregateState prev, AggregateState current) IChangeRepository.GetPrevAndCurrentStates(Guid aggregateId, int version)
+            => throw new NotImplementedException();
+
         #region Methods (boxing and unboxing)
 
         /// <summary>

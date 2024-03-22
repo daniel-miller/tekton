@@ -6,12 +6,12 @@ namespace Common.Contract
     {
         public ResourceLocation Location { get; set; }
 
-        public ResourceClassification ParseClassification()
+        public ResourceType ParseType()
         {
-            if (Enum.TryParse(Classification, out ResourceClassification classification))
-                return classification;
+            if (Enum.TryParse(Type, out ResourceType type))
+                return type;
 
-            return ResourceClassification.None;
+            return ResourceType.None;
         }
     }
 }

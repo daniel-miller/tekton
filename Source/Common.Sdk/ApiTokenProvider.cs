@@ -21,7 +21,7 @@ namespace Common.Sdk
             _httpClient = httpClient;
         }
 
-        public async Task<string> GetTokenAsync(string endpoint, string secret)
+        public async Task<string> GetTokenAsync(Uri endpoint, string secret)
         {
             if (ValidateCachedToken())
                 return _cachedToken;
@@ -29,7 +29,7 @@ namespace Common.Sdk
             return await GenerateNewToken(endpoint, secret);
         }
 
-        private async Task<string> GenerateNewToken(string endpoint, string secret)
+        private async Task<string> GenerateNewToken(Uri endpoint, string secret)
         {
             string newToken = string.Empty;
             try
@@ -38,7 +38,7 @@ namespace Common.Sdk
                 
                 var requestData = JsonSerializer.Serialize(new { Secret = secret });
                 var requestContent = new StringContent(requestData, Encoding.UTF8, "application/json");
-                var requestMethod = $"{endpoint}/token";
+                var requestMethod = $"{endpoint}token";
 
                 var responseMessage = await _httpClient.PostAsync(requestMethod, requestContent);
                 var responseContent = await responseMessage.Content.ReadAsStringAsync();

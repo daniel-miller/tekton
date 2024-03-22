@@ -16,7 +16,7 @@ namespace Common.Timeline.Changes
         /// <summary>
         /// Used by ChangeGrid
         /// </summary>
-        int Count(Guid aggregate, string keyword);
+        int Count(Guid aggregate, string keyword, bool includeChildren);
 
         /// <summary>
         /// Gets count of changes for an aggregate.
@@ -57,7 +57,7 @@ namespace Common.Timeline.Changes
         /// Gets serialized changes for all aggregates of a specific type.
         /// </summary>
         /// <returns></returns>
-        List<SerializedChange> GetSerializedChangesPaged(Guid aggregate, string keyword, int skip, int pageSize);
+        List<SerializedChange> GetSerializedChangesPaged(Guid aggregate, string keyword, bool includeChildren, int skip, int pageSize);
 
         /// <summary>
         /// Enumerate changes for all aggregates of a specific type.
@@ -67,7 +67,7 @@ namespace Common.Timeline.Changes
         /// <summary>
         /// Used in ChangeGrid
         /// </summary>
-        IChange[] GetChangesPaged(Guid aggregate, string keyword, int skip, int pageSize);
+        IChange[] GetChangesPaged(Guid aggregate, string keyword, bool includeChildren, int skip, int pageSize);
 
         /// <summary>
         /// Gets a specific version of change for an aggregate.
@@ -123,5 +123,7 @@ namespace Common.Timeline.Changes
         /// This is useful when a specific change is obsolete and we need either ignore it or transform to a new change
         /// </summary>
         void RegisterObsoleteChangeTypes(IEnumerable<string> changeTypes);
+
+        void GetClassAndOrganization(Guid aggregate, out string @class, out Guid organization);
     }
 }
