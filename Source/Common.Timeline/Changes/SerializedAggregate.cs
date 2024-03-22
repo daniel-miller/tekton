@@ -12,6 +12,6 @@ namespace Common.Timeline.Changes
         public Guid AggregateIdentifier { get; set; }
         public string AggregateType { get; set; }
         public Guid OriginOrganization { get; set; }
-        public Guid? RootAggregateIdentifier { get; set; }
+        public Guid RootAggregateIdentifier { get; set; }
     }
 }

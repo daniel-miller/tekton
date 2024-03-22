@@ -144,6 +144,32 @@ namespace Common.Timeline.Snapshots
             return aggregate;
         }
 
+        public (AggregateState prev, AggregateState current) GetPrevAndCurrentStates(Guid aggregateId, int version)
+        {           
+            var changes = _changeStore.GetChanges(aggregateId, -1, version);
+            if (changes.Length == 0)
+                return (null, null);
+
+            _changeStore.GetClassAndOrganization(aggregateId, out var aggregateClass, out var _);
+
+            var aggregateType = Type.GetType(aggregateClass);
+            var aggregate = (AggregateRoot)aggregateType.GetConstructor(Type.EmptyTypes).Invoke(null);
+
+            var prevState = aggregate.CreateState();
+            for (int i = 0; i < changes.Length - 1; i++)
+                prevState.Apply(changes[i]);
+
+            var prevStateJson = _serializer.Serialize(prevState);
+
+            var currentState = _serializer.Deserialize<AggregateState>(prevStateJson, prevState.GetType(), false);
+            currentState.Apply(changes[changes.Length - 1]);
+
+            if (changes.Length == 1)
+                prevState = null;
+
+            return (prevState, currentState);
+        }
+
         /// <summary>
         /// Returns a specific aggregate as at a specific version.
         /// </summary>

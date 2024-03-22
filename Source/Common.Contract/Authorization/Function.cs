@@ -4,12 +4,12 @@ namespace Common.Contract
 {
     public class Function : Model
     {
-        public FunctionClassification ParseClassification()
+        public FunctionType ParseType()
         {
-            if (Enum.TryParse(Classification, out FunctionClassification classification))
-                return classification;
+            if (Enum.TryParse(Type, out FunctionType type))
+                return type;
 
-            return FunctionClassification.None;
+            return FunctionType.None;
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Common.Contract
 {
-    public enum ResourceClassification 
+    public enum ResourceType 
     { 
         // Undefined
         None, 

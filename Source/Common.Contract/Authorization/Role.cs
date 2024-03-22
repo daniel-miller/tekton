@@ -4,12 +4,12 @@ namespace Common.Contract
 {
     public class Role : Model
     {
-        public RoleClassification ParseClassification()
+        public RoleType ParseType()
         {
-            if (Enum.TryParse(Classification, out RoleClassification classification))
-                return classification;
+            if (Enum.TryParse(Type, out RoleType type))
+                return type;
 
-            return RoleClassification.None;
+            return RoleType.None;
         }
     }
 }

@@ -43,5 +43,7 @@ namespace Common.Timeline.Changes
         /// Retrieves an aggregate from offline storage and returns only its most recent state.
         /// </summary>
         T Unbox<T>(Guid aggregate) where T : AggregateRoot;
+
+        (AggregateState prev, AggregateState current) GetPrevAndCurrentStates(Guid aggregateId, int version);
     }
 }

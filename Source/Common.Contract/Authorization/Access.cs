@@ -212,7 +212,7 @@ namespace Common.Contract
 
             foreach(var value in Metadata.Values)
             {
-                value.Classification = FunctionClassification.Access.ToString();
+                value.Type = FunctionType.Access.ToString();
             }
         }
     }
