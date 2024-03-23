@@ -9,39 +9,21 @@ namespace Common.Sdk
 {
     public class SdkClient
     {
-        private ApiClient _api;
-        private IApiClientFactory _apiClientFactory;
+        private readonly ApiClient _api;
+        private readonly IApiClientFactory _apiClientFactory;
 
         public Pagination Pagination { get; private set; }
 
-        /// <remarks>
-        /// Force callers to use the static Build method to instantiate a new SDK Client.
-        /// </remarks>
-        private SdkClient() { }
-
-        /// <summary>
-        /// Construct a new SdkClient
-        /// </summary>
-        /// <remarks></returns>
-        static public async Task Build(IApiClientFactory factory)
+        public SdkClient(IApiClientFactory factory)
         {
-            var sdk = new SdkClient
-            {
-                _api = new ApiClient(factory),
-                _apiClientFactory = factory
-            };
-
-            if (factory.GetToken() != null)
-                return;
-
-            var secret = factory.GetSecret();
-
-            var token = await sdk.GetApiToken(secret);
-
-            factory.SetToken(token);
+            _api = new ApiClient(factory);
+            _apiClientFactory = factory;
         }
 
-        public async Task<string> GetApiToken(string secret)
+        public async Task<string> Authenticate()
+            => await Authenticate(_apiClientFactory.GetSecret());
+
+        public async Task<string> Authenticate(string secret)
         {
             var client = _apiClientFactory.CreateClient();
 
@@ -52,7 +34,7 @@ namespace Common.Sdk
             return token;
         }
 
-        public static Dictionary<string, string> ConvertToDictionary(object obj)
+        public Dictionary<string, string> ConvertToDictionary(object obj)
         {
             if (obj == null)
                 throw new ArgumentNullException(nameof(obj), "Object cannot be null.");
