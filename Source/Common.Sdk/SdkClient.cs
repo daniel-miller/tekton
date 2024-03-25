@@ -20,16 +20,16 @@ namespace Common.Sdk
             _apiClientFactory = factory;
         }
 
-        public async Task<string> Authenticate()
-            => await Authenticate(_apiClientFactory.GetSecret());
+        public async Task<string> Authenticate(int? lifetime)
+            => await Authenticate(_apiClientFactory.GetSecret(), lifetime);
 
-        public async Task<string> Authenticate(string secret)
+        public async Task<string> Authenticate(string secret, int? lifetime)
         {
             var client = _apiClientFactory.CreateClient();
 
             var provider = new ApiTokenProvider(client);
             
-            var token = await provider.GetTokenAsync(client.BaseAddress, secret);
+            var token = await provider.GetTokenAsync(client.BaseAddress, secret, lifetime);
             
             return token;
         }

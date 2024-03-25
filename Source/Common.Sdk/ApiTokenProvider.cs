@@ -21,22 +21,23 @@ namespace Common.Sdk
             _httpClient = httpClient;
         }
 
-        public async Task<string> GetTokenAsync(Uri endpoint, string secret)
+        public async Task<string> GetTokenAsync(Uri endpoint, string secret, int? lifetime)
         {
             if (ValidateCachedToken())
                 return _cachedToken;
 
-            return await GenerateNewToken(endpoint, secret);
+            return await GenerateNewToken(endpoint, secret, lifetime);
         }
 
-        private async Task<string> GenerateNewToken(Uri endpoint, string secret)
+        private async Task<string> GenerateNewToken(Uri endpoint, string secret, int? lifetime)
         {
             string newToken = string.Empty;
             try
             {
                 await Lock.WaitAsync();
-                
-                var requestData = JsonSerializer.Serialize(new { Secret = secret });
+
+                var request = new ApiTokenRequest(secret, lifetime);
+                var requestData = JsonSerializer.Serialize(request);
                 var requestContent = new StringContent(requestData, Encoding.UTF8, "application/json");
                 var requestMethod = $"{endpoint}token";
 
