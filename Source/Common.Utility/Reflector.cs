@@ -2,38 +2,41 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-public class Reflector
+namespace Common.Utility
 {
-    public void FindConstants(Type type, IEnumerable<string> constants, Dictionary<string, string> dictionary)
+    public class Reflector
     {
-        foreach (var constant in constants)
+        public void FindConstants(Type type, IEnumerable<string> constants, Dictionary<string, string> dictionary)
         {
-            FindConstants(type, constant, dictionary);
-        }
-    }
-
-    public void FindConstants(Type type, string constant, Dictionary<string, string> dictionary)
-    {
-        FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
-
-        foreach (var field in fields)
-        {
-            if (field != null && field.Name == constant && field.IsLiteral)
+            foreach (var constant in constants)
             {
-                var fieldType = field.DeclaringType?.FullName;
-                var fieldValue = field.GetValue(null)?.ToString();
-
-                if (fieldType != null && fieldValue != null)
-                {
-                    var key = fieldType.Replace("+", ".") + "." + field.Name;
-                    dictionary.Add(key, fieldValue);
-                }
+                FindConstants(type, constant, dictionary);
             }
         }
 
-        foreach (var nestedType in type.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static))
+        public void FindConstants(Type type, string constant, Dictionary<string, string> dictionary)
         {
-            FindConstants(nestedType, constant, dictionary);
+            FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+
+            foreach (var field in fields)
+            {
+                if (field != null && field.Name == constant && field.IsLiteral)
+                {
+                    var fieldType = field.DeclaringType?.FullName;
+                    var fieldValue = field.GetValue(null)?.ToString();
+
+                    if (fieldType != null && fieldValue != null)
+                    {
+                        var key = fieldType.Replace("+", ".") + "." + field.Name;
+                        dictionary.Add(key, fieldValue);
+                    }
+                }
+            }
+
+            foreach (var nestedType in type.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static))
+            {
+                FindConstants(nestedType, constant, dictionary);
+            }
         }
     }
 }
