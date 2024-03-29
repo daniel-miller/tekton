@@ -39,7 +39,7 @@ namespace Common.Sdk
                 var request = new ApiTokenRequest(secret, lifetime);
                 var requestData = JsonSerializer.Serialize(request);
                 var requestContent = new StringContent(requestData, Encoding.UTF8, "application/json");
-                var requestMethod = $"{endpoint}token";
+                var requestMethod = $"{endpoint}api/token";
 
                 var responseMessage = await _httpClient.PostAsync(requestMethod, requestContent);
                 var responseContent = await responseMessage.Content.ReadAsStringAsync();

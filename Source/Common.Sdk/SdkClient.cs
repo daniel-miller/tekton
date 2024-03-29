@@ -20,10 +20,10 @@ namespace Common.Sdk
             _apiClientFactory = factory;
         }
 
-        public async Task<string> Authenticate(int? lifetime)
+        public async Task<string> Authenticate(int? lifetime = null)
             => await Authenticate(_apiClientFactory.GetSecret(), lifetime);
 
-        public async Task<string> Authenticate(string secret, int? lifetime)
+        public async Task<string> Authenticate(string secret, int? lifetime = null)
         {
             var client = _apiClientFactory.CreateClient();
 
