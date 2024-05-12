@@ -91,6 +91,9 @@ namespace Common.Sdk
         public async Task Delete(string endpoint, string[] item)
             => await _api.HttpDelete(endpoint, item);
 
+        public async Task<T> Export<T>(string endpoint, object payload)
+            => await _api.HttpPost<T>(endpoint, payload);
+
         public async Task<T> GetItem<T>(string endpoint, string item)
             => await _api.HttpGet<T>(endpoint, item);
 
@@ -105,6 +108,9 @@ namespace Common.Sdk
 
         public async Task<T> GetItem<T>(string endpoint, Guid item1, Guid item2, Guid item3)
             => await GetItem<T>(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
+
+        public async Task<T> GetItem<T>(string endpoint, Guid item1, Guid item2, Guid item3, Guid item4)
+            => await GetItem<T>(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString(), item4.ToString() });
 
         public async Task<T> GetItem<T>(string endpoint, Guid item1, Guid item2, int item3)
             => await GetItem<T>(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
@@ -156,6 +162,6 @@ namespace Common.Sdk
             => await _api.HttpPut(endpoint, new[] { item1.ToString(), item2 }, payload);
 
         public async Task Modify(string endpoint, Guid item1, string item2, int item3, object payload)
-            => await _api.HttpPut(endpoint, new[] { item1.ToString(), item2, item3.ToString() }, payload);
+            => await _api.HttpPut(endpoint, new[] { item1.ToString(), item2, item3.ToString() }, payload);        
     }
 }
