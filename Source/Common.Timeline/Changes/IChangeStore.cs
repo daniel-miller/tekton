@@ -83,6 +83,7 @@ namespace Common.Timeline.Changes
         /// Save changes.
         /// </summary>
         void Save(AggregateRoot aggregate, IEnumerable<IChange> changes);
+        void Save(IEnumerable<AggregateImport> import);
 
         /// <summary>
         /// Save change.

@@ -23,6 +23,8 @@ namespace Common.Timeline.Commands
                 data.OriginOrganization = x.OriginOrganization;
                 data.OriginUser = x.OriginUser;
 
+                data.CommandIdentifier = x.CommandIdentifier;
+
                 return data;
             }
             catch (InvalidCastException ex)
