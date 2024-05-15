@@ -1,8 +1,7 @@
 ﻿namespace Common.Contract
 {
-    public class ValidationResponse
+    public class ValidationError : Error
     {
         public string Property { get; set; }
-        public string Message { get; set; }
     }
 }

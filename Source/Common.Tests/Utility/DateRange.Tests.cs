@@ -1,6 +1,6 @@
 using Common.Utility;
 
-namespace Common.Tests.Auto.Utility
+namespace Common.Tests.Utility
 {
     public class DateRangeTests
     {

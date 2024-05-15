@@ -9,11 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Sdk", "Common.Sdk\Co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Utility", "Common.Utility\Common.Utility.csproj", "{DD569FBC-896F-4F9E-A2FA-1B4901C00794}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{0E6AD828-6070-4DFA-A40D-34E6D4CF46E2}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Tests.Auto", "Common.Tests.Auto\Common.Tests.Auto.csproj", "{C606E31B-002F-46A5-BF44-DDE41074A926}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Tests", "Common.Tests\Common.Tests.csproj", "{C606E31B-002F-46A5-BF44-DDE41074A926}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Timeline", "Common.Timeline\Common.Timeline.csproj", "{B54536F7-606B-4AE9-81A9-15BE17DA0106}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{73A25ABF-AD47-40CB-ADF9-9F0F9D84C57D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,7 +46,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{C606E31B-002F-46A5-BF44-DDE41074A926} = {0E6AD828-6070-4DFA-A40D-34E6D4CF46E2}
+		{C606E31B-002F-46A5-BF44-DDE41074A926} = {73A25ABF-AD47-40CB-ADF9-9F0F9D84C57D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C8579A47-2918-48F3-9662-A2BD8501BA8B}

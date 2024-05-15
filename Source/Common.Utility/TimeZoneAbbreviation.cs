@@ -4,8 +4,6 @@ namespace Common.Utility
 {
     public class TimeZoneAbbreviation
     {
-        #region Properties
-
         public string Generic { get; }
 
         public string Standard { get; }
@@ -14,15 +12,7 @@ namespace Common.Utility
 
         public string Moment { get; }
 
-        #endregion
-
-        #region Fields
-
         private readonly TimeZoneInfo _zone;
-
-        #endregion
-
-        #region Construction
 
         public TimeZoneAbbreviation(TimeZoneInfo zone, string generic, string standard, string daylight, string moment)
         {
@@ -34,13 +24,7 @@ namespace Common.Utility
             Moment = moment;
         }
 
-        #endregion
-
-        #region Methods
-
-        public string GetAbbreviation(DateTimeOffset time) =>
-            _zone.IsDaylightSavingTime(time) ? Daylight : Standard;
-
-        #endregion
+        public string GetAbbreviation(DateTimeOffset time) 
+            => _zone.IsDaylightSavingTime(time) ? Daylight : Standard;
     }
 }

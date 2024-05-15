@@ -99,6 +99,13 @@ namespace Common.Sdk
         public async Task<T> Get<T>(string endpoint, int id)
             => await Get<T>(endpoint, id.ToString());
 
+        public async Task<IEnumerable<T>> List<T>(string endpoint, Dictionary<string, string> criteria)
+        {
+            var many = await _api.HttpGet<T>(endpoint, criteria);
+            Pagination = _api.Pagination;
+            return many;
+        }
+
         public async Task<T> Modify<T>(string endpoint, Guid id, object payload)
             => await _api.HttpPut<T>(endpoint, id.ToString(), payload);
 
@@ -128,13 +135,6 @@ namespace Common.Sdk
 
         public async Task Modify(string endpoint, Guid id1, string id2, int id3, object payload)
             => await _api.HttpPut(endpoint, new[] { id1.ToString(), id2, id3.ToString() }, payload);
-
-        public async Task<IEnumerable<T>> List<T>(string endpoint, Dictionary<string, string> criteria)
-        {
-            var many = await _api.HttpGet<T>(endpoint, criteria);
-            Pagination = _api.Pagination;
-            return many;
-        }
 
         public async Task<IEnumerable<T>> Search<T>(string endpoint, Dictionary<string, string> criteria)
         {
