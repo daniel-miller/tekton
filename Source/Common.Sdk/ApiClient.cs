@@ -7,7 +7,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Web;
 
 using Common.Contract;
 
@@ -24,14 +23,14 @@ namespace Common.Sdk
             _factory = apiClientFactory;
         }
 
-        public async Task<T> HttpGet<T>(string endpoint, string item)
-            => await HttpGet<T>(endpoint, new[] { item });
+        public async Task<T> HttpGet<T>(string endpoint, string id)
+            => await HttpGet<T>(endpoint, new[] { id });
 
-        public async Task<T> HttpGet<T>(string endpoint, string[] item)
+        public async Task<T> HttpGet<T>(string endpoint, string[] id)
         {
             var url = endpoint.ToString();
-            if (item != null && item.Length > 0)
-                url += "/" + string.Join("/", item);
+            if (id != null && id.Length > 0)
+                url += "/" + string.Join("/", id);
 
             var client = CreateHttpClient();
             var http = await client.GetAsync(url);
@@ -41,10 +40,10 @@ namespace Common.Sdk
             return response;
         }
 
-        public async Task<IEnumerable<T>> HttpGet<T>(string endpoint, Dictionary<string, string> variables)
+        public async Task<IEnumerable<T>> HttpGet<T>(string endpoint, Dictionary<string, string> criteria)
         {
             var url = endpoint.ToString() + "?";
-            foreach (var kvp in variables)
+            foreach (var kvp in criteria)
                 url += $"{kvp.Key}={kvp.Value}&";
 
             var client = CreateHttpClient();
@@ -92,9 +91,9 @@ namespace Common.Sdk
             await http.Content.ReadAsStringAsync();
         }
 
-        public async Task<T> HttpPut<T>(string endpoint, string item, object payload)
+        public async Task<T> HttpPut<T>(string endpoint, string id, object payload)
         {
-            var url = endpoint + "/" + item;
+            var url = endpoint + "/" + id;
             var data = JsonSerializer.Serialize(payload);
             var content = new StringContent(data, Encoding.UTF8, "application/json");
             var client = CreateHttpClient();
@@ -105,9 +104,9 @@ namespace Common.Sdk
             return response;
         }
 
-        public async Task HttpPut(string endpoint, string item, object payload)
+        public async Task HttpPut(string endpoint, string id, object payload)
         {
-            var url = endpoint + "/" + item;
+            var url = endpoint + "/" + id;
             var data = JsonSerializer.Serialize(payload);
             var content = new StringContent(data, Encoding.UTF8, "application/json");
             var client = CreateHttpClient();
@@ -115,11 +114,11 @@ namespace Common.Sdk
             await http.Content.ReadAsStringAsync();
         }
 
-        public async Task HttpPut(string endpoint, string[] item, object payload)
+        public async Task HttpPut(string endpoint, string[] id, object payload)
         {
             var url = endpoint.ToString();
-            if (item != null && item.Length > 0)
-                url += "/" + string.Join("/", item);
+            if (id != null && id.Length > 0)
+                url += "/" + string.Join("/", id);
 
             var data = JsonSerializer.Serialize(payload);
             var content = new StringContent(data, Encoding.UTF8, "application/json");
@@ -128,35 +127,18 @@ namespace Common.Sdk
             await http.Content.ReadAsStringAsync();
         }
 
-        public async Task HttpDelete(string endpoint, string item)
-            => await HttpDelete(endpoint, new[] { item });
+        public async Task HttpDelete(string endpoint, string id)
+            => await HttpDelete(endpoint, new[] { id });
 
-        public async Task HttpDelete(string endpoint, string[] item)
+        public async Task HttpDelete(string endpoint, string[] id)
         {
             var url = endpoint.ToString();
-            if (item != null && item.Length > 0)
-                url += "/" + string.Join("/", item);
+            if (id != null && id.Length > 0)
+                url += "/" + string.Join("/", id);
 
             var client = CreateHttpClient();
             var http = await client.DeleteAsync(url);
             await http.Content.ReadAsStringAsync();
-        }
-
-        public static string DictionaryToQueryString(Dictionary<string, string> dictionary)
-        {
-            if (dictionary == null || dictionary.Count == 0)
-                return string.Empty;
-
-            var queryParams = new List<string>();
-
-            foreach (var kvp in dictionary)
-            {
-                string key = HttpUtility.UrlEncode(kvp.Key);
-                string value = HttpUtility.UrlEncode(kvp.Value);
-                queryParams.Add($"{key}={value}");
-            }
-
-            return string.Join("&", queryParams);
         }
 
         private HttpClient CreateHttpClient()

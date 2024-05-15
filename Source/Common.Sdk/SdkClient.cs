@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading.Tasks;
 
 using Common.Contract;
@@ -28,140 +27,123 @@ namespace Common.Sdk
             var client = _apiClientFactory.CreateClient();
 
             var provider = new ApiTokenProvider(client);
-            
+
             var token = await provider.GetTokenAsync(client.BaseAddress, secret, lifetime);
-            
+
             return token;
-        }
-
-        public Dictionary<string, string> ConvertToDictionary(object obj)
-        {
-            if (obj == null)
-                throw new ArgumentNullException(nameof(obj), "Object cannot be null.");
-
-            Dictionary<string, string> result = new Dictionary<string, string>();
-
-            PropertyInfo[] properties = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-            foreach (PropertyInfo property in properties)
-            {
-                string propertyName = property.Name;
-                object propertyValue = property.GetValue(obj);
-
-                if (propertyValue != null)
-                    result[propertyName] = propertyValue.ToString();
-            }
-
-            return result;
         }
 
         public async Task<T> Create<T>(string endpoint, object payload)
             => await _api.HttpPost<T>(endpoint, payload);
 
-        public async Task Create(string endpoint, object payload)
+        public async Task Delete(string endpoint, Guid id)
+            => await Delete(endpoint, id.ToString());
+
+        public async Task Delete(string endpoint, Guid id1, Guid id2)
+            => await Delete(endpoint, new[] { id1.ToString(), id2.ToString() });
+
+        public async Task Delete(string endpoint, Guid id1, Guid id2, Guid id3)
+            => await Delete(endpoint, new[] { id1.ToString(), id2.ToString(), id3.ToString() });
+
+        public async Task Delete(string endpoint, Guid id1, Guid id2, int id3)
+            => await Delete(endpoint, new[] { id1.ToString(), id2.ToString(), id3.ToString() });
+
+        public async Task Delete(string endpoint, Guid id1, int id2)
+            => await Delete(endpoint, new[] { id1.ToString(), id2.ToString() });
+
+        public async Task Delete(string endpoint, Guid id1, string id2)
+            => await Delete(endpoint, new[] { id1.ToString(), id2 });
+
+        public async Task Delete(string endpoint, Guid id1, string id2, int id3)
+            => await Delete(endpoint, new[] { id1.ToString(), id2, id3.ToString() });
+
+        public async Task Delete(string endpoint, int id)
+            => await Delete(endpoint, id.ToString());
+
+        public async Task Delete(string endpoint, string id)
+            => await _api.HttpDelete(endpoint, id);
+
+        public async Task Delete(string endpoint, string[] id)
+            => await _api.HttpDelete(endpoint, id);
+
+        public async Task Export(string endpoint, object payload)
             => await _api.HttpPost(endpoint, payload);
 
-        public async Task Delete(string endpoint, Guid item)
-            => await Delete(endpoint, item.ToString());
+        public async Task<T> Get<T>(string endpoint, string id)
+            => await _api.HttpGet<T>(endpoint, id);
 
-        public async Task Delete(string endpoint, Guid item1, Guid item2)
-            => await Delete(endpoint, new[] { item1.ToString(), item2.ToString() });
+        public async Task<T> Get<T>(string endpoint, string[] id)
+            => await _api.HttpGet<T>(endpoint, id);
 
-        public async Task Delete(string endpoint, Guid item1, Guid item2, Guid item3)
-            => await Delete(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
+        public async Task<T> Get<T>(string endpoint, Guid id)
+            => await Get<T>(endpoint, id.ToString());
 
-        public async Task Delete(string endpoint, Guid item1, Guid item2, int item3)
-            => await Delete(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
+        public async Task<T> Get<T>(string endpoint, Guid id1, Guid id2)
+            => await Get<T>(endpoint, new[] { id1.ToString(), id2.ToString() });
 
-        public async Task Delete(string endpoint, Guid item1, int item2)
-            => await Delete(endpoint, new[] { item1.ToString(), item2.ToString() });
+        public async Task<T> Get<T>(string endpoint, Guid id1, Guid id2, Guid id3)
+            => await Get<T>(endpoint, new[] { id1.ToString(), id2.ToString(), id3.ToString() });
 
-        public async Task Delete(string endpoint, Guid item1, string item2)
-            => await Delete(endpoint, new[] { item1.ToString(), item2 });
+        public async Task<T> Get<T>(string endpoint, Guid id1, Guid id2, int id3)
+            => await Get<T>(endpoint, new[] { id1.ToString(), id2.ToString(), id3.ToString() });
 
-        public async Task Delete(string endpoint, Guid item1, string item2, int item3)
-            => await Delete(endpoint, new[] { item1.ToString(), item2, item3.ToString() });
+        public async Task<T> Get<T>(string endpoint, Guid id1, int id2)
+            => await Get<T>(endpoint, new[] { id1.ToString(), id2.ToString() });
 
-        public async Task Delete(string endpoint, int item)
-            => await Delete(endpoint, item.ToString());
+        public async Task<T> Get<T>(string endpoint, Guid id1, string id2)
+            => await Get<T>(endpoint, new[] { id1.ToString(), id2 });
 
-        public async Task Delete(string endpoint, string item)
-            => await _api.HttpDelete(endpoint, item);
+        public async Task<T> Get<T>(string endpoint, Guid id1, string id2, int id3)
+            => await Get<T>(endpoint, new[] { id1.ToString(), id2, id3.ToString() });
 
-        public async Task Delete(string endpoint, string[] item)
-            => await _api.HttpDelete(endpoint, item);
+        public async Task<T> Get<T>(string endpoint, int id)
+            => await Get<T>(endpoint, id.ToString());
 
-        public async Task<T> Export<T>(string endpoint, object payload)
-            => await _api.HttpPost<T>(endpoint, payload);
+        public async Task<T> Modify<T>(string endpoint, Guid id, object payload)
+            => await _api.HttpPut<T>(endpoint, id.ToString(), payload);
 
-        public async Task<T> GetItem<T>(string endpoint, string item)
-            => await _api.HttpGet<T>(endpoint, item);
+        public async Task Modify(string endpoint, int id, object payload)
+            => await _api.HttpPut(endpoint, id.ToString(), payload);
 
-        public async Task<T> GetItem<T>(string endpoint, string[] item)
-            => await _api.HttpGet<T>(endpoint, item);
+        public async Task Modify(string endpoint, string id, object payload)
+            => await _api.HttpPut(endpoint, id, payload);
 
-        public async Task<T> GetItem<T>(string endpoint, Guid item)
-            => await GetItem<T>(endpoint, item.ToString());
+        public async Task Modify(string endpoint, Guid id, object payload)
+            => await _api.HttpPut(endpoint, id.ToString(), payload);
 
-        public async Task<T> GetItem<T>(string endpoint, Guid item1, Guid item2)
-            => await GetItem<T>(endpoint, new[] { item1.ToString(), item2.ToString() });
+        public async Task Modify(string endpoint, Guid id1, Guid id2, object payload)
+            => await _api.HttpPut(endpoint, new[] { id1.ToString(), id2.ToString() }, payload);
 
-        public async Task<T> GetItem<T>(string endpoint, Guid item1, Guid item2, Guid item3)
-            => await GetItem<T>(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
+        public async Task Modify(string endpoint, Guid id1, Guid id2, Guid id3, object payload)
+            => await _api.HttpPut(endpoint, new[] { id1.ToString(), id2.ToString(), id3.ToString() }, payload);
 
-        public async Task<T> GetItem<T>(string endpoint, Guid item1, Guid item2, Guid item3, Guid item4)
-            => await GetItem<T>(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString(), item4.ToString() });
+        public async Task Modify(string endpoint, Guid id1, Guid id2, int id3, object payload)
+            => await _api.HttpPut(endpoint, new[] { id1.ToString(), id2.ToString(), id3.ToString() }, payload);
 
-        public async Task<T> GetItem<T>(string endpoint, Guid item1, Guid item2, int item3)
-            => await GetItem<T>(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() });
+        public async Task Modify(string endpoint, Guid id1, int id2, object payload)
+            => await _api.HttpPut(endpoint, new[] { id1.ToString(), id2.ToString() }, payload);
 
-        public async Task<T> GetItem<T>(string endpoint, Guid item1, int item2)
-            => await GetItem<T>(endpoint, new[] { item1.ToString(), item2.ToString() });
+        public async Task Modify(string endpoint, Guid id1, string id2, object payload)
+            => await _api.HttpPut(endpoint, new[] { id1.ToString(), id2 }, payload);
 
-        public async Task<T> GetItem<T>(string endpoint, Guid item1, string item2)
-            => await GetItem<T>(endpoint, new[] { item1.ToString(), item2 });
+        public async Task Modify(string endpoint, Guid id1, string id2, int id3, object payload)
+            => await _api.HttpPut(endpoint, new[] { id1.ToString(), id2, id3.ToString() }, payload);
 
-        public async Task<T> GetItem<T>(string endpoint, Guid item1, string item2, int item3)
-            => await GetItem<T>(endpoint, new[] { item1.ToString(), item2, item3.ToString() });
-
-        public async Task<T> GetItem<T>(string endpoint, int item)
-            => await GetItem<T>(endpoint, item.ToString());
-
-        public async Task<IEnumerable<T>> GetList<T>(string endpoint, Dictionary<string, string> variables)
+        public async Task<IEnumerable<T>> List<T>(string endpoint, Dictionary<string, string> criteria)
         {
-            var many = await _api.HttpGet<T>(endpoint, variables);
+            var many = await _api.HttpGet<T>(endpoint, criteria);
             Pagination = _api.Pagination;
             return many;
         }
 
-        public async Task<T> Modify<T>(string endpoint, Guid item, object payload)
-            => await _api.HttpPut<T>(endpoint, item.ToString(), payload);
+        public async Task<IEnumerable<T>> Search<T>(string endpoint, Dictionary<string, string> criteria)
+        {
+            var many = await _api.HttpGet<T>(endpoint, criteria);
+            Pagination = _api.Pagination;
+            return many;
+        }
 
-        public async Task Modify(string endpoint, int item, object payload)
-            => await _api.HttpPut(endpoint, item.ToString(), payload);
-
-        public async Task Modify(string endpoint, string item, object payload)
-            => await _api.HttpPut(endpoint, item, payload);
-
-        public async Task Modify(string endpoint, Guid item, object payload)
-            => await _api.HttpPut(endpoint, item.ToString(), payload);
-
-        public async Task Modify(string endpoint, Guid item1, Guid item2, object payload)
-            => await _api.HttpPut(endpoint, new[] { item1.ToString(), item2.ToString() }, payload);
-
-        public async Task Modify(string endpoint, Guid item1, Guid item2, Guid item3, object payload)
-            => await _api.HttpPut(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() }, payload);
-
-        public async Task Modify(string endpoint, Guid item1, Guid item2, int item3, object payload)
-            => await _api.HttpPut(endpoint, new[] { item1.ToString(), item2.ToString(), item3.ToString() }, payload);
-
-        public async Task Modify(string endpoint, Guid item1, int item2, object payload)
-            => await _api.HttpPut(endpoint, new[] { item1.ToString(), item2.ToString() }, payload);
-
-        public async Task Modify(string endpoint, Guid item1, string item2, object payload)
-            => await _api.HttpPut(endpoint, new[] { item1.ToString(), item2 }, payload);
-
-        public async Task Modify(string endpoint, Guid item1, string item2, int item3, object payload)
-            => await _api.HttpPut(endpoint, new[] { item1.ToString(), item2, item3.ToString() }, payload);        
+        public Dictionary<string, string> ToDictionary(object obj)
+            => Utility.DictionaryConverter.ToDictionary(obj);
     }
 }
