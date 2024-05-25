@@ -1,6 +1,4 @@
-﻿using Common.Sdk;
-
-namespace Common.Tests.Sdk
+﻿namespace Common.Test
 {
     public class ApiTokenRequestTests
     {

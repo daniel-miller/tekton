@@ -1,7 +1,6 @@
 using Common.Timeline.Snapshots;
-using Common.Utility;
 
-namespace Common.Tests.Timeline
+namespace Common.Timeline.Test
 {
     public class SnapshotStrategyTests
     {

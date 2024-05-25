@@ -1,6 +1,6 @@
 ﻿using Common.Timeline.Changes;
 
-namespace Common.Tests.Timeline
+namespace Common.Timeline.Test
 {
     internal class MockState : AggregateState
     {

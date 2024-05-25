@@ -1,6 +1,4 @@
-﻿using Common.Contract;
-
-namespace Common.Tests.Contract.Limitation
+﻿namespace Common.Test
 {
     public class CriteriaTests
     {
