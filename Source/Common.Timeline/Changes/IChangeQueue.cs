@@ -32,4 +32,9 @@ namespace Common.Timeline.Changes
         /// </summary>
         void Override<T>(Action<T> action, Guid organization) where T : IChange;
     }
+
+    public interface IEventProcessor
+    {
+        void Register(IChangeQueue publisher);
+    }
 }
