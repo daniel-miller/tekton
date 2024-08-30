@@ -7,9 +7,5 @@
 	<ItemGroup>
 		<PackageReference Include="System.Text.Json" Version="8.0.4" />
 	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Maintenance\" />
-	</ItemGroup>
 	
 </Project>
