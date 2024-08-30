@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -36,14 +35,14 @@ namespace Common
             {
                 await Lock.WaitAsync();
 
-                var request = new ApiTokenRequest(secret, lifetime);
+                var request = new JsonWebTokenRequest { Secret = secret, Lifetime = lifetime };
                 var requestData = JsonSerializer.Serialize(request);
                 var requestContent = new StringContent(requestData, Encoding.UTF8, "application/json");
                 var requestMethod = $"{endpoint}api/token";
 
                 var responseMessage = await _httpClient.PostAsync(requestMethod, requestContent);
                 var responseContent = await responseMessage.Content.ReadAsStringAsync();
-                
+
                 var status = responseMessage.StatusCode;
                 if (status != HttpStatusCode.OK)
                 {
@@ -65,13 +64,13 @@ namespace Common
         {
             if (string.IsNullOrEmpty(_cachedToken))
                 return false;
-            
-            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(_cachedToken);
-            var expiryTimeText = jwt.Claims.Single(claim => claim.Type == "exp").Value;
+
+            var jwt = new JsonWebToken(_cachedToken);
+            var expiryTimeText = jwt.Claims.Single(claim => claim.Key == "exp").Value;
             var expiryDateTime = UnixTimeStampToDateTime(int.Parse(expiryTimeText));
             if (expiryDateTime > DateTime.UtcNow)
                 return true;
-            
+
             return false;
         }
 

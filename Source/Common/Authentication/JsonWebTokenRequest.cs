@@ -2,7 +2,7 @@
 
 namespace Common
 {
-    public class TokenRequest
+    public class JsonWebTokenRequest
     {
         public string Secret { get; set; }
         public int? Lifetime { get; set; }
