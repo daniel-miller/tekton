@@ -1,6 +1,6 @@
 ﻿namespace Common
 {
-    public class SdkConfiguration
+    public class SdkOptions
     {
         public string ApiUrl { get; set; }
         public string TokenSecret { get; set; }
