@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
+using Common.Timeline.Commands;
 using Common.Timeline.Exceptions;
 
 namespace Common.Timeline.Changes
@@ -103,13 +104,7 @@ namespace Common.Timeline.Changes
             LockAndRun(() =>
             {
                 foreach (var change in _changes)
-                {
-                    if (change.OriginOrganization == Guid.Empty)
-                        change.OriginOrganization = organization;
-
-                    if (change.OriginUser == Guid.Empty)
-                        change.OriginUser = user;
-                }
+                    change.Identify(organization, user);
             });
         }
 
@@ -157,10 +152,25 @@ namespace Common.Timeline.Changes
             if (State == null)
                 State = CreateState();
 
+            if (_context != null)
+                change.Identify(_context.Organization, _context.User);
+
             State.Apply(change);
         }
 
+        private AggregateRunContext _context = null;
+
+        public void LockAndRun(Command context, Action action)
+        {
+            LockAndRun(action, new AggregateRunContext(context.OriginOrganization, context.OriginUser));
+        }
+
         public void LockAndRun(Action action)
+        {
+            LockAndRun(action, null);
+        }
+
+        private void LockAndRun(Action action, AggregateRunContext context)
         {
             // LockEnter
             {
@@ -181,10 +191,20 @@ namespace Common.Timeline.Changes
 
             try
             {
+                if (context != null)
+                {
+                    if (_context == null)
+                        _context = context;
+                    else if (_context != context)
+                        throw new AggregateException("Context already assigned to this aggregate");
+                }
+
                 action?.Invoke();
             }
             finally
             {
+                _context = null;
+
                 // LockExit
                 {
                     Monitor.Exit(this);

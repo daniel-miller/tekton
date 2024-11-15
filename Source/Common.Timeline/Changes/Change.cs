@@ -72,5 +72,14 @@ namespace Common.Timeline.Changes
         {
             ChangeTime = DateTimeOffset.UtcNow;
         }
+
+        public void Identify(Guid organization, Guid user)
+        {
+            if (OriginOrganization == Guid.Empty)
+                OriginOrganization = organization;
+
+            if (OriginUser == Guid.Empty)
+                OriginUser = user;
+        }
     }
 }
