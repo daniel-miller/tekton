@@ -30,7 +30,7 @@ namespace Common
 
             foreach (var lockout in lockouts)
             {
-                if (lockout.IsActive(when, enterprise, environment, roles))
+                if (lockout.IsActive(when, enterprise, environment))
                 {
                     Current = lockout;
                     return;
@@ -41,12 +41,12 @@ namespace Common
 
             foreach (var lockout in lockouts)
             {
-                var next = lockout.MinutesUntilNextActualStartTime(when, enterprise, environment, roles);
+                var next = lockout.MinutesUntilNextActualStartTime(when, enterprise, environment);
 
                 if (next != null && next.Value < 60)
                 {
                     Upcoming = lockout;
-                    UpcomingDeadline = lockout.NextActualStartTime(when, enterprise, environment, roles);
+                    UpcomingDeadline = lockout.NextActualStartTime(when, enterprise, environment);
                     UpcomingDuration = lockout.Interval.Duration;
                     return;
                 }

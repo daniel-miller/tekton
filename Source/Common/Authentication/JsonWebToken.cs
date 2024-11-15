@@ -43,7 +43,7 @@ namespace Common
             }
         }
 
-        public JsonWebToken(Dictionary<string, string> payload, string secret, string issuer, string subject, string audience, DateTimeOffset expiry)
+        public JsonWebToken(Dictionary<string, string> payload, string secret, string issuer, string subject, string audience, DateTimeOffset? expiry)
         {
             // Many external systems (including Moodle) use Firebase to verify authentication tokens. Firebase 
             // considers a token invalid when the value of the "iat" claim represents a time in the future. If there is
@@ -59,9 +59,11 @@ namespace Common
                 { "sub", subject },
                 { "aud", audience },
                 { "iat", now.ToString() },
-                { "nbf", now.ToString() },
-                { "exp", expiry.ToUnixTimeSeconds().ToString() }
+                { "nbf", now.ToString() }
             };
+
+            if (expiry.HasValue)
+                Claims.Add("exp", expiry.Value.ToUnixTimeSeconds().ToString());
 
             var header = new Dictionary<string, string>
             {

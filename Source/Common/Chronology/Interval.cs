@@ -58,7 +58,7 @@ namespace Common
 
             var start = NextPotentialStartTime(effective.Year, effective.Month, effective.Day);
 
-            if (start < point)
+            if (point < start)
                 return false;
 
             var duration = DurationAsTimeSpan();
@@ -154,20 +154,18 @@ namespace Common
 
             var start = NextPotentialStartTime(effective.Year, effective.Month, effective.Day);
 
-            var duration = DurationAsTimeSpan();
-
             if (!IsRecurring())
                 return start;
 
-            var days = RecurrencesAsDays();
+            var recurrences = RecurrencesAsDays();
 
             start = NextPotentialStartTime(when.Year, when.Month, when.Day);
 
-            var intervals = new List<DateTimeOffset> { start };
+            var intervals = new List<DateTimeOffset>();
 
             var upcoming = Enumerable.Range(0, 7)
                 .Select(i => start.AddDays(i))
-                .Where(x => days.Any(day => day == x.DayOfWeek));
+                .Where(i => recurrences.Any(recurrence => recurrence == i.DayOfWeek));
 
             intervals.AddRange(upcoming);
 

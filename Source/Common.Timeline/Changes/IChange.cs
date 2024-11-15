@@ -22,5 +22,7 @@ namespace Common.Timeline.Changes
         Guid OriginUser { get; set; }
 
         DateTimeOffset ChangeTime { get; set; }
+
+        void Identify(Guid organization, Guid user);
     }
 }
