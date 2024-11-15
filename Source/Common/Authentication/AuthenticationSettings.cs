@@ -8,6 +8,11 @@ namespace Common
         public RootSettings Root { get; set; }
     }
 
+    public class DatabaseSettings
+    {
+        public string ConnectionString { get; set; }
+    }
+
     public class TokenSettings
     {
         public string Key { get; set; }

@@ -38,5 +38,13 @@ namespace Common
                 FindConstants(nestedType, constant, dictionary);
             }
         }
+
+        /// <summary>
+        /// Returns the assembly-qualified class name without the version, culture, and public key token.
+        /// </summary>
+        public string GetClassName(Type type)
+        {
+            return $"{type.FullName}, {Assembly.GetAssembly(type).GetName().Name}";
+        }
     }
 }
