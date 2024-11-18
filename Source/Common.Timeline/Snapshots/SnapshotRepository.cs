@@ -237,11 +237,6 @@ namespace Common.Timeline.Snapshots
             }
             catch (InvalidOperationException ex)
             {
-                // Jan 14, 2022 - Daniel: Newtonsoft.Json.Serialization.JsonSerializerInternalWriter.SerializeDictionary
-                // threw this exception today when it failed to serialize a MessageAggregate instance. We don't know
-                // what specific aggregate failed to serialize, therefore I'm rethrowing the exception here with more
-                // information for future troubleshooting, in case the exception recurs.
-
                 var type = aggregate.GetType().Name;
                 var id = aggregate.AggregateIdentifier;
                 var version = aggregate.AggregateVersion;

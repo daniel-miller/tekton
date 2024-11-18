@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Common.Timeline.Changes
+namespace Common.Observation
 {
     /// <summary>
     /// Provides a serialization wrapper for aggregates so we can use Entity Framework for basic DAL operations.
