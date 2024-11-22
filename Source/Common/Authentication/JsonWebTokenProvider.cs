@@ -24,9 +24,7 @@ namespace Common
 
         public async Task<string> Authenticate(string secret, int? lifetime = null)
         {
-            var provider = new JsonWebTokenProvider(_client, _serializer);
-
-            var token = await provider.GetTokenAsync(_client.BaseAddress, secret, lifetime);
+            var token = await GetTokenAsync(_client.BaseAddress, secret, lifetime);
 
             return token;
         }
@@ -46,10 +44,14 @@ namespace Common
             {
                 await Lock.WaitAsync();
 
+                var baseUrl = endpoint.ToString();
+                if (!baseUrl.EndsWith("/"))
+                    baseUrl += "/";
+
                 var request = new JsonWebTokenRequest { Secret = secret, Lifetime = lifetime };
                 var requestData = _serializer.Serialize(request);
                 var requestContent = new StringContent(requestData, Encoding.UTF8, "application/json");
-                var requestMethod = $"{endpoint}/{_method}";
+                var requestMethod = $"{baseUrl}{_method}";
 
                 var responseMessage = await _client.PostAsync(requestMethod, requestContent);
                 var responseContent = await responseMessage.Content.ReadAsStringAsync();
