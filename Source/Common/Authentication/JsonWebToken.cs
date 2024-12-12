@@ -8,12 +8,19 @@ namespace Common
 {
     public class JsonWebToken
     {
+        public const int DefaultLifetimeLimit = 20; // Minutes
+
         public string Header { get; set; }
         public string Payload { get; set; }
         public string Signature { get; set; }
         public string Token => $"{Header}.{Payload}.{Signature}";
 
         public Dictionary<string, string> Claims { get; set; }
+
+        public JsonWebToken()
+        {
+            Claims = new Dictionary<string, string>();
+        }
 
         public JsonWebToken(IJsonSerializer serializer, string jwt)
         {
@@ -176,12 +183,54 @@ namespace Common
         /// </summary>
         public bool IsExpired()
         {
-            if (!Claims.ContainsKey("exp"))
+            if (Expiry == null)
                 return false;
 
-            var expiry = long.Parse(Claims["exp"]);
+            return Expiry.Value < DateTimeOffset.UtcNow;
+        }
 
-            return DateTimeOffset.FromUnixTimeSeconds(expiry) < DateTimeOffset.UtcNow;
+        public DateTimeOffset? Expiry
+        {
+            get
+            {
+                if (!Claims.ContainsKey("exp"))
+                    return null;
+
+                var exp = long.Parse(Claims["exp"]);
+
+                return DateTimeOffset.FromUnixTimeSeconds(exp);
+            }
+            set
+            {
+                if (value == null)
+                    Claims.Remove("exp");
+                else if (!Claims.ContainsKey("exp"))
+                    Claims.Add("exp", value.Value.ToUnixTimeSeconds().ToString());
+                else
+                    Claims["exp"] = value.Value.ToUnixTimeSeconds().ToString();
+            }
+        }
+
+        public int? Lifetime
+        {
+            get
+            {
+                if (!Claims.ContainsKey("lifetime"))
+                    return null;
+
+                var lifetime = int.Parse(Claims["lifetime"]);
+
+                return lifetime;
+            }
+            set
+            {
+                if (value == null)
+                    Claims.Remove("lifetime");
+                else if (!Claims.ContainsKey("lifetime"))
+                    Claims.Add("lifetime", value.ToString());
+                else
+                    Claims["lifetime"] = value.ToString();
+            }
         }
     }
 }

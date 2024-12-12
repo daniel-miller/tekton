@@ -11,22 +11,6 @@ namespace Common
         public string[] Whitelist { get; set; }
     }
 
-    public class AuthenticationModel
-    {
-        public string TokenSecret { get; set; }
-        public DateTimeOffset? TokenExpiry { get; set; }
-        public int? TokenLifetimeLimit { get; set; }
-
-        public string UserEmail { get; set; }
-        public string UserLanguage { get; set; }
-        public string UserName { get; set; }
-        public string UserPhone { get; set; }
-        public string UserTimeZone { get; set; }
-
-        public Guid OrganizationIdentifier { get; set; }
-        public Guid UserIdentifier { get; set; }
-    }
-
     public class ContactSettings
     {
         public RootSettings Root { get; set; }
