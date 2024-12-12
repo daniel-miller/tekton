@@ -1,49 +1,48 @@
 ﻿using System;
 using System.Linq;
 
-using Common.Timeline.Changes;
-using Common.Timeline.Exceptions;
-using Common.Timeline.Services;
-
-namespace Common.Timeline.Snapshots
+namespace Common.Observation.Snapshots
 {
     /// <summary>
     /// Saves and gets snapshots to and from a snapshot store.
     /// </summary>
-    public class SnapshotRepository : IChangeRepository
+    public class SnapshotRepository : IEventRepository
     {
-        private readonly IGuidCache<AggregateRoot> _cache;
+        private readonly GuidCache<AggregateRoot> _cache;
         private readonly IJsonSerializer _serializer;
 
         private readonly ISnapshotStore _snapshotStore;
         private readonly ISnapshotStrategy _snapshotStrategy;
-        private readonly IChangeRepository _changeRepository;
-        private readonly IChangeStore _changeStore;
+        private readonly IEventRepository _eventRepository;
+        private readonly IEventStore _eventStore;
 
         /// <summary>
         /// Constructs a new SnapshotRepository instance.
         /// </summary>
-        /// <param name="changeStore">Store where changes are persisted</param>
-        /// <param name="changeRepository">Repository to get aggregates from the change store</param>
+        /// <param name="eventStore">Store where events are persisted</param>
+        /// <param name="eventRepository">Repository to get aggregates from the event store</param>
         /// <param name="snapshotStore">Store where snapshots are persisted</param>
         /// <param name="snapshotStrategy">Strategy used to determine when to take a snapshot</param>
-        public SnapshotRepository(IChangeStore changeStore, IChangeRepository changeRepository, ISnapshotStore snapshotStore, ISnapshotStrategy snapshotStrategy)
+        public SnapshotRepository(IEventStore eventStore, IEventRepository eventRepository, 
+            ISnapshotStore snapshotStore, ISnapshotStrategy snapshotStrategy, 
+            IJsonSerializer serializer)
         {
-            _changeStore = changeStore ?? throw new ArgumentNullException(nameof(changeStore));
-            _changeRepository = changeRepository ?? throw new ArgumentNullException(nameof(changeRepository));
+            _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
+            _eventRepository = eventRepository ?? throw new ArgumentNullException(nameof(eventRepository));
+
             _snapshotStore = snapshotStore ?? throw new ArgumentNullException(nameof(snapshotStore));
             _snapshotStrategy = snapshotStrategy ?? throw new ArgumentNullException(nameof(snapshotStrategy));
 
-            _cache = ServiceLocator.Instance.GetService<IGuidCache<AggregateRoot>>();
-            _serializer = ServiceLocator.Instance.GetService<IJsonSerializer>();
+            _cache = new GuidCache<AggregateRoot>();
+            _serializer = serializer;
         }
 
         /// <summary>
         /// Saves the aggregate. Takes a snapshot if needed.
         /// </summary>
-        public IChange[] Save<T>(T aggregate, int? version = null) where T : AggregateRoot
+        public IEvent[] Save<T>(T aggregate, int? version = null) where T : AggregateRoot
         {
-            var concurrencyChange = false;
+            var concurrencyEvent = false;
 
             var previous = (T)_cache.Get(aggregate.AggregateIdentifier);
 
@@ -54,21 +53,21 @@ namespace Common.Timeline.Snapshots
             lock (_cache)
                 _cache.Add(aggregate.AggregateIdentifier, aggregate, 5 * 60, true);
 
-            IChange[] changes = null;
+            IEvent[] events = null;
 
             aggregate.LockAndRun(() =>
             {
-                if (!concurrencyChange)
+                if (!concurrencyEvent)
                 {
-                    // Take a snapshot if needed but only if no concurrency changes happened
+                    // Take a snapshot if needed but only if no concurrency events happened
                     TakeSnapshot(aggregate, false);
                 }
 
-                // Return the stream of saved changes to the caller so they can be published.
-                changes = _changeRepository.Save(aggregate, version);
+                // Return the stream of saved events to the caller so they can be published.
+                events = _eventRepository.Save(aggregate, version);
             });
 
-            return changes;
+            return events;
         }
 
         /// <summary>
@@ -106,7 +105,7 @@ namespace Common.Timeline.Snapshots
                     clone.AggregateIdentifier = aggregate.AggregateIdentifier;
                     clone.RootAggregateIdentifier = aggregate.RootAggregateIdentifier;
                     clone.AggregateVersion = aggregate.AggregateVersion;
-                    clone.State = _serializer.Deserialize<AggregateState>(originalState, aggregate.State.GetType(), false);
+                    clone.State = _serializer.Deserialize<AggregateState>(originalState, aggregate.State.GetType(), JsonPurpose.Storage);
                 });
 
                 return clone;
@@ -131,40 +130,40 @@ namespace Common.Timeline.Snapshots
             var aggregate = AggregateFactory<T>.CreateAggregate();
             var snapshotVersion = RestoreAggregateFromSnapshot(aggregateId, aggregate);
 
-            // If there is no snapshot then load the aggregate directly from the change store.
+            // If there is no snapshot then load the aggregate directly from the event store.
             if (snapshotVersion == (version ?? -1))
-                return _changeRepository.Get<T>(aggregateId);
+                return _eventRepository.Get<T>(aggregateId);
 
-            // Otherwise load the aggregate from the changes that occurred after the snapshot was taken.
-            var changes = _changeStore.GetChanges(aggregateId, snapshotVersion)
+            // Otherwise load the aggregate from the events that occurred after the snapshot was taken.
+            var events = _eventStore.GetEvents(aggregateId, snapshotVersion)
                 .Where(desc => desc.AggregateVersion > snapshotVersion);
 
-            aggregate.Rehydrate(changes);
+            aggregate.Rehydrate(events);
 
             return aggregate;
         }
 
         public (AggregateState prev, AggregateState current) GetPrevAndCurrentStates(Guid aggregateId, int version)
         {           
-            var changes = _changeStore.GetChanges(aggregateId, -1, version);
-            if (changes.Length == 0)
+            var events = _eventStore.GetEvents(aggregateId, -1, version);
+            if (events.Length == 0)
                 return (null, null);
 
-            _changeStore.GetClassAndOrganization(aggregateId, out var aggregateClass, out var _);
+            _eventStore.GetClassAndOrganization(aggregateId, out var aggregateClass, out var _);
 
             var aggregateType = Type.GetType(aggregateClass);
             var aggregate = (AggregateRoot)aggregateType.GetConstructor(Type.EmptyTypes).Invoke(null);
 
             var prevState = aggregate.CreateState();
-            for (int i = 0; i < changes.Length - 1; i++)
-                prevState.Apply(changes[i]);
+            for (int i = 0; i < events.Length - 1; i++)
+                prevState.Apply(events[i]);
 
             var prevStateJson = _serializer.Serialize(prevState);
 
-            var currentState = _serializer.Deserialize<AggregateState>(prevStateJson, prevState.GetType(), false);
-            currentState.Apply(changes[changes.Length - 1]);
+            var currentState = _serializer.Deserialize<AggregateState>(prevStateJson, prevState.GetType(), JsonPurpose.Storage);
+            currentState.Apply(events[events.Length - 1]);
 
-            if (changes.Length == 1)
+            if (events.Length == 1)
                 prevState = null;
 
             return (prevState, currentState);
@@ -183,7 +182,7 @@ namespace Common.Timeline.Snapshots
         /// </summary>
         public bool Exists<T>(Guid aggregate)
         {
-            return _changeRepository.Exists<T>(aggregate);
+            return _eventRepository.Exists<T>(aggregate);
         }
 
         /// <summary>
@@ -201,7 +200,7 @@ namespace Common.Timeline.Snapshots
 
             aggregate.AggregateIdentifier = snapshot.AggregateIdentifier;
             aggregate.AggregateVersion = snapshot.AggregateVersion;
-            aggregate.State = _serializer.Deserialize<AggregateState>(snapshot.AggregateState, aggregate.CreateState().GetType(), false);
+            aggregate.State = _serializer.Deserialize<AggregateState>(snapshot.AggregateState, aggregate.CreateState().GetType(), JsonPurpose.Storage);
 
             return snapshot.AggregateVersion;
         }
@@ -224,7 +223,7 @@ namespace Common.Timeline.Snapshots
 
             SerializeAggregateState(aggregate, snapshot);
 
-            snapshot.AggregateVersion = aggregate.AggregateVersion + aggregate.GetUncommittedChanges().Length;
+            snapshot.AggregateVersion = aggregate.AggregateVersion + aggregate.GetUncommittedEvents().Length;
 
             _snapshotStore.Save(snapshot);
         }
@@ -241,7 +240,7 @@ namespace Common.Timeline.Snapshots
                 var id = aggregate.AggregateIdentifier;
                 var version = aggregate.AggregateVersion;
                 var message = $"Serialization failed for {type} {id} version {version}.";
-                throw new SerializationFailedException(message, ex);
+                throw new SnapshotSerializationFailedException(message, ex);
             }
         }
 
@@ -252,7 +251,7 @@ namespace Common.Timeline.Snapshots
         /// </summary>
         public void Ping()
         {
-            var aggregates = _changeStore.GetExpired(DateTimeOffset.UtcNow);
+            var aggregates = _eventStore.GetExpired(DateTimeOffset.UtcNow);
             foreach (var aggregate in aggregates)
                 Box(Get<AggregateRoot>(aggregate));
         }
@@ -265,7 +264,7 @@ namespace Common.Timeline.Snapshots
             TakeSnapshot(aggregate, true);
 
             _snapshotStore.Box(aggregate.AggregateIdentifier);
-            _changeStore.Box(aggregate.AggregateIdentifier, true);
+            _eventStore.Box(aggregate.AggregateIdentifier, true);
 
             _cache.Remove(aggregate.AggregateIdentifier);
         }
@@ -279,7 +278,7 @@ namespace Common.Timeline.Snapshots
             var aggregate = AggregateFactory<T>.CreateAggregate();
             aggregate.AggregateIdentifier = aggregateId;
             aggregate.AggregateVersion = 1;
-            aggregate.State = _serializer.Deserialize<AggregateState>(snapshot.AggregateState, aggregate.CreateState().GetType(), false);
+            aggregate.State = _serializer.Deserialize<AggregateState>(snapshot.AggregateState, aggregate.CreateState().GetType(), JsonPurpose.Storage);
             return aggregate;
         }
 

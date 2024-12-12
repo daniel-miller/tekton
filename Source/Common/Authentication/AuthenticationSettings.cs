@@ -4,22 +4,21 @@ namespace Common
 {
     public class AuthenticationSettings
     {
-        public TokenSettings Token { get; set; }
+        public string Key { get; set; }
+        public string Issuer { get; set; }
+        public string Audience { get; set; }
+        public int Lifetime { get; set; }
+        public string[] Whitelist { get; set; }
+    }
+
+    public class ContactSettings
+    {
         public RootSettings Root { get; set; }
     }
 
     public class DatabaseSettings
     {
         public string ConnectionString { get; set; }
-    }
-
-    public class TokenSettings
-    {
-        public string Key { get; set; }
-        public string Issuer { get; set; }
-        public string Audience { get; set; }
-        public int Lifetime { get; set; }
-        public string[] Whitelist { get; set; }
     }
 
     public class RootSettings

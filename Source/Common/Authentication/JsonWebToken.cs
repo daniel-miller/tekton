@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
 
 namespace Common
 {
     public class JsonWebToken
     {
+        public const int DefaultLifetimeLimit = 20; // Minutes
+
         public string Header { get; set; }
         public string Payload { get; set; }
         public string Signature { get; set; }
@@ -16,7 +17,12 @@ namespace Common
 
         public Dictionary<string, string> Claims { get; set; }
 
-        public JsonWebToken(string jwt)
+        public JsonWebToken()
+        {
+            Claims = new Dictionary<string, string>();
+        }
+
+        public JsonWebToken(IJsonSerializer serializer, string jwt)
         {
             try
             {
@@ -35,7 +41,7 @@ namespace Common
                 string headerJson = Encoding.UTF8.GetString(DecodeBase64(Header));
                 string payloadJson = Encoding.UTF8.GetString(DecodeBase64(Payload));
                 
-                Claims = JsonSerializer.Deserialize<Dictionary<string, string>>(payloadJson);
+                Claims = serializer.Deserialize<Dictionary<string, string>>(payloadJson);
             }
             catch (Exception ex)
             {
@@ -43,7 +49,7 @@ namespace Common
             }
         }
 
-        public JsonWebToken(Dictionary<string, string> payload, string secret, string issuer, string subject, string audience, DateTimeOffset? expiry)
+        public JsonWebToken(IJsonSerializer serializer, Dictionary<string, string> payload, string secret, string issuer, string subject, string audience, DateTimeOffset? expiry)
         {
             // Many external systems (including Moodle) use Firebase to verify authentication tokens. Firebase 
             // considers a token invalid when the value of the "iat" claim represents a time in the future. If there is
@@ -71,8 +77,8 @@ namespace Common
                 { "typ", "JWT" }
             };
 
-            string headerJson = JsonSerializer.Serialize(header);
-            string payloadJson = JsonSerializer.Serialize(SortByKey(Claims));
+            string headerJson = serializer.Serialize(header);
+            string payloadJson = serializer.Serialize(SortByKey(Claims));
 
             Header = EncodeBase64(Encoding.UTF8.GetBytes(headerJson));
             Payload = EncodeBase64(Encoding.UTF8.GetBytes(payloadJson));
@@ -177,12 +183,54 @@ namespace Common
         /// </summary>
         public bool IsExpired()
         {
-            if (!Claims.ContainsKey("exp"))
+            if (Expiry == null)
                 return false;
 
-            var expiry = long.Parse(Claims["exp"]);
+            return Expiry.Value < DateTimeOffset.UtcNow;
+        }
 
-            return DateTimeOffset.FromUnixTimeSeconds(expiry) < DateTimeOffset.UtcNow;
+        public DateTimeOffset? Expiry
+        {
+            get
+            {
+                if (!Claims.ContainsKey("exp"))
+                    return null;
+
+                var exp = long.Parse(Claims["exp"]);
+
+                return DateTimeOffset.FromUnixTimeSeconds(exp);
+            }
+            set
+            {
+                if (value == null)
+                    Claims.Remove("exp");
+                else if (!Claims.ContainsKey("exp"))
+                    Claims.Add("exp", value.Value.ToUnixTimeSeconds().ToString());
+                else
+                    Claims["exp"] = value.Value.ToUnixTimeSeconds().ToString();
+            }
+        }
+
+        public int? Lifetime
+        {
+            get
+            {
+                if (!Claims.ContainsKey("lifetime"))
+                    return null;
+
+                var lifetime = int.Parse(Claims["lifetime"]);
+
+                return lifetime;
+            }
+            set
+            {
+                if (value == null)
+                    Claims.Remove("lifetime");
+                else if (!Claims.ContainsKey("lifetime"))
+                    Claims.Add("lifetime", value.ToString());
+                else
+                    Claims["lifetime"] = value.ToString();
+            }
         }
     }
 }

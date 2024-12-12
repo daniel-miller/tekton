@@ -11,14 +11,18 @@ namespace Common
         public Model Organization { get; set; }
         public Model[] Roles { get; set; }
 
-        public DateTimeOffset? Expiry { get; set; }
-        public int Lifetime { get; set; }
+        public JsonWebToken Token { get; set; }
 
         public string Language { get; set; }
         public string TimeZone { get; set; }
 
         public string Phone { get; set; }
         public string IPAddress { get; set; }
+
+        public Principal()
+        {
+            Token = new JsonWebToken();
+        }
 
         #region IIdentity and IPrincipal
 
@@ -44,5 +48,14 @@ namespace Common
     public interface IPrincipalContext
     {
         Principal Current { get; }
+    }
+
+    public interface IAuthenticationService
+    {
+        Authorizer GetAuthorizer();
+
+        void RefreshAuthorizer();
+
+        Principal GetPrincipal(string secret);
     }
 }

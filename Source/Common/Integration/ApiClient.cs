@@ -3,62 +3,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Common
 {
     public class ApiClient
     {
-        protected readonly IApiClientFactory _factory;
+        protected readonly IHttpClientCreator _creator;
+        protected readonly IJsonSerializer _serializer;
 
         public Pagination Pagination { get; private set; }
 
         #region Construction
 
-        public ApiClient(IApiClientFactory apiClientFactory)
+        public ApiClient(IHttpClientCreator creator, IJsonSerializer serializer)
         {
-            _factory = apiClientFactory;
-        }
-
-        private HttpClient CreateHttpClient()
-        {
-            var client = _factory.CreateClient();
-            var token = _factory.GetToken();
-            if (token != null)
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            return client;
+            _creator = creator;
+            _serializer = serializer;
         }
 
         public Dictionary<string, string> ToDictionary(object criteria)
             => DictionaryConverter.ToDictionary(criteria);
 
+        private HttpClient CreateHttpClient()
+            => _creator.Create();
+
         #endregion
-
-        public async Task<string> Authenticate(int? lifetime = null)
-            => await Authenticate(_factory.GetSecret(), lifetime);
-
-        public async Task<string> Authenticate(string secret, int? lifetime = null)
-        {
-            var client = _factory.CreateClient();
-
-            var provider = new ApiTokenProvider(client);
-
-            var token = await provider.GetTokenAsync(client.BaseAddress, secret, lifetime);
-
-            return token;
-        }
-
-        public async Task<TResult> ExecuteCommand<TResult>(IQuery<TResult> query)
-            => throw new NotImplementedException();
-
-        public async Task<TResult> RunQuery<TResult>(IQuery<TResult> query)
-            => throw new NotImplementedException();
-
-        public async Task<TResult> PublishEvent<TResult>(IQuery<TResult> query)
-            => throw new NotImplementedException();
 
         #region HTTP Requests (GET, POST, PUT, DELETE)
 
@@ -71,7 +42,7 @@ namespace Common
             var client = CreateHttpClient();
             var http = await client.GetAsync(url);
             var json = await http.Content.ReadAsStringAsync();
-            var response = JsonSerializer.Deserialize<T>(json);
+            var response = _serializer.Deserialize<T>(json);
             var status = (int)http.StatusCode;
             return response;
         }
@@ -91,10 +62,10 @@ namespace Common
 
             try
             {
-                var response = JsonSerializer.Deserialize<T>(json);
+                var response = _serializer.Deserialize<T>(json);
 
                 if (http.Headers.TryGetValues(Pagination.HeaderKey, out IEnumerable<string> values))
-                    Pagination = JsonSerializer.Deserialize<Pagination>(values.First());
+                    Pagination = _serializer.Deserialize<Pagination>(values.First());
 
                 return response;
             }
@@ -140,7 +111,7 @@ namespace Common
         public async Task<T> HttpPost<T>(string endpoint, object payload)
         {
             var url = endpoint;
-            var data = JsonSerializer.Serialize(payload);
+            var data = _serializer.Serialize(payload);
             var content = new StringContent(data, Encoding.UTF8, "application/json");
 
             var client = CreateHttpClient();
@@ -149,10 +120,10 @@ namespace Common
 
             try
             {
-                var response = JsonSerializer.Deserialize<T>(json);
+                var response = _serializer.Deserialize<T>(json);
 
                 if (http.Headers.TryGetValues(Pagination.HeaderKey, out IEnumerable<string> values))
-                    Pagination = JsonSerializer.Deserialize<Pagination>(values.First());
+                    Pagination = _serializer.Deserialize<Pagination>(values.First());
 
                 return response;
             }
@@ -165,7 +136,7 @@ namespace Common
         public async Task HttpPost(string endpoint, object payload)
         {
             var url = endpoint;
-            var data = JsonSerializer.Serialize(payload);
+            var data = _serializer.Serialize(payload);
             var content = new StringContent(data, Encoding.UTF8, "application/json");
             var client = CreateHttpClient();
             var http = await client.PostAsync(url, content);
@@ -175,12 +146,12 @@ namespace Common
         public async Task<T> HttpPut<T>(string endpoint, string id, object payload)
         {
             var url = endpoint + "/" + id;
-            var data = JsonSerializer.Serialize(payload);
+            var data = _serializer.Serialize(payload);
             var content = new StringContent(data, Encoding.UTF8, "application/json");
             var client = CreateHttpClient();
             var http = await client.PutAsync(url, content);
             var json = await http.Content.ReadAsStringAsync();
-            var response = JsonSerializer.Deserialize<T>(json);
+            var response = _serializer.Deserialize<T>(json);
             var status = (int)http.StatusCode;
             return response;
         }
@@ -188,7 +159,7 @@ namespace Common
         public async Task HttpPut(string endpoint, string id, object payload)
         {
             var url = endpoint + "/" + id;
-            var data = JsonSerializer.Serialize(payload);
+            var data = _serializer.Serialize(payload);
             var content = new StringContent(data, Encoding.UTF8, "application/json");
             var client = CreateHttpClient();
             var http = await client.PutAsync(url, content);
@@ -201,7 +172,7 @@ namespace Common
             if (id != null && id.Length > 0)
                 url += "/" + string.Join("/", id);
 
-            var data = JsonSerializer.Serialize(payload);
+            var data = _serializer.Serialize(payload);
             var content = new StringContent(data, Encoding.UTF8, "application/json");
             var client = CreateHttpClient();
             var http = await client.PutAsync(url, content);
