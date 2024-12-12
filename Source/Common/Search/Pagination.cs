@@ -5,7 +5,7 @@ namespace Common
     [Serializable]
     public class Pagination
     {
-        public const string HeaderKey = "X-Common-Pagination";
+        public const string HeaderKey = "X-Common-Search-Pagination";
 
         public Pagination()
             : this(null, null)
@@ -42,7 +42,7 @@ namespace Common
         public int? Items { get; set; }
         public int? Total { get; set; }
 
-        public int? Pages => Total.HasValue && Take.HasValue ? (int?)Math.Ceiling((double)Total.Value / Take.Value) : null;
+        public int? Pages => Total.HasValue && Take.HasValue ? (int?)System.Math.Ceiling((double)Total.Value / Take.Value) : null;
         public bool More => (Page.HasValue && Pages.HasValue) ? Page < Pages : false;
     }
 }
