@@ -3,7 +3,7 @@ using System.Net.Http.Headers;
 
 namespace Common
 {
-    public interface IHttpClientCreator
+    public interface IHttpClientFactory
     {
         HttpClient Create();
 
@@ -14,12 +14,12 @@ namespace Common
         void SetToken(string token);
     }
 
-    public class HttpClientCreator : IHttpClientCreator
+    public class HttpClientFactory : IHttpClientFactory
     {
         private string _token;
         private string _secret;
-
-        public HttpClientCreator(string secret)
+        
+        public HttpClientFactory(string secret)
         {
             _secret = secret;
         }
@@ -46,9 +46,9 @@ namespace Common
             return _token;
         }
 
-        public void SetToken(string jwt)
+        public void SetToken(string token)
         {
-            _token = jwt;
+            _token = token;
         }
     }
 }

@@ -104,11 +104,11 @@ namespace Common.Observation
             {
                 foreach (var @event in _events)
                 {
-                    if (@event.OriginShard == Guid.Empty)
-                        @event.OriginShard = organization;
+                    if (@event.OriginOrganization == Guid.Empty)
+                        @event.OriginOrganization = organization;
 
-                    if (@event.OriginActor == Guid.Empty)
-                        @event.OriginActor = user;
+                    if (@event.OriginUser == Guid.Empty)
+                        @event.OriginUser = user;
                 }
             });
         }

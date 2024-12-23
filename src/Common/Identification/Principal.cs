@@ -8,6 +8,7 @@ namespace Common
         public Actor Actor { get; set; }
         public Actor Impersonator { get; set; }
 
+        public Model Enterprise { get; set; }
         public Model Organization { get; set; }
         public Model[] Roles { get; set; }
 
@@ -43,19 +44,5 @@ namespace Common
         }
 
         #endregion
-    }
-
-    public interface IPrincipalContext
-    {
-        Principal Current { get; }
-    }
-
-    public interface IAuthenticationService
-    {
-        Authorizer GetAuthorizer();
-
-        void RefreshAuthorizer();
-
-        Principal GetPrincipal(string secret);
     }
 }

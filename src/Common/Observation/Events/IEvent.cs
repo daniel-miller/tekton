@@ -18,8 +18,8 @@ namespace Common.Observation
 
         AggregateState AggregateState { get; set; }
 
-        Guid OriginShard { get; set; }
-        Guid OriginActor { get; set; }
+        Guid OriginOrganization { get; set; }
+        Guid OriginUser { get; set; }
 
         DateTimeOffset OriginTime { get; set; }
     }

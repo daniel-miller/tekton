@@ -4,7 +4,7 @@ namespace Common
 {
     public interface IExceptionMonitor
     {
-        Environment Environment { get; }
+        ReleaseOptions Release { get; }
         SentryOptions Sentry { get; }
 
         void Error(Exception ex);

@@ -10,16 +10,16 @@ namespace Common
 {
     public class ApiClient
     {
-        protected readonly IHttpClientCreator _creator;
+        protected readonly IHttpClientFactory _httpClientFactory;
         protected readonly IJsonSerializer _serializer;
 
         public Pagination Pagination { get; private set; }
 
         #region Construction
 
-        public ApiClient(IHttpClientCreator creator, IJsonSerializer serializer)
+        public ApiClient(IHttpClientFactory httpClientFactory, IJsonSerializer serializer)
         {
-            _creator = creator;
+            _httpClientFactory = httpClientFactory;
             _serializer = serializer;
         }
 
@@ -27,7 +27,7 @@ namespace Common
             => DictionaryConverter.ToDictionary(criteria);
 
         private HttpClient CreateHttpClient()
-            => _creator.Create();
+            => _httpClientFactory.Create();
 
         #endregion
 

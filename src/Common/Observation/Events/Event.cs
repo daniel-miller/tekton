@@ -38,12 +38,12 @@ namespace Common.Observation
         /// <summary>
         /// Identifies the organization for the session in which the event was raised.
         /// </summary>
-        public Guid OriginShard { get; set; }
+        public Guid OriginOrganization { get; set; }
 
         /// <summary>
         /// Identifies the user for the session in which the event was raised.
         /// </summary>
-        public Guid OriginActor { get; set; }
+        public Guid OriginUser { get; set; }
 
         /// <summary>
         /// Fully-qualified assembly name for the class that implements the event.

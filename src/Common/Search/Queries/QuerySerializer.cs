@@ -23,8 +23,8 @@ namespace Common.Search
             {
                 var data = _serializer.Deserialize<IQuery<TResult>>(x.QueryCriteria, Type.GetType(x.QueryClass), JsonPurpose.Storage);
 
-                data.OriginShard = x.OriginShard;
-                data.OriginActor = x.OriginActor;
+                data.OriginOrganization = x.OriginOrganization;
+                data.OriginUser = x.OriginUser;
 
                 data.QueryIdentifier = x.QueryIdentifier;
 
@@ -43,8 +43,8 @@ namespace Common.Search
         {
             var criteria = _serializer.Serialize(query, JsonPurpose.Storage, new[]
             {
-                "OriginShard",
-                "OriginActor",
+                "OriginOrganization",
+                "OriginUser",
                 "QueryIdentifier"
             });
 
@@ -58,8 +58,8 @@ namespace Common.Search
 
                 QueryIdentifier = query.QueryIdentifier,
 
-                OriginShard = query.OriginShard,
-                OriginActor = query.OriginActor
+                OriginOrganization = query.OriginOrganization,
+                OriginUser = query.OriginUser
             };
 
             if (serialized.QueryClass.Length > 200)

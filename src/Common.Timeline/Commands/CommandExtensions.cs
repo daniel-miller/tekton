@@ -39,14 +39,16 @@ namespace Common.Timeline.Commands
         public static SerializedCommand Serialize(this ICommand command, bool ignoreAttributes)
         {
             var serializer = Services.ServiceLocator.Instance.GetService<Services.IJsonSerializer>();
-            var data = serializer.Serialize(command, new[]
-            {
-                nameof(ICommand.AggregateIdentifier),
-                nameof(ICommand.ExpectedVersion),
-                nameof(ICommand.OriginOrganization),
-                nameof(ICommand.OriginUser),
-                nameof(ICommand.CommandIdentifier)
-            }, ignoreAttributes);
+            var data = ignoreAttributes
+                ? serializer.Serialize(command, new[]
+                {
+                    nameof(ICommand.AggregateIdentifier),
+                    nameof(ICommand.ExpectedVersion),
+                    nameof(ICommand.OriginOrganization),
+                    nameof(ICommand.OriginUser),
+                    nameof(ICommand.CommandIdentifier)
+                }, ignoreAttributes)
+                : serializer.SerializeCommand(command);
 
             var serialized = new SerializedCommand
             {

@@ -51,20 +51,20 @@ namespace Common.Observation
         {
             var name = _reflector.GetClassName(@event.GetType());
 
-            var precursorExists = _precursors.ContainsKey((name, @event.OriginShard));
+            var precursorExists = _precursors.ContainsKey((name, @event.OriginOrganization));
             var subscriberExists = _subscribers.ContainsKey(name);
-            var extenderExists = _extenders.ContainsKey((name, @event.OriginShard));
+            var extenderExists = _extenders.ContainsKey((name, @event.OriginOrganization));
 
-            if (_overriders.ContainsKey((name, @event.OriginShard)))
+            if (_overriders.ContainsKey((name, @event.OriginOrganization)))
             {
-                var overrider = _overriders[(name, @event.OriginShard)];
+                var overrider = _overriders[(name, @event.OriginOrganization)];
                 overrider?.Invoke(@event);
             }
             else if (precursorExists || subscriberExists || extenderExists)
             {
                 if (precursorExists)
                 {
-                    var precursor = _precursors[(name, @event.OriginShard)];
+                    var precursor = _precursors[(name, @event.OriginOrganization)];
                     precursor?.Invoke(@event);
                 }
 
@@ -77,7 +77,7 @@ namespace Common.Observation
 
                 if (extenderExists)
                 {
-                    var extender = _extenders[(name, @event.OriginShard)];
+                    var extender = _extenders[(name, @event.OriginOrganization)];
                     extender?.Invoke(@event);
                 }
             }

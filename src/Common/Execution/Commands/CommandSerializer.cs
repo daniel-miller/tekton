@@ -26,8 +26,8 @@ namespace Common.Execution
                 data.AggregateIdentifier = x.AggregateIdentifier;
                 data.ExpectedVersion = x.ExpectedVersion;
 
-                data.OriginShard = x.OriginShard;
-                data.OriginActor = x.OriginActor;
+                data.OriginOrganization = x.OriginOrganization;
+                data.OriginUser = x.OriginUser;
 
                 data.CommandIdentifier = x.CommandIdentifier;
 
@@ -48,8 +48,8 @@ namespace Common.Execution
             {
                 nameof(ICommand.AggregateIdentifier),
                 nameof(ICommand.ExpectedVersion),
-                nameof(ICommand.OriginShard),
-                nameof(ICommand.OriginActor),
+                nameof(ICommand.OriginOrganization),
+                nameof(ICommand.OriginUser),
                 nameof(ICommand.CommandIdentifier)
             });
 
@@ -66,8 +66,8 @@ namespace Common.Execution
 
                 CommandIdentifier = command.CommandIdentifier,
 
-                OriginShard = command.OriginShard,
-                OriginActor = command.OriginActor
+                OriginOrganization = command.OriginOrganization,
+                OriginUser = command.OriginUser
             };
 
             if (serialized.CommandClass.Length > 200)
