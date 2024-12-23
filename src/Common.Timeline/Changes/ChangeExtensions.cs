@@ -51,7 +51,7 @@ namespace Common.Timeline.Changes
         public static SerializedChange Serialize(this IChange change, Guid aggregateIdentifier, int version)
         {
             var serializer = Services.ServiceLocator.Instance.GetService<Services.IJsonSerializer>();
-            var data = serializer.Serialize(change, new[] { "AggregateIdentifier", "AggregateState", "AggregateVersion", "ChangeTime", "OriginOrganization", "OriginUser" }, false);
+            var data = serializer.SerializeChange(change);
 
             var serialized = new SerializedChange
             {

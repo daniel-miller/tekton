@@ -4,8 +4,8 @@ namespace Common.Search
 {
     public interface IQuery<TResult>
     {
-        Guid OriginShard { get; set; }
-        Guid OriginActor { get; set; }
+        Guid OriginOrganization { get; set; }
+        Guid OriginUser { get; set; }
 
         Guid QueryIdentifier { get; set; }
     }

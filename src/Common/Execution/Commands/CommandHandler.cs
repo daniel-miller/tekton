@@ -200,9 +200,9 @@ namespace Common.Execution
             if (match.Success)
                 @class = $"{match.Groups[1].Value}, {match.Groups[2].Value}";
 
-            if (_overriders.ContainsKey((@class, command.OriginShard)))
+            if (_overriders.ContainsKey((@class, command.OriginOrganization)))
             {
-                var customization = _overriders[(@class, command.OriginShard)];
+                var customization = _overriders[(@class, command.OriginOrganization)];
                 customization.Invoke(command);
             }
             else if (_subscribers.ContainsKey(@class))
@@ -236,8 +236,8 @@ namespace Common.Execution
             try
             {
                 var serialized = _store.Serialize(command);
-                return $"OriginShard = {serialized.OriginShard}"
-                   + $", OriginActor = {serialized.OriginActor}"
+                return $"OriginOrganization = {serialized.OriginOrganization}"
+                   + $", OriginUser = {serialized.OriginUser}"
                    + $", CommandData = {serialized.CommandData}";
             }
             catch

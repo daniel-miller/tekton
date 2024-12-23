@@ -7,8 +7,8 @@ namespace Common.Search
     /// </summary>
     public class SerializedQuery
     {
-        public Guid OriginShard { get; set; }
-        public Guid OriginActor { get; set; }
+        public Guid OriginOrganization { get; set; }
+        public Guid OriginUser { get; set; }
 
         public string QueryClass { get; set; }
         public string QueryType { get; set; }

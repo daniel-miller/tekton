@@ -6,10 +6,8 @@ using SecurityClaim = System.Security.Claims.Claim;
 
 namespace Common
 {
-    public class IdentityAdapter
+    public class PrincipalAdapter
     {
-        const int DefaultTokenLifetimeLimitInMinutes = 20;
-
         public IEnumerable<SecurityClaim> ToClaims(Principal principal, string ipAddress)
         {
             var claims = new List<SecurityClaim>
@@ -130,7 +128,7 @@ namespace Common
                     return requested.Value;
             }
 
-            return @default ?? DefaultTokenLifetimeLimitInMinutes;
+            return @default ?? JsonWebToken.DefaultLifetimeLimit;
         }
     }
 }

@@ -46,8 +46,8 @@ namespace Common.Observation
             dest.AggregateIdentifier = source.AggregateIdentifier;
             dest.AggregateVersion = source.AggregateVersion;
             dest.OriginTime = source.OriginTime;
-            dest.OriginShard = source.OriginShard;
-            dest.OriginActor = source.OriginActor;
+            dest.OriginOrganization = source.OriginOrganization;
+            dest.OriginUser = source.OriginUser;
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Common.Observation
         {
             var data = _serializer.Serialize(@event
                 , JsonPurpose.Storage
-                , new[] { "AggregateIdentifier", "AggregateState", "AggregateVersion", "OriginActor", "OriginShard", "OriginTime" });
+                , new[] { "AggregateIdentifier", "AggregateState", "AggregateVersion", "OriginOrganization", "OriginTime", "OriginUser" });
 
             var serialized = new SerializedEvent
             {
@@ -68,12 +68,12 @@ namespace Common.Observation
                 EventType = @event.GetType().Name,
                 EventData = data,
 
-                OriginShard = @event.OriginShard,
-                OriginActor = @event.OriginActor
+                OriginOrganization = @event.OriginOrganization,
+                OriginUser = @event.OriginUser
             };
 
-            @event.OriginShard = serialized.OriginShard;
-            @event.OriginActor = serialized.OriginActor;
+            @event.OriginOrganization = serialized.OriginOrganization;
+            @event.OriginUser = serialized.OriginUser;
 
             return serialized;
         }

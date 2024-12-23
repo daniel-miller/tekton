@@ -16,8 +16,8 @@ namespace Common.Execution
         public Guid AggregateIdentifier { get; set; }
         public int? ExpectedVersion { get; set; }
 
-        public Guid OriginShard { get; set; }
-        public Guid OriginActor { get; set; }
+        public Guid OriginOrganization { get; set; }
+        public Guid OriginUser { get; set; }
 
         public Guid CommandIdentifier { get; set; }
         
