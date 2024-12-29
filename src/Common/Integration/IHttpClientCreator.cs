@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Net.Http.Headers;
 
 namespace Common
@@ -6,6 +7,8 @@ namespace Common
     public interface IHttpClientFactory
     {
         HttpClient Create();
+
+        Uri GetBaseAddress();
 
         string GetSecret();
 
@@ -16,17 +19,22 @@ namespace Common
 
     public class HttpClientFactory : IHttpClientFactory
     {
-        private string _token;
+        private Uri _baseAddress;
         private string _secret;
-        
-        public HttpClientFactory(string secret)
+        private string _token;
+
+        public HttpClientFactory(Uri baseAddress,  string secret)
         {
+            _baseAddress = baseAddress;
             _secret = secret;
         }
 
         public HttpClient Create()
         {
-            var client = new HttpClient();
+            var client = new HttpClient() 
+            { 
+                BaseAddress = _baseAddress
+            };
 
             if (!string.IsNullOrEmpty(_token))
             {
@@ -34,6 +42,11 @@ namespace Common
             }
 
             return client;
+        }
+
+        public Uri GetBaseAddress()
+        {
+            return _baseAddress;
         }
 
         public string GetSecret()

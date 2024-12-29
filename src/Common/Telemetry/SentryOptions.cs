@@ -2,6 +2,7 @@
 {
     public class SentryOptions
     {
+        public bool Debug { get; set; }
         public string Dsn { get; set; }
         public bool Enabled { get; set; }
         public string Log { get; set; }

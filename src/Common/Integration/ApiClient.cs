@@ -39,13 +39,15 @@ namespace Common
             if (id != null && id.Length > 0)
                 url += "/" + string.Join("/", id);
 
-            var client = CreateHttpClient();
-            var http = await client.GetAsync(url);
-            var json = await http.Content.ReadAsStringAsync();
-            var response = _serializer.Deserialize<T>(json);
-            var status = (int)http.StatusCode;
-            return response;
-        }
+            using (var client = CreateHttpClient())
+            {
+                var http = await client.GetAsync(url);
+                var json = await http.Content.ReadAsStringAsync();
+                var response = _serializer.Deserialize<T>(json);
+                var status = (int)http.StatusCode;
+                return response;
+            }
+            }
 
         public async Task<T> HttpGet<T>(string endpoint, Dictionary<string, string> criteria)
         {
@@ -53,25 +55,27 @@ namespace Common
             foreach (var kvp in criteria)
                 url += $"{kvp.Key}={kvp.Value}&";
 
-            var client = CreateHttpClient();
-            var http = await client.GetAsync(url);
-            var json = await http.Content.ReadAsStringAsync();
-
-            if (http.StatusCode != HttpStatusCode.OK)
-                throw new ApiException($"An unexpected HTTP response was received from {endpoint}: {(int)http.StatusCode} {http.StatusCode}. {http.RequestMessage}");
-
-            try
+            using (var client = CreateHttpClient())
             {
-                var response = _serializer.Deserialize<T>(json);
+                var http = await client.GetAsync(url);
+                var json = await http.Content.ReadAsStringAsync();
 
-                if (http.Headers.TryGetValues(Pagination.HeaderKey, out IEnumerable<string> values))
-                    Pagination = _serializer.Deserialize<Pagination>(values.First());
+                if (http.StatusCode != HttpStatusCode.OK)
+                    throw new ApiException($"An unexpected HTTP response was received from {endpoint}: {(int)http.StatusCode} {http.StatusCode}. {http.RequestMessage}");
 
-                return response;
-            }
-            catch (Exception ex)
-            {
-                throw new ApiException($"An unexpected JSON deserialization error occurred on the response received from {endpoint}. {ex.Message}. JSON = {json}");
+                try
+                {
+                    var response = _serializer.Deserialize<T>(json);
+
+                    if (http.Headers.TryGetValues(Pagination.HeaderKey, out IEnumerable<string> values))
+                        Pagination = _serializer.Deserialize<Pagination>(values.First());
+
+                    return response;
+                }
+                catch (Exception ex)
+                {
+                    throw new ApiException($"An unexpected JSON deserialization error occurred on the response received from {endpoint}. {ex.Message}. JSON = {json}");
+                }
             }
         }
 
