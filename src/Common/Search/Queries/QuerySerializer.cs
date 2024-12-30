@@ -15,7 +15,24 @@ namespace Common.Search
         }
 
         /// <summary>
-        /// Returns a deserialized command.
+        /// Returns a deserialized query.
+        /// </summary>
+        public IQuery<TResult> Deserialize<TResult>(Type queryType, string queryCriteria)
+        {
+            try
+            {
+                var queryObject = _serializer.Deserialize<IQuery<TResult>>(queryCriteria, queryType, JsonPurpose.Storage);
+
+                return queryObject;
+            }
+            catch (InvalidCastException ex)
+            {
+                throw new InvalidCastException($"{ex.Message} Query: Type = {queryType.Name}, Criteria = [{queryCriteria}]", ex);
+            }
+        }
+
+        /// <summary>
+        /// Returns a deserialized query.
         /// </summary>
         public IQuery<TResult> Deserialize<TResult>(SerializedQuery x)
         {
