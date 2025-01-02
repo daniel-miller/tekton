@@ -172,7 +172,7 @@ namespace Common.Timeline.Registries
 
                     if (exSub is FileNotFoundException exFileNotFound)
                     {
-                        if (!string.IsNullOrEmpty(exFileNotFound.FusionLog))
+                        if (!string.IsNullOrWhiteSpace(exFileNotFound.FusionLog))
                         {
                             sb.AppendLine("Fusion Log:");
                             sb.AppendLine(exFileNotFound.FusionLog);
