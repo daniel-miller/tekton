@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atomic.Utility", "Atomic.Ut
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Timeline", "Common.Timeline\Common.Timeline.csproj", "{FEC162E8-9CF8-4982-8462-F57992D2AF3A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Timeline.Test", "Common.Timeline.Test\Common.Timeline.Test.csproj", "{C010FAD1-9B24-4988-B05D-E983454061FB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atomic.Terminal", "Atomic.Terminal\Atomic.Terminal.csproj", "{52FE122D-F620-402C-80BA-925B44261281}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,10 +35,10 @@ Global
 		{FEC162E8-9CF8-4982-8462-F57992D2AF3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FEC162E8-9CF8-4982-8462-F57992D2AF3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FEC162E8-9CF8-4982-8462-F57992D2AF3A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C010FAD1-9B24-4988-B05D-E983454061FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C010FAD1-9B24-4988-B05D-E983454061FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C010FAD1-9B24-4988-B05D-E983454061FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C010FAD1-9B24-4988-B05D-E983454061FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52FE122D-F620-402C-80BA-925B44261281}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52FE122D-F620-402C-80BA-925B44261281}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52FE122D-F620-402C-80BA-925B44261281}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52FE122D-F620-402C-80BA-925B44261281}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

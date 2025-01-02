@@ -13,7 +13,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Folder Include="Bus\Query\Exceptions\" />
+	  <Compile Remove="Bus\Query\Exceptions\**" />
+	  <EmbeddedResource Remove="Bus\Query\Exceptions\**" />
+	  <None Remove="Bus\Query\Exceptions\**" />
 	</ItemGroup>
 	
 </Project>

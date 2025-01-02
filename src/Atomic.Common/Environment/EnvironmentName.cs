@@ -2,6 +2,9 @@
 {
     public enum EnvironmentName
     {
-        Local, Development, Sandbox, Production
+        Local, 
+        Development, 
+        Sandbox, 
+        Production
     }
 }

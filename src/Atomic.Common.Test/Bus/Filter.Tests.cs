@@ -5,14 +5,14 @@ public class FilterTests
     [Fact]
     public void Contructor_DefaultPage_Returns1()
     {
-        var criteria = new Filter();
-        Assert.Equal(1, criteria.Page);
+        var filter = new Filter();
+        Assert.Equal(1, filter.Page);
     }
 
     [Fact]
     public void Contructor_DefaultTake_Returns20()
     {
-        var criteria = new Filter();
-        Assert.Equal(20, criteria.Take);
+        var filter = new Filter();
+        Assert.Equal(20, filter.Take);
     }
 }
