@@ -44,7 +44,7 @@ namespace Atomic.Common
 
         public DateTimeOffset? NextActualStartTime(DateTimeOffset when, string enterprise, string environment)
         {
-            var next = Interval.NextActualStartTime(when);
+            var next = Interval.NextOpenTime(when);
 
             if (next < when)
                 return null;

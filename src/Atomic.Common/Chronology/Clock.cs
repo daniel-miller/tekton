@@ -5,6 +5,8 @@ namespace Atomic.Common
 {
     public class Clock
     {
+        public static DateTime NextCentury = new DateTime(2100, 1, 1, 0, 0, 0);
+
         public DateTimeOffset? ConvertTimeZone(DateTimeOffset? when, string tz)
         {
             const string utc = "UTC";
