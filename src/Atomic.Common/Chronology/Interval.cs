@@ -11,13 +11,24 @@ namespace Atomic.Common
     /// <remarks>
     /// An interval contains a date/time value X if X occurs in this range:
     ///    (Effective) &le; X &lt; (Effective + Duration)
-    /// For example, a 10-minute interval that starts at 9:00 AM contains all date/time values in 
-    /// between 9:00 AM (inclusive) and 9:10 AM (exclusive). 
+    /// Please note this class uses DateTimeOffset values rather than DateTime values to guard 
+    /// against ambiguities that arise when the time zone offset is unspecified. In addition, it 
+    /// uses the MST/MDT time zone to ensure daylight savings is taken into account. For reference,
+    /// see https://www.timeanddate.com/time/zone/canada/calgary
     /// </remarks>
+    /// <example>
+    /// A 10-minute interval starting at 9:00 contains values in the range [9:00 AM .. 9:10 PM). In
+    /// other words, between 9:00 AM (inclusive) and 9:10 AM (exclusive). 
+    /// </example>
     public class Interval
     {
+        private const string MST = "Mountain Standard Time";
+
         private const string RequiredDateFormat = "yyyy-MM-dd";
+
         private const string RequiredTimeFormat = "HH:mm";
+
+        private readonly Clock _clock = new Clock();
 
         /// <summary>
         /// Date and time the interval opens for the first time.
@@ -42,7 +53,7 @@ namespace Atomic.Common
         /// <summary>
         /// Length of time the interval is open. (e.g. 1h, 30m, 2d)
         /// </summary>
-        public string Duration { get; set; }
+        public string Length { get; set; }
 
         /// <summary>
         /// Days of the week when the interval is open. (e.g. Sun, Mon, Tue)
@@ -58,7 +69,7 @@ namespace Atomic.Common
         /// date/time values in the current century.
         /// </remarks>
         public Interval()
-            : this(Clock.NextCentury, "UTC", "1h")
+            : this(Clock.NextCentury, "1h")
         {
             
         }
@@ -67,58 +78,38 @@ namespace Atomic.Common
         /// Constructs an interval that opens on a specific date, at a specific time, within a 
         /// specific time zone, for a specific period of time.
         /// </summary>
-        public Interval(DateTime effective, string timeZone, string duration)
+        public Interval(DateTimeOffset effective, string length, string weekdays = null)
         {
-            Effective = effective;
+            Effective = _clock.ConvertTimeZone(effective, MST);
             Date = effective.ToString(RequiredDateFormat, CultureInfo.CurrentCulture);
             Time = effective.ToString(RequiredTimeFormat, CultureInfo.CurrentCulture);
-            Zone = timeZone;
-            Duration = duration;
+            Zone = MST;
+            Length = length;
             Recurrences = new List<string>();
-        }
 
-        /// <summary>
-        /// Determines if the interval contains a specific point in time.
-        /// </summary>
-        public bool Contains(DateTimeOffset when)
-        {
-            var effective = Effective.Date;
-
-            var start = EffectiveTime(effective.Year, effective.Month, effective.Day);
-
-            if (when < start)
-                return false;
-
-            var duration = DurationAsTimeSpan();
-
-            var end = start.Add(duration);
-
-            if (IsRecurring())
+            if (weekdays != null)
             {
-                var days = RecurrencesAsDays();
+                var days = weekdays.Split(new char[] { ',', ' ' })
+                    .Where(day => IsValidWeekday(day));
 
-                if (!days.Any(day => day == when.DayOfWeek))
-                    return false;
-
-                start = EffectiveTime(when.Year, when.Month, when.Day);
-
-                end = start.Add(duration);
+                foreach (var day in days)
+                {
+                    Recurrences.Add(day.Trim().ToLower());
+                }
             }
-
-            return start <= when && when < end;
         }
 
         /// <summary>
-        /// Parses the duration string into a TimeSpan.
+        /// Parses the interval length into a TimeSpan.
         /// </summary>
-        public TimeSpan DurationAsTimeSpan()
+        public TimeSpan GetDuration()
         {
-            if (string.IsNullOrWhiteSpace(Duration) || Duration.Length < 2)
+            if (string.IsNullOrWhiteSpace(Length) || Length.Length < 2)
                 throw new ArgumentException("Invalid interval format");
 
             var pattern = @"(\d+)\s*([dhm])";
 
-            var match = System.Text.RegularExpressions.Regex.Match(Duration, pattern);
+            var match = System.Text.RegularExpressions.Regex.Match(Length, pattern);
 
             if (!match.Success)
                 throw new ArgumentException("Invalid interval format");
@@ -126,7 +117,7 @@ namespace Atomic.Common
             string numberPart = match.Groups[1].Value;
 
             if (!int.TryParse(numberPart, out int number))
-                throw new ArgumentException("Invalid number in duration");
+                throw new ArgumentException("Invalid number in length");
 
             string unit = match.Groups[2].Value.ToLower();
 
@@ -139,93 +130,124 @@ namespace Atomic.Common
                 case "d":
                     return TimeSpan.FromDays(number);
                 default:
-                    throw new ArgumentException($"{unit} is not a supported unit for duration. Please use m (minutes), h (hours), or d (days).");
+                    throw new ArgumentException($"{unit} is not a supported unit for interval length. Please use m (minutes), h (hours), or d (days).");
             }
         }
 
-        /// <summary>
-        /// Determines if the interval includes a recurrence for a specific day of the week.
-        /// </summary>
-        public bool IncludesRecurrence(string day)
-            => Recurrences.Any(r => AreEqual(r, day));
+        public TimeZoneInfo GetTimeZone()
+            => _clock.GetTimeZone(Zone);
 
         /// <summary>
-        /// Determines if the interval recurs throughout the week.
+        /// Calculates when the interval potentially starts on a specific date.
         /// </summary>
-        public bool IsRecurring()
-            => Recurrences.Count > 0;
-
-        /// <summary>
-        /// Determines if the interval is valid.
-        /// </summary>
-        public bool IsValid()
-            => !Validate().Any();
-
-        /// <summary>
-        /// Calculates exactly when the interval opens next, following a specific date and time.
-        /// </summary>
-        public int? MinutesBeforeOpenTime(DateTimeOffset when)
+        public DateTimeOffset GetStart(DateTimeOffset current)
         {
-            var open = NextOpenTime(when);
+            // Ensure we are working in the same time zone. If the effective date is MST and the 
+            // current date is MDT (or vice versa) then adjust the offset by one hour.
 
-            if (open == null)
-                return null;
+            var tz = GetTimeZone();
 
-            return (int)(open.Value - when).TotalMinutes;
+            var offset = Effective.Offset;
+
+            if (tz.IsDaylightSavingTime(current) && !tz.IsDaylightSavingTime(Effective))
+            {
+                offset = offset.Add(new TimeSpan(1, 0, 0));
+            }
+            else if (!tz.IsDaylightSavingTime(current) && tz.IsDaylightSavingTime(Effective))
+            {
+                offset = offset.Add(new TimeSpan(-1, 0, 0));
+            }
+
+            current = current.ToOffset(offset);
+
+            // Merge the current date with the effective time of day to determine exactly when the
+            // interval opens on the current date.
+
+            var start = new DateTimeOffset(
+                current.Year, current.Month, current.Day,
+                Effective.Hour, Effective.Minute, Effective.Second,
+                offset);
+
+            return start;
+        }
+
+        /// <summary>
+        /// Calculates when the interval potentially ends on a specific date.
+        /// </summary>
+        public DateTimeOffset GetEnd(DateTimeOffset current)
+        {
+            var end = GetStart(current) + GetDuration();
+
+            return end;
+        }
+
+        /// <summary>
+        /// Determines if the interval contains a specific point in time.
+        /// </summary>
+        public bool Contains(DateTimeOffset current)
+        {
+            if (current < Effective)
+                return false;
+
+            var start = GetStart(current);
+
+            var end = GetEnd(current);
+
+            if (IsRecurring() && !RecurrencesAsDays().Contains(start.DayOfWeek))
+                return false;
+
+            return start <= current && current < end;
         }
 
         /// <summary>
         /// Calculates exactly when the interval opens next, following a specific date and time.
         /// </summary>
-        public DateTimeOffset? NextOpenTime(DateTimeOffset when)
+        public DateTimeOffset? NextOpenTime(DateTimeOffset current)
         {
             // The simplest case is when the interval opens for the first time in the future.
 
-            if (when < Effective)
+            if (current < Effective)
                 return Effective;
 
             // If the interval opened in the past, and there are no recurrences, then the interval
             // never opens again in the future.
 
-            if (!Recurrences.Any())
+            if (!IsRecurring())
                 return null;
 
             // Otherwise, the interval opens next at the effective time on each day within the
             // recurrence pattern. Determine the first time this occurs in the future.
 
-            var effective = EffectiveTime(when.Year, when.Month, when.Day);
+            var start = GetStart(current);
 
             var recurrences = RecurrencesAsDays();
 
             var openings = Enumerable.Range(0, 8)
-                .Select(i => effective.AddDays(i))
+                .Select(i => start.AddDays(i))
                 .Where(day => recurrences.Contains(day.DayOfWeek))
                 .ToList();
 
-            return openings.FirstOrDefault(opening => when < opening);
+            return openings.FirstOrDefault(opening => current < opening);
         }
 
         /// <summary>
-        /// Calculates the exact time when the interval might be in effect on a specific date.
+        /// Calculates exactly when the interval opens next, following a specific date and time.
         /// </summary>
-        public DateTimeOffset EffectiveTime(DateTime when)
-            => EffectiveTime(when.Year, when.Month, when.Day);
-
-        /// <summary>
-        /// Calculates the exact time when the interval might be in effect on a specific date.
-        /// </summary>
-        public DateTimeOffset EffectiveTime(int year, int month, int day)
+        public int? MinutesBeforeOpenTime(DateTimeOffset current)
         {
-            var when = new DateTime(year, month, day);
+            var open = NextOpenTime(current);
 
-            var time = Effective.TimeOfDay;
+            if (open == null)
+                return null;
 
-            var open = when.AddHours(time.Hours).AddMinutes(time.Minutes);
-            
-            TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById(Zone);
-
-            return TimeZoneInfo.ConvertTime(new DateTimeOffset(open), tz);
+            return (int)(open.Value - current).TotalMinutes;
         }
+
+        /// <summary>
+        /// Determines if the interval recurs throughout the week.
+        /// </summary>
+        public bool IsRecurring()
+            => Recurrences.Any();
 
         /// <summary>
         /// Parses the list of recurrences into an enumeration of weekdays.
@@ -257,6 +279,12 @@ namespace Atomic.Common
         }
 
         /// <summary>
+        /// Determines if the interval includes a recurrence for a specific day of the week.
+        /// </summary>
+        public bool IncludesRecurrence(string day)
+            => Recurrences.Any(r => AreEqual(r, day));
+
+        /// <summary>
         /// Determines validation errors in the interval.
         /// </summary>
         public List<ValidationError> Validate()
@@ -269,16 +297,16 @@ namespace Atomic.Common
             if (!DateTime.TryParseExact(Time, RequiredTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var time))
                 errors.Add(new ValidationError { Property = nameof(Time), Summary = $"{Time} is not an expected time format. Please use {RequiredTimeFormat}." });
 
-            if (!TimeZoneInfo.GetSystemTimeZones().Any(tz => AreEqual(tz.Id, Zone)))
+            if (GetTimeZone() == null)
                 errors.Add(new ValidationError { Property = nameof(Zone), Summary = $"{Zone} is not a valid time zone." });
 
             try
             {
-                DurationAsTimeSpan();
+                GetDuration();
             }
             catch (ArgumentException ex)
             {
-                errors.Add(new ValidationError { Property = nameof(Duration), Summary = ex.Message });
+                errors.Add(new ValidationError { Property = nameof(Length), Summary = ex.Message });
             }
 
             if (Recurrences == null)
@@ -292,6 +320,29 @@ namespace Atomic.Common
             }
 
             return errors;
+        }
+
+        /// <summary>
+        /// Determines if the interval is valid.
+        /// </summary>
+        public bool IsValid()
+            => !Validate().Any();
+
+        private bool IsValidWeekday(string day)
+        {
+            switch (day.ToLower())
+            {
+                case "sun":
+                case "mon":
+                case "tue":
+                case "wed":
+                case "thu":
+                case "fri":
+                case "sat":
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         /// <summary>

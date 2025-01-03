@@ -7,13 +7,6 @@ public class ClockTests
     const string UTC = "UTC";
 
     [Fact]
-    public void ConvertTimeZone_NullDateTimeOffset_ReturnNull()
-    {
-        var clock = new Clock();
-        Assert.Null(clock.ConvertTimeZone(null, UTC));
-    }
-
-    [Fact]
     public void ConvertTimeZone_InvalidTimeZone_ReturnUTC()
     {
         var clock = new Clock();
@@ -31,12 +24,9 @@ public class ClockTests
         var pst = clock.ConvertTimeZone(now, PacificStandardTime);
         Assert.Equal(mst, pst);
 
-        if (mst.HasValue && pst.HasValue)
-        {
-            var mstMinusOneHour = mst.Value.AddHours(-1);
-            var differenceInHours = (mstMinusOneHour - pst).Value.Hours;
-            Assert.Equal(-1, differenceInHours);
-        }
+        var mstMinusOneHour = mst.AddHours(-1);
+        var differenceInHours = (mstMinusOneHour - pst).Hours;
+        Assert.Equal(-1, differenceInHours);
     }
 
     [Fact]
@@ -50,9 +40,7 @@ public class ClockTests
 
         Assert.Equal(utc, mst);
         Assert.Equal(mst, converted);
-
-        if (converted.HasValue)
-            Assert.Equal(15, converted.Value.Hour);
+        Assert.Equal(15, converted.Hour);
     }
 
     [Fact]

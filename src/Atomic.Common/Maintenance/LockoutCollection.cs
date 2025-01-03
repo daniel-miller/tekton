@@ -47,7 +47,7 @@ namespace Atomic.Common
                 {
                     Upcoming = lockout;
                     UpcomingDeadline = lockout.NextActualStartTime(when, enterprise, environment);
-                    UpcomingDuration = lockout.Interval.Duration;
+                    UpcomingDuration = lockout.Interval.Length;
                     return;
                 }
             }
