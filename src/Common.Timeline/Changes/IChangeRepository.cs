@@ -45,5 +45,7 @@ namespace Common.Timeline.Changes
         T Unbox<T>(Guid aggregate) where T : AggregateRoot;
 
         (AggregateState prev, AggregateState current) GetPrevAndCurrentStates(Guid aggregateId, int version);
+
+        IChange[] GetStatesAndChanges(Guid aggregateId);
     }
 }
