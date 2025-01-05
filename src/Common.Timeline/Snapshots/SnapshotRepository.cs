@@ -170,6 +170,34 @@ namespace Common.Timeline.Snapshots
             return (prevState, currentState);
         }
 
+        public IChange[] GetStatesAndChanges(Guid aggregateId)
+        {
+            var changes = _changeStore.GetChanges(aggregateId, -1);
+            if (changes.Length == 0)
+                return changes;
+
+            _changeStore.GetClassAndOrganization(aggregateId, out var aggregateClass, out var _);
+
+            var aggregateType = Type.GetType(aggregateClass);
+            var aggregate = (AggregateRoot)aggregateType.GetConstructor(Type.EmptyTypes).Invoke(null);
+
+            var state = aggregate.CreateState();
+            var stateType = state.GetType();
+
+            for (int i = 0; i < changes.Length; i++)
+            {
+                var change = changes[i];
+
+                state.Apply(change);
+
+                var stateJson = _serializer.Serialize(state);
+
+                change.AggregateState = _serializer.Deserialize<AggregateState>(stateJson, stateType, false);
+            }
+
+            return changes;
+        }
+
         /// <summary>
         /// Returns a specific aggregate as at a specific version.
         /// </summary>
@@ -237,6 +265,11 @@ namespace Common.Timeline.Snapshots
             }
             catch (InvalidOperationException ex)
             {
+                // Jan 14, 2022 - Daniel: Newtonsoft.Json.Serialization.JsonSerializerInternalWriter.SerializeDictionary
+                // threw this exception today when it failed to serialize a MessageAggregate instance. We don't know
+                // what specific aggregate failed to serialize, therefore I'm rethrowing the exception here with more
+                // information for future troubleshooting, in case the exception recurs.
+
                 var type = aggregate.GetType().Name;
                 var id = aggregate.AggregateIdentifier;
                 var version = aggregate.AggregateVersion;
