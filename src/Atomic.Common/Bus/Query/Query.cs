@@ -13,7 +13,7 @@ namespace Atomic.Common.Bus
 
         public Query()
         {
-            QueryIdentifier = GuidGenerator.NewGuid();
+            QueryIdentifier = GuidFactory.Create();
         }
     }
 }

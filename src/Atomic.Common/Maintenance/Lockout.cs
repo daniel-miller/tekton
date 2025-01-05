@@ -17,6 +17,12 @@ namespace Atomic.Common
         public string[] Environments { get; set; }
 
         /// <summary>
+        /// The interfaces to which this lockout applies.
+        /// </summary>
+
+        public string[] Interfaces { get; set; }
+
+        /// <summary>
         /// The interval of time during which the lockout is in effect.
         /// </summary>
         public Interval Interval { get; set; }
@@ -24,6 +30,7 @@ namespace Atomic.Common
         public Lockout()
         {
             Interval = new Interval();
+            Enterprises = Environments = Interfaces = new string[0];
         }
 
         public bool FilterEnterprises()
@@ -32,41 +39,44 @@ namespace Atomic.Common
         public bool FilterEnvironments()
             => Environments != null && Environments.Any();
 
-        public int? MinutesUntilNextActualStartTime(DateTimeOffset when, string enterprise, string environment)
+        public bool FilterInterfaces()
+            => Interfaces != null && Interfaces.Any();
+
+        public int? MinutesBeforeOpenTime(DateTimeOffset current, string enterprise, string environment)
         {
-            var next = NextActualStartTime(when, enterprise, environment);
+            var next = NextOpenTime(current, enterprise, environment);
 
             if (next == null)
                 return null;
 
-            return (int)(next.Value - when).TotalMinutes;
+            return Interval.MinutesBeforeOpenTime(current);
         }
 
-        public DateTimeOffset? NextActualStartTime(DateTimeOffset when, string enterprise, string environment)
+        public DateTimeOffset? NextOpenTime(DateTimeOffset current, string enterprise, string environment)
         {
-            var next = Interval.NextOpenTime(when);
+            var next = Interval.NextOpenTime(current);
 
-            if (next < when)
+            if (next < current)
                 return null;
 
-            if (FilterEnterprises() && !AreEqual(enterprise, Enterprises))
+            if (FilterEnterprises() && enterprise.MatchesNone(Enterprises))
                 return null;
 
-            if (FilterEnvironments() && !AreEqual(environment, Environments))
+            if (FilterEnvironments() && environment.MatchesNone(Environments))
                 return null;
 
             return next;
         }
 
-        public bool IsActive(DateTimeOffset when, string enterprise, string environment)
+        public bool IsActive(DateTimeOffset current, string enterprise, string environment)
         {
-            if (!Interval.Contains(when))
+            if (!Interval.Contains(current))
                 return false;
 
-            if (FilterEnterprises() && !AreEqual(enterprise, Enterprises))
+            if (FilterEnterprises() && enterprise.MatchesNone(Enterprises))
                 return false;
 
-            if (FilterEnvironments() && !AreEqual(environment, Environments))
+            if (FilterEnvironments() && environment.MatchesNone(Environments))
                 return false;
 
             return true;
@@ -79,19 +89,15 @@ namespace Atomic.Common
         {
             var errors = Interval.Validate().ToList();
 
-            if (Environments == null)
-                errors.Add(new ValidationError { Property = nameof(Environments), Summary = "Environments cannot be null. Use an empty list for all environments." });
+            foreach (var i in Environments)
+                if (i.MatchesNone(Common.Environments.Names))
+                    errors.Add(new ValidationError { Property = nameof(Environments), Summary = $"Environments can contain only items in this list: {string.Join("; ", Common.Environments.Names)}" });
 
-            if (Enterprises == null)
-                errors.Add(new ValidationError { Property = nameof(Enterprises), Summary = "Enterprises cannot be null. Use an empty list for all enterprises." });
+            foreach (var i in Interfaces)
+                if (i.MatchesNone(new[] { "api", "ui" }))
+                    errors.Add(new ValidationError { Property = nameof(Environments), Summary = "Interfaces can contain only items in this list: API; UI" });
 
             return errors;
         }
-        
-        private bool AreEqual(string x, string y)
-            => string.Compare(x, y, StringComparison.OrdinalIgnoreCase) == 0;
-        
-        private bool AreEqual(string value, string[] list)
-            => list.Any(item => AreEqual(item, value));
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Atomic.Common
+﻿using System.Linq;
+
+namespace Atomic.Common
 {
     public class EnvironmentModel : Model
     {
@@ -30,6 +32,28 @@
                     Slug = "prod";
                     break;
             }
+        }
+    }
+
+    public static class Environments
+    {
+        public static EnvironmentModel[] All { get; set; }
+
+        public static string[] Slugs
+            => All.Select(x => x.Slug).ToArray();
+
+        public static string[] Names
+            => All.Select(x => x.Name).ToArray();
+
+        static Environments()
+        {
+            All = new[]
+            {
+                new EnvironmentModel(EnvironmentName.Local),
+                new EnvironmentModel(EnvironmentName.Development),
+                new EnvironmentModel(EnvironmentName.Sandbox),
+                new EnvironmentModel(EnvironmentName.Production)
+            };
         }
     }
 }

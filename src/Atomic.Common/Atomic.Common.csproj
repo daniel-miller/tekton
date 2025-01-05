@@ -17,5 +17,9 @@
 	  <EmbeddedResource Remove="Bus\Query\Exceptions\**" />
 	  <None Remove="Bus\Query\Exceptions\**" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Telemetry\Logging\" />
+	</ItemGroup>
 	
 </Project>

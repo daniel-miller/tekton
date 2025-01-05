@@ -21,7 +21,7 @@ namespace Atomic.Common.Bus
         {
             try
             {
-                var queryObject = _serializer.Deserialize<IQuery<TResult>>(queryCriteria, queryType, JsonPurpose.Storage);
+                var queryObject = _serializer.Deserialize<IQuery<TResult>>(queryType, queryCriteria, JsonPurpose.Storage);
 
                 return queryObject;
             }
@@ -38,7 +38,7 @@ namespace Atomic.Common.Bus
         {
             try
             {
-                var data = _serializer.Deserialize<IQuery<TResult>>(x.QueryCriteria, Type.GetType(x.QueryClass), JsonPurpose.Storage);
+                var data = _serializer.Deserialize<IQuery<TResult>>(Type.GetType(x.QueryClass), x.QueryCriteria, JsonPurpose.Storage);
 
                 data.OriginShard = x.OriginShard;
                 data.OriginActor = x.OriginActor;
@@ -58,7 +58,7 @@ namespace Atomic.Common.Bus
         /// </summary>
         public SerializedQuery Serialize<TResult>(IQuery<TResult> query)
         {
-            var criteria = _serializer.Serialize(query, JsonPurpose.Storage, new[]
+            var criteria = _serializer.Serialize(query, JsonPurpose.Storage, false, new[]
             {
                 "OriginShard",
                 "OriginActor",
