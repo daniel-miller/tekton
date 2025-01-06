@@ -98,16 +98,32 @@ namespace Atomic.Common
             return Utc;
         }
 
+        public static TimeZoneInfo GetZone(DateTimeOffset when)
+        {
+            var zones = GetZones(when);
+
+            foreach (var zone in zones)
+                if (Supported.Any(x => x.Id == zone.Id))
+                    return zone;
+
+            return Utc;
+        }
+
         public static TimeZoneInfo[] GetZones(DateTimeOffset when)
         {
             var offset = when.Offset;
 
             var zones = TimeZoneInfo.GetSystemTimeZones()
-                .Where(tz => tz.BaseUtcOffset == offset)
+                .Where(tz => tz.GetUtcOffset(when) == offset)
                 .OrderBy(x => x.StandardName)
                 .ToArray();
 
             return zones;
+        }
+
+        public static TimeSpan GetOffset(DateTime when, string zone)
+        {
+            return GetZone(zone).GetUtcOffset(when);
         }
 
         public static bool IsValidZone(string zone)

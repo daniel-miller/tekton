@@ -29,11 +29,6 @@ namespace Atomic.Common
         private const string RequiredTimeFormat = "HH:mm";
 
         /// <summary>
-        /// Date and time the interval opens for the first time.
-        /// </summary>
-        public DateTimeOffset Effective { get; set; }
-
-        /// <summary>
         /// Date the interval opens for the first time. (Year/Month/Date Format = yyyy-MM-dd)
         /// </summary>
         public string Date { get; set; }
@@ -67,21 +62,32 @@ namespace Atomic.Common
         /// date/time values in the current century.
         /// </remarks>
         public Interval()
-            : this(Clock.NextCentury, "1h")
+            : this("2100-01-01", "00:00", "UTC", "1h")
         {
             
+        }
+
+        public Interval(DateTime effective, string zone, string length, string weekdays = null)
+            : this($"{effective:yyyy-MM-dd}", $"{effective:HH:mm}", zone, length, weekdays)
+        {
+
+        }
+
+        public Interval(DateTimeOffset effective, string length, string weekdays = null)
+            : this(effective.DateTime, TimeZones.GetZone(effective).Id, length, weekdays)
+        {
+
         }
 
         /// <summary>
         /// Constructs an interval that opens on a specific date, at a specific time, within a 
         /// specific time zone, for a specific period of time.
         /// </summary>
-        public Interval(DateTimeOffset effective, string length, string weekdays = null)
+        public Interval(string date, string time, string zone, string length, string weekdays = null)
         {
-            Effective = TimeZones.Convert(effective, MST);
-            Date = effective.ToString(RequiredDateFormat, CultureInfo.CurrentCulture);
-            Time = effective.ToString(RequiredTimeFormat, CultureInfo.CurrentCulture);
-            Zone = MST;
+            Date = date;
+            Time = time;
+            Zone = zone;
             Length = length;
             Recurrences = new List<string>();
 
@@ -91,9 +97,7 @@ namespace Atomic.Common
                     .Where(day => IsValidWeekday(day));
 
                 foreach (var day in days)
-                {
                     Recurrences.Add(day.Trim().ToLower());
-                }
             }
         }
 
@@ -133,6 +137,19 @@ namespace Atomic.Common
         }
 
         /// <summary>
+        /// Date and time the interval opens for the first time.
+        /// </summary>
+        public DateTimeOffset GetEffective()
+        {
+            var d = DateTime.ParseExact(Date, "yyyy-MM-dd", CultureInfo.CurrentCulture);
+            var t = DateTime.ParseExact(Time, "HH:mm", CultureInfo.CurrentCulture);
+            var dt = new DateTime(d.Year, d.Month, d.Day, t.Hour, t.Minute, 0);
+            var offset = TimeZones.GetOffset(dt, Zone);
+            var dto = new DateTimeOffset(dt, offset);
+            return dto;
+        }
+
+        /// <summary>
         /// Calculates when the interval potentially starts on a specific date.
         /// </summary>
         public DateTimeOffset GetStart(DateTimeOffset current)
@@ -142,13 +159,15 @@ namespace Atomic.Common
 
             var tz = TimeZones.GetZone(Zone);
 
-            var offset = Effective.Offset;
+            var effective = GetEffective();
 
-            if (tz.IsDaylightSavingTime(current) && !tz.IsDaylightSavingTime(Effective))
+            var offset = effective.Offset;
+
+            if (tz.IsDaylightSavingTime(current) && !tz.IsDaylightSavingTime(effective))
             {
                 offset = offset.Add(new TimeSpan(1, 0, 0));
             }
-            else if (!tz.IsDaylightSavingTime(current) && tz.IsDaylightSavingTime(Effective))
+            else if (!tz.IsDaylightSavingTime(current) && tz.IsDaylightSavingTime(effective))
             {
                 offset = offset.Add(new TimeSpan(-1, 0, 0));
             }
@@ -160,7 +179,7 @@ namespace Atomic.Common
 
             var start = new DateTimeOffset(
                 current.Year, current.Month, current.Day,
-                Effective.Hour, Effective.Minute, Effective.Second,
+                effective.Hour, effective.Minute, effective.Second,
                 offset);
 
             return start;
@@ -181,7 +200,9 @@ namespace Atomic.Common
         /// </summary>
         public bool Contains(DateTimeOffset current)
         {
-            if (current < Effective)
+            var effective = GetEffective();
+
+            if (current < effective)
                 return false;
 
             var start = GetStart(current);
@@ -199,10 +220,12 @@ namespace Atomic.Common
         /// </summary>
         public DateTimeOffset? NextOpenTime(DateTimeOffset current)
         {
+            var effective = GetEffective();
+
             // The simplest case is when the interval opens for the first time in the future.
 
-            if (current < Effective)
-                return Effective;
+            if (current < effective)
+                return effective;
 
             // If the interval opened in the past, and there are no recurrences, then the interval
             // never opens again in the future.
@@ -310,8 +333,9 @@ namespace Atomic.Common
             }
             else if (Recurrences.Any())
             {
-                if (!RecurrencesAsDays().Contains(Effective.DayOfWeek))
-                    errors.Add(new ValidationError { Property = nameof(Recurrences), Summary = $"Recurrences for this interval must include {Effective.DayOfWeek} because {Date} occurs on this day of the week." });
+                var effective = GetEffective();
+                if (!RecurrencesAsDays().Contains(effective.DayOfWeek))
+                    errors.Add(new ValidationError { Property = nameof(Recurrences), Summary = $"Recurrences for this interval must include {effective.DayOfWeek} because {Date} occurs on this day of the week." });
             }
 
             return errors;

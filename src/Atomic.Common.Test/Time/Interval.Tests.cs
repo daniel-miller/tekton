@@ -18,9 +18,9 @@ public class IntervalTests
         January8 = CreateDto(new DateTime(2025, 1, 8, 0, 0, 0), -7);
         January9 = CreateDto(new DateTime(2025, 1, 9, 0, 0, 0), -7);
 
-        OneTime = new Interval(January1, "30m");
+        OneTime = new Interval(January1.DateTime, TimeZones.Mountain.Id, "30m");
 
-        RecurringTWR = new Interval(January1, "30m");
+        RecurringTWR = new Interval(January1.DateTime, TimeZones.Mountain.Id, "30m");
         RecurringTWR.Recurrences.Add("Tue");
         RecurringTWR.Recurrences.Add("Wed");
         RecurringTWR.Recurrences.Add("Thu");
@@ -41,9 +41,9 @@ public class IntervalTests
     {
         var i = new Interval();
 
-        Assert.Equal(i.Effective, Clock.NextCentury);
+        Assert.Equal(i.GetEffective(), Clock.NextCentury);
 
-        Assert.Equal("Mountain Standard Time", i.Zone);
+        Assert.Equal("UTC", i.Zone);
         
         Assert.Equal(60, i.GetDuration().TotalMinutes);
 
@@ -165,15 +165,17 @@ public class IntervalTests
 
         foreach (var i in intervals)
         {
-            Assert.Equal(i.Effective.TimeOfDay, i.GetStart(January1.DateTime.AddSeconds(-1)).TimeOfDay);
-            Assert.Equal(i.Effective.TimeOfDay, i.GetStart(January1.DateTime.AddDays(-1)).TimeOfDay);
-            Assert.Equal(i.Effective.TimeOfDay, i.GetStart(January1.DateTime.AddMonths(-6)).TimeOfDay);
+            var effective = i.GetEffective();
 
-            Assert.Equal(i.Effective.TimeOfDay, i.GetStart(January1.DateTime).TimeOfDay);
+            Assert.Equal(effective.TimeOfDay, i.GetStart(January1.DateTime.AddSeconds(-1)).TimeOfDay);
+            Assert.Equal(effective.TimeOfDay, i.GetStart(January1.DateTime.AddDays(-1)).TimeOfDay);
+            Assert.Equal(effective.TimeOfDay, i.GetStart(January1.DateTime.AddMonths(-6)).TimeOfDay);
 
-            Assert.Equal(i.Effective.TimeOfDay, i.GetStart(January1.DateTime.AddSeconds(1)).TimeOfDay);
-            Assert.Equal(i.Effective.TimeOfDay, i.GetStart(January1.DateTime.AddDays(1)).TimeOfDay);
-            Assert.Equal(i.Effective.TimeOfDay, i.GetStart(January1.DateTime.AddMonths(6)).TimeOfDay);
+            Assert.Equal(effective.TimeOfDay, i.GetStart(January1.DateTime).TimeOfDay);
+
+            Assert.Equal(effective.TimeOfDay, i.GetStart(January1.DateTime.AddSeconds(1)).TimeOfDay);
+            Assert.Equal(effective.TimeOfDay, i.GetStart(January1.DateTime.AddDays(1)).TimeOfDay);
+            Assert.Equal(effective.TimeOfDay, i.GetStart(January1.DateTime.AddMonths(6)).TimeOfDay);
         }
     }
 
@@ -188,7 +190,9 @@ public class IntervalTests
         var end = January1.AddMinutes(i.GetDuration().Minutes);
         var after = end.AddSeconds(1);
 
-        Assert.Equal(i.Effective, i.NextOpenTime(before));
+        var effective = i.GetEffective();
+
+        Assert.Equal(effective, i.NextOpenTime(before));
         Assert.Null(i.NextOpenTime(start));
         Assert.Null(i.NextOpenTime(inside));
         Assert.Null(i.NextOpenTime(end));
@@ -266,8 +270,8 @@ public class IntervalTests
 
         for (var current = from; current <= thru; current = current.AddMinutes(5))
         {
-            Assert.Equal(IsInHotfixWindow(current, hotfix.Effective), hotfix.Contains(current));
-            Assert.Equal(IsInMaintenanceWindow(current, maintenance.Effective), maintenance.Contains(current));
+            Assert.Equal(IsInHotfixWindow(current, hotfix.GetEffective()), hotfix.Contains(current));
+            Assert.Equal(IsInMaintenanceWindow(current, maintenance.GetEffective()), maintenance.Contains(current));
         }
     }
 
@@ -285,18 +289,18 @@ public class IntervalTests
         var maintenance = new Interval(CreateDto(new DateTime(2025, 1, 1, 3, 0, 0), -7), "30m");
 
         // Confirm the windows are valid.
-        Assert.True(IsInHotfixWindow(hotfix.Effective, hotfix.Effective));
-        Assert.True(IsInMaintenanceWindow(maintenance.Effective, maintenance.Effective));
+        Assert.True(IsInHotfixWindow(hotfix.GetEffective(), hotfix.GetEffective()));
+        Assert.True(IsInMaintenanceWindow(maintenance.GetEffective(), maintenance.GetEffective()));
 
         // Confirm the windows do not overlap.
-        Assert.False(hotfix.Contains(maintenance.Effective));
-        Assert.False(maintenance.Contains(hotfix.Effective));
+        Assert.False(hotfix.Contains(maintenance.GetEffective()));
+        Assert.False(maintenance.Contains(hotfix.GetEffective()));
 
         // Special Case #1: Jan 3, 2025 3:00 AM UTC = Jan 2, 2025 8:00 PM MST. This is not a hotfix
         // window because Jan 2, 2025 is a Thursday.
         
         var current = CreateDto(new DateTime(2025, 1, 3, 3, 0, 0), 0);
-        Assert.False(IsInHotfixWindow(current, hotfix.Effective));
+        Assert.False(IsInHotfixWindow(current, hotfix.GetEffective()));
         Assert.False(hotfix.Contains(current));
 
         // Special Case #2: Mar 9, 2025 9:00 AM UTC = Mar 9, 2025 3:00 AM MST. This is potentially
@@ -306,7 +310,7 @@ public class IntervalTests
         // not (or vice versa), then the Contains method needs to adjust for this variance. 
         
         current = CreateDto(new DateTime(2025, 3, 9, 9, 0, 0), 0);
-        Assert.True(IsInMaintenanceWindow(current, maintenance.Effective));
+        Assert.True(IsInMaintenanceWindow(current, maintenance.GetEffective()));
         Assert.True(maintenance.Contains(current));
     }
 

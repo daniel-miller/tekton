@@ -110,9 +110,9 @@ namespace Atomic.Common
         private string ToQuantity(int count, string noun)
         {
             if (count == 1)
-                return noun;
+                return $"1 {noun}";
 
-            return noun + "s";
+            return $"{count:N0} {noun}s";
         }
 
         private bool IsInteger(double value)

@@ -5,24 +5,17 @@ using System.Threading;
 
 namespace Atomic.Common
 {
+    public delegate void MemoryCacheHandler<TKey, TData>(object sender, MemoryCacheArgs<TKey, TData> args);
+
     /// <summary>
-    /// Provides functionality to add, remove, and get objects in a cache.
+    /// This is a generic cache based on key/value pairs where key is a string. You can add any item to this cache as 
+    /// long as the key is unique, so treat keys like namespaces and apply consistent naming conventions throughout 
+    /// your application. Every cache entry has its own timeout. This class is thread safe and will delete expired 
+    /// entries on its own using System.Threading.Timers (which run on <see cref="ThreadPool"/> threads).
     /// </summary>
-    public interface IMemoryCache<TK, T>
+    public class MemoryCache<T> : MemoryCache<string, T>
     {
-        T this[TK key] { get; }
-        T Get(TK key);
-        bool TryGet(TK key, out T value);
 
-        bool Exists(TK key);
-
-        void Add(TK key, T value);
-        void Add(TK key, T value, int timeout, bool restartTimer = false);
-        void Remove(TK key);
-        void Remove(Predicate<TK> pattern);
-
-        void Clear();
-        void Dispose();
     }
 
     /// <summary>
@@ -406,53 +399,4 @@ namespace Atomic.Common
 
         #endregion
     }
-
-    #region Classes (derived)
-
-    /// <summary>
-    /// This is a generic cache based on key/value pairs where key is a string. You can add any item to this cache as 
-    /// long as the key is unique, so treat keys like namespaces and apply consistent naming conventions throughout 
-    /// your application. Every cache entry has its own timeout. This class is thread safe and will delete expired 
-    /// entries on its own using System.Threading.Timers (which run on <see cref="ThreadPool"/> threads).
-    /// </summary>
-    public class MemoryCache<T> : MemoryCache<string, T>
-    {
-
-    }
-
-    public class GuidCache<T> : MemoryCache<Guid, T>
-    {
-
-    }
-
-    /// <summary>
-    /// The non-generic Cache class instanciates a Cache{object} that can be used with any type of (mixed) content. It 
-    /// also publishes a static <c>.Global</c> member, so a cache can be used without creating a dedicated instance. 
-    /// The <c>.Global</c> member is lazy-instantiated.
-    /// </summary>
-    public class Cache : MemoryCache<string, object>
-    {
-        private static readonly Lazy<Cache> Lazy = new Lazy<Cache>();
-
-        /// <summary>
-        /// Gets the global shared cache instance valid for the entire process.
-        /// </summary>
-        public static Cache Global => Lazy.Value;
-    }
-
-    #endregion
-
-    public class MemoryCacheArgs<TKey, TData> : EventArgs
-    {
-        public TKey Key { get; }
-        public TData Data { get; }
-
-        public MemoryCacheArgs(TKey key, TData data)
-        {
-            Key = key;
-            Data = data;
-        }
-    }
-
-    public delegate void MemoryCacheHandler<TKey, TData>(object sender, MemoryCacheArgs<TKey, TData> args);
 }

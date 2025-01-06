@@ -1,4 +1,6 @@
-﻿namespace Atomic.Common.Test;
+﻿using Newtonsoft.Json;
+
+namespace Atomic.Common.Test;
 
 public class LockoutTests
 {
@@ -33,8 +35,10 @@ public class LockoutTests
         Assert.True(lockout.FilterInterfaces());
         Assert.True(lockout.Interfaces[0].Matches("API"));
 
-        Assert.Equal(20, lockout.Interval.Effective.Hour);
-        Assert.Equal(0, lockout.Interval.Effective.Minute);
+        var effective = lockout.Interval.GetEffective();
+
+        Assert.Equal(20, effective.Hour);
+        Assert.Equal(0, effective.Minute);
         Assert.Equal(60, lockout.Interval.GetDuration().TotalMinutes);
 
         var twoHoursBefore = CreateDto(2025, 1, 15, 18, 0, 0, -7);
@@ -64,8 +68,10 @@ public class LockoutTests
     {
         var lockout = CreateDailyBuild();
 
-        Assert.Equal(8, lockout.Interval.Effective.Hour);
-        Assert.Equal(0, lockout.Interval.Effective.Minute);
+        var effective = lockout.Interval.GetEffective();
+
+        Assert.Equal(8, effective.Hour);
+        Assert.Equal(0, effective.Minute);
         Assert.Equal(60, lockout.Interval.GetDuration().TotalMinutes);
     }
 
@@ -74,8 +80,10 @@ public class LockoutTests
     {
         var lockout = CreateDailyMaintenance();
 
-        Assert.Equal(3, lockout.Interval.Effective.Hour);
-        Assert.Equal(0, lockout.Interval.Effective.Minute);
+        var effective = lockout.Interval.GetEffective();
+
+        Assert.Equal(3, effective.Hour);
+        Assert.Equal(0, effective.Minute);
         Assert.Equal(30, lockout.Interval.GetDuration().TotalMinutes);
 
         Assert.False(lockout.FilterEnterprises());
@@ -91,8 +99,12 @@ public class LockoutTests
     {
         var lockout = CreateCustom1();
 
-        Assert.Equal(11, lockout.Interval.Effective.Hour);
-        Assert.Equal(0, lockout.Interval.Effective.Minute);
+        var effective = lockout.Interval.GetEffective();
+
+        Assert.Equal("Pacific Standard Time", lockout.Interval.Zone);
+
+        Assert.Equal(10, effective.Hour);
+        Assert.Equal(0, effective.Minute);
         Assert.Equal(30, lockout.Interval.GetDuration().TotalMinutes);
 
         Assert.Single(lockout.Enterprises);
@@ -106,9 +118,13 @@ public class LockoutTests
     public void Contructor_Custom2()
     {
         var lockout = CreateCustom2();
+        
+        var effective = lockout.Interval.GetEffective();
 
-        Assert.Equal(12, lockout.Interval.Effective.Hour);
-        Assert.Equal(30, lockout.Interval.Effective.Minute);
+        Assert.Equal("Pacific Standard Time", lockout.Interval.Zone);
+
+        Assert.Equal(11, effective.Hour);
+        Assert.Equal(30, effective.Minute);
         Assert.Equal(30, lockout.Interval.GetDuration().TotalMinutes);
 
         Assert.Single(lockout.Enterprises);
@@ -123,8 +139,12 @@ public class LockoutTests
     {
         var lockout = CreateCustom3();
 
-        Assert.Equal(14, lockout.Interval.Effective.Hour);
-        Assert.Equal(30, lockout.Interval.Effective.Minute);
+        var effective = lockout.Interval.GetEffective();
+
+        Assert.Equal("Pacific Standard Time", lockout.Interval.Zone);
+
+        Assert.Equal(13, effective.Hour);
+        Assert.Equal(30, effective.Minute);
         Assert.Equal(30, lockout.Interval.GetDuration().TotalMinutes);
 
         Assert.Single(lockout.Enterprises);
@@ -139,8 +159,12 @@ public class LockoutTests
     {
         var lockout = CreateCustom4();
 
-        Assert.Equal(16, lockout.Interval.Effective.Hour);
-        Assert.Equal(30, lockout.Interval.Effective.Minute);
+        var effective = lockout.Interval.GetEffective();
+
+        Assert.Equal("Pacific Standard Time", lockout.Interval.Zone);
+
+        Assert.Equal(15, effective.Hour);
+        Assert.Equal(30, effective.Minute);
         Assert.Equal(30, lockout.Interval.GetDuration().TotalMinutes);
 
         Assert.Single(lockout.Enterprises);
@@ -173,17 +197,24 @@ public class LockoutTests
             {
                 for (var current = from; current <= thru; current = current.AddMinutes(5))
                 {
-                    Assert.Equal(IsActiveHotfixWindow(hotfix.Interval.Effective, current, enterprise, environment.Name), hotfix.IsActive(current, enterprise, environment.Name));
-                    Assert.Equal(IsActiveDailyBuild(build.Interval.Effective, current, enterprise, environment.Name), build.IsActive(current, enterprise, environment.Name));
-                    Assert.Equal(IsActiveDailyMaintenance(maintenance.Interval.Effective, current, enterprise, environment.Name), maintenance.IsActive(current, enterprise, environment.Name));
+                    Assert.Equal(IsActiveHotfixWindow(hotfix.Interval.GetEffective(), current, enterprise, environment.Name), hotfix.IsActive(current, enterprise, environment.Name));
+                    Assert.Equal(IsActiveDailyBuild(build.Interval.GetEffective(), current, enterprise, environment.Name), build.IsActive(current, enterprise, environment.Name));
+                    Assert.Equal(IsActiveDailyMaintenance(maintenance.Interval.GetEffective(), current, enterprise, environment.Name), maintenance.IsActive(current, enterprise, environment.Name));
 
-                    Assert.Equal(IsActiveCustom1(custom1.Interval.Effective, current, enterprise, environment.Name), custom1.IsActive(current, enterprise, environment.Name));
-                    Assert.Equal(IsActiveCustom2(custom2.Interval.Effective, current, enterprise, environment.Name), custom2.IsActive(current, enterprise, environment.Name));
-                    Assert.Equal(IsActiveCustom3(custom3.Interval.Effective, current, enterprise, environment.Name), custom3.IsActive(current, enterprise, environment.Name));
-                    Assert.Equal(IsActiveCustom4(custom4.Interval.Effective, current, enterprise, environment.Name), custom4.IsActive(current, enterprise, environment.Name));
+                    Assert.Equal(IsActiveCustom1(custom1.Interval.GetEffective(), current, enterprise, environment.Name), custom1.IsActive(current, enterprise, environment.Name));
+                    Assert.Equal(IsActiveCustom2(custom2.Interval.GetEffective(), current, enterprise, environment.Name), custom2.IsActive(current, enterprise, environment.Name));
+                    Assert.Equal(IsActiveCustom3(custom3.Interval.GetEffective(), current, enterprise, environment.Name), custom3.IsActive(current, enterprise, environment.Name));
+                    Assert.Equal(IsActiveCustom4(custom4.Interval.GetEffective(), current, enterprise, environment.Name), custom4.IsActive(current, enterprise, environment.Name));
                 }
             }
         }
+
+        var test1 = CreateDailyLocalTest();
+        var test2 = CreateDailyDevelopmentTest();
+        var lockouts = new List<Lockout> { maintenance, build, hotfix, test1, test2, custom1, custom2, custom3, custom4 };
+        var json = JsonConvert.SerializeObject(lockouts);
+        var path = @"d:\temp\lockouts.json";
+        File.WriteAllText(path, json);
     }
 
     [Fact]
@@ -284,6 +315,44 @@ public class LockoutTests
 
         // Every day for 30 minutes.
         lockout.Interval = new Interval(effective, "30m", "Sun,Mon,Tue,Wed,Thu,Fri,Sat");
+
+        // API and UI.
+        lockout.Interfaces = ["API", "UI"];
+
+        return lockout;
+    }
+
+    private Lockout CreateDailyLocalTest()
+    {
+        var lockout = new Lockout();
+
+        lockout.Enterprises = ["E01"];
+        lockout.Environments = ["Local"];
+
+        // January 1, 2025 at 17:00 PM MST (UTC-7h)
+        var effective = new DateTimeOffset(new DateTime(2025, 1, 1, 17, 0, 0), new TimeSpan(-7, 0, 0));
+
+        // Every Sunday for 2 hours.
+        lockout.Interval = new Interval(effective, "2h", "Sun");
+
+        // API and UI.
+        lockout.Interfaces = ["API", "UI"];
+
+        return lockout;
+    }
+
+    private Lockout CreateDailyDevelopmentTest()
+    {
+        var lockout = new Lockout();
+
+        lockout.Enterprises = ["E01"];
+        lockout.Environments = ["Development"];
+
+        // January 1, 2025 at 12:00 PM MST (UTC-7h)
+        var effective = new DateTimeOffset(new DateTime(2025, 1, 1, 12, 0, 0), new TimeSpan(-7, 0, 0));
+
+        // Every weekday for 7 minutes.
+        lockout.Interval = new Interval(effective, "7m", "Mon,Tue,Wed,Thu,Fri");
 
         // API and UI.
         lockout.Interfaces = ["API", "UI"];
