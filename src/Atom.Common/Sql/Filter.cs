@@ -1,0 +1,51 @@
+﻿namespace Atom.Common
+{
+    public class Filter
+    {
+        /// <summary>
+        /// The subset of rows requested within a paged data set. 
+        /// </summary>
+        /// <remarks>
+        /// Indexing starts at one (not zero) because we want page numbers to be readable and user-
+        /// friendly in HTTP request URLs.
+        /// </remarks>
+        public int Page { get; set; } = 1;
+
+        /// <summary>
+        /// The number of rows requested (i.e., the page size).
+        /// </summary>
+        public int Take { get; set; } = 20;
+
+        /// <summary>
+        /// A comma-separated list of property names.
+        /// </summary>
+        /// <remarks>
+        /// Here we support sorting direction specifiers "asc" and "desc" for ascending and
+        /// descending. If there is no specifier then ascending sort is the default.
+        /// </remarks>
+        /// <example>
+        /// Sort = "Age+desc,LastName+asc,FirstName
+        /// </example>
+        public string Sort { get; set; }
+
+        /// <summary>
+        /// A comma-separated list of properties to be specifically excluded from the data set.
+        /// </summary>
+        /// <remarks>
+        /// This property can be used (optionally) to decrease the size of the data set requested by
+        /// client code when there is a need decrease bandwidth usage and/or increase performance on
+        /// the server by limiting the amount of work it is expected to do in building a response.
+        /// </remarks>
+        public string Excludes { get; set; }
+
+        /// <summary>
+        /// A comma-separated list of properties to be specifically included in the data set.
+        /// </summary>
+        /// <remarks>
+        /// This property can be used (optionally) to include additional information in the 
+        /// requested data set, when the additional data is not included by default - normally for 
+        /// performance reasons.
+        /// </remarks>
+        public string Includes { get; set; }
+    }
+}
