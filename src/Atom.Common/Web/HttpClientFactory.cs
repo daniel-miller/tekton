@@ -12,20 +12,25 @@ namespace Atom.Common
 
         string GetSecret();
 
-        string GetToken();
+        string GetAuthorizationParameter();
 
-        void SetToken(string token);
+        void SetAuthenticationHeader(string scheme, string parameter);
     }
 
     public class HttpClientFactory : IHttpClientFactory
     {
-        private Uri _baseAddress;
-        private string _secret;
-        private string _token;
+        private readonly Uri _baseAddress;
+        
+        private readonly string _secret;
 
-        public HttpClientFactory(Uri baseAddress,  string secret)
+        private string _authorizationScheme = "Bearer";
+
+        private string _authorizationParameter;
+
+        public HttpClientFactory(Uri baseAddress, string secret)
         {
             _baseAddress = baseAddress;
+
             _secret = secret;
         }
 
@@ -36,9 +41,9 @@ namespace Atom.Common
                 BaseAddress = _baseAddress
             };
 
-            if (!string.IsNullOrWhiteSpace(_token))
+            if (_authorizationParameter.IsNotEmpty())
             {
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(_authorizationScheme, _authorizationParameter);
             }
 
             return client;
@@ -54,14 +59,15 @@ namespace Atom.Common
             return _secret;
         }
 
-        public string GetToken()
+        public string GetAuthorizationParameter()
         {
-            return _token;
+            return _authorizationParameter;
         }
 
-        public void SetToken(string token)
+        public void SetAuthenticationHeader(string scheme, string parameter)
         {
-            _token = token;
+            _authorizationScheme = scheme;
+            _authorizationParameter = parameter;
         }
     }
 }

@@ -1,11 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Atom.Common
 {
     public static class StringExtension
     {
+        public static string Base64Encode(this string s)
+        {
+            if (s == null)
+                return null;
+
+            var bytes = Encoding.UTF8.GetBytes(s);
+
+            return Convert.ToBase64String(bytes);
+        }
+
         public static bool IsEmpty(this string s) 
             => s == null || s.Length == 0 || string.IsNullOrWhiteSpace(s);
 

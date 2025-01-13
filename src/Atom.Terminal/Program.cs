@@ -1,28 +1,117 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Atom.Common;
+using Atom.Terminal;
+
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
-var host = Host.CreateDefaultBuilder(args)
+using Serilog;
 
-    .ConfigureAppConfiguration((context, config) =>
-    {
-        // Clear default configuration sources.
-        config.Sources.Clear();
+// Step 1. Load configuration settings (from appsettings.json) before doing anything else.
 
-        // Add appsettings.json from the custom base path.
-        config.SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-            .AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", optional: true)
-            .AddEnvironmentVariables();
-    })
+var configuration = BuildConfiguration();
 
-    .ConfigureServices((context, services) =>
-    {
-        services.AddTransient<Application>();
-    })
+var settings = GetSettings(configuration);
 
-    .Build();
+// Step 2. Configure logging before we build the application host to ensure we capture all log
+// entries, including those generated during the host initialization process. This is critical for
+// diagnosing startup issues, monitoring initialization steps, and providing consistent, centralized
+// logging throughout the application lifecycle.
 
-var app = host.Services.GetRequiredService<Application>();
+Serilog.Log.Logger = ConfigureLogging(settings.Kernel.Telemetry.Logging.Path);
 
-await app.RunAsync(args);
+// Step 3. Build the application host with all services registered in the DI container.
+
+var host = BuildHost(settings);
+
+// Step 4. Start up the application.
+
+await Startup(host);
+
+// Step 5. Shut down the application
+
+await Shutdown(host);
+
+
+// -------------------------------------------------------------------------------------------------
+
+
+IConfigurationRoot BuildConfiguration()
+{
+    return new ConfigurationBuilder()
+        .SetBasePath(AppContext.BaseDirectory)
+        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+        .AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true)
+        .AddEnvironmentVariables()
+        .Build();
+}
+
+AtomSettings GetSettings(IConfigurationRoot configuration)
+{
+    var atomSection = configuration.GetRequiredSection("Atom");
+    return atomSection.Get<AtomSettings>()!;
+}
+
+Serilog.ILogger ConfigureLogging(string path)
+{
+    return new LoggerConfiguration()
+        .MinimumLevel.Debug()
+        .WriteTo.Console()
+        .WriteTo.File(path, rollingInterval: RollingInterval.Day)
+        .CreateLogger();
+}
+
+IHost BuildHost(AtomSettings settings)
+{
+    var builder = Host.CreateDefaultBuilder(args)
+
+        .ConfigureServices((context, services) =>
+        {
+            services.AddSingleton(settings);
+            services.AddSingleton(settings.Release);
+            services.AddSingleton(settings.Plugin.Integration);
+            services.AddSingleton(settings.Plugin.Integration.AstronomyApi);
+            services.AddSingleton(settings.Plugin.Integration.VisualCrossing);
+
+            services.AddLogging(builder =>
+            {
+                builder.ClearProviders();
+                builder.AddSerilog(dispose: true);
+            });
+
+            services.AddMonitoringServices(settings.Kernel.Telemetry.Monitoring);
+
+            services.AddSingleton<Atom.Terminal.ILog, Atom.Terminal.Log>();
+            services.AddSingleton<IMonitor, Atom.Terminal.Monitor>();
+            services.AddSingleton<IJsonSerializer, Atom.Utility.JsonSerializer>();
+
+            services.AddTransient<Application>();
+
+            services.AddSingleton<Spectre.Console.Cli.ITypeRegistrar>(new TypeRegistrar(services));
+        });
+
+    var host = builder.Build();
+
+    return host;
+}
+
+async Task Startup(IHost host)
+{
+    var monitor = host.Services.GetRequiredService<IMonitor>();
+
+    monitor.Information("Starting up.");
+
+    var app = host.Services.GetRequiredService<Application>();
+
+    await app.RunAsync(args);
+}
+
+async Task Shutdown(IHost host)
+{
+    var monitor = host.Services.GetRequiredService<IMonitor>();
+
+    monitor.Information("Shutting down.");
+
+    await monitor.Flush();
+}

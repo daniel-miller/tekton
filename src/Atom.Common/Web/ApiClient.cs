@@ -8,183 +8,245 @@ using System.Threading.Tasks;
 
 namespace Atom.Common
 {
-    public class ApiClient
+    public abstract class ApiClientBase
     {
+        protected string JsonDeserializationError = "The content in the API response cannot be deserialized to the requested type.";
+
         protected readonly IHttpClientFactory _httpClientFactory;
+
         protected readonly IJsonSerializer _serializer;
 
-        public Pagination Pagination { get; private set; }
-
-        #region Construction
-
-        public ApiClient(IHttpClientFactory httpClientFactory, IJsonSerializer serializer)
+        public ApiClientBase(IHttpClientFactory httpClientFactory, IJsonSerializer serializer)
         {
             _httpClientFactory = httpClientFactory;
+
             _serializer = serializer;
+        }
+
+        protected Error CreateError(string summary, Exception ex, string endpoint, string responseContent)
+        {
+            var error = new Error(summary)
+            {
+                Description = ex.Message
+            };
+
+            error.Data["Endpoint"] = endpoint;
+            error.Data["Response Content"] = responseContent;
+
+            return error;
+        }
+
+        protected HttpClient CreateHttpClient()
+            => _httpClientFactory.Create();
+
+        protected string CreateUrl(string endpoint, string[] segments = null, Dictionary<string, string> parameters = null)
+        {
+            var url = endpoint.ToString();
+            if (segments == null || segments.Length == 0)
+                return url;
+
+            if (!url.EndsWith("/"))
+                url += "/";
+
+            url += string.Join("/", segments);
+
+            if (parameters == null || parameters.Count == 0)
+                return url;
+
+            url += "?";
+
+            var index = 0;
+
+            foreach (var parameter in parameters)
+            {
+                if (index > 0)
+                    url += "&";
+
+                url += $"{parameter.Key}={parameter.Value}";
+
+                index++;
+            }
+
+            return url;
+        }
+
+        protected void SetPagination(ApiResult status)
+        {
+            if (status.Headers.TryGetValues(Pagination.HeaderKey, out IEnumerable<string> values))
+                status.Pagination = _serializer.Deserialize<Pagination>(values.First());
         }
 
         public Dictionary<string, string> ToDictionary(object criteria)
             => Inspector.CreateDictionary(criteria);
+    }
 
-        private HttpClient CreateHttpClient()
-            => _httpClientFactory.Create();
+    public class ApiClient : ApiClientBase
+    {
+        public ApiClient(IHttpClientFactory httpClientFactory, IJsonSerializer serializer)
+            : base(httpClientFactory, serializer)
+        { 
+
+        }
+
+        #region Requests (GET, POST, PUT, DELETE)
+
+        public async Task<ApiResult<T>> HttpGet<T>(string endpoint, string[] segments = null, Dictionary<string, string> parameters = null)
+        {
+            var url = CreateUrl(endpoint, segments, parameters);
+
+            using (var client = CreateHttpClient())
+            {
+                var response = await client.GetAsync(url);
+
+                var status = new ApiResult<T>(response.StatusCode, response.Headers);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    SetPagination(status);
+
+                    var responseContent = await response.Content.ReadAsStringAsync();
+
+                    try
+                    {
+                        status.Data = _serializer.Deserialize<T>(responseContent);
+                    }
+                    catch (Exception ex)
+                    {
+                        var error = CreateError(JsonDeserializationError, ex, endpoint, responseContent);
+
+                        status.Errors.Add(error);
+                    }
+                }
+
+                return status;
+            }
+        }
+
+        public async Task<ApiResult<T>> HttpPost<T>(string endpoint, object payload)
+        {
+            var url = CreateUrl(endpoint);
+
+            var data = _serializer.Serialize(payload);
+
+            var content = new StringContent(data, Encoding.UTF8, "application/json");
+
+            using (var client = CreateHttpClient())
+            {
+                var response = await client.PostAsync(url, content);
+
+                var status = new ApiResult<T>(response.StatusCode, response.Headers);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    SetPagination(status);
+
+                    var responseContent = await response.Content.ReadAsStringAsync();
+
+                    try
+                    {
+                        status.Data = _serializer.Deserialize<T>(responseContent);
+                    }
+                    catch (Exception ex)
+                    {
+                        var error = CreateError(JsonDeserializationError, ex, endpoint, responseContent);
+
+                        status.Errors.Add(error);
+                    }
+                }
+
+                return status;
+            }
+        }
+
+        public async Task<ApiResult> HttpPost(string endpoint, object payload)
+        {
+            var url = CreateUrl(endpoint);
+
+            var data = _serializer.Serialize(payload);
+
+            var content = new StringContent(data, Encoding.UTF8, "application/json");
+
+            using (var client = CreateHttpClient())
+            {
+                var response = await client.PostAsync(url, content);
+
+                var status = new ApiResult(response.StatusCode, response.Headers);
+
+                return status;
+            }
+        }
+
+        public async Task<ApiResult> HttpPut(string endpoint, string[] segments, object payload)
+        {
+            var url = CreateUrl(endpoint, segments);
+
+            var data = _serializer.Serialize(payload);
+
+            var content = new StringContent(data, Encoding.UTF8, "application/json");
+
+            using (var client = CreateHttpClient())
+            {
+                var response = await client.PutAsync(url, content);
+
+                var status = new ApiResult(response.StatusCode, response.Headers);
+
+                return status;
+            }
+        }
+
+        public async Task<ApiResult> HttpDelete(string endpoint, string[] segments)
+        {
+            var url = CreateUrl(endpoint, segments);
+
+            using (var client = CreateHttpClient())
+            {
+                var response = await client.DeleteAsync(url);
+
+                var status = new ApiResult(response.StatusCode, response.Headers);
+
+                return status;
+            }
+        }
 
         #endregion
 
-        #region HTTP Requests (GET, POST, PUT, DELETE)
+        #region Wrappers (GET, PUT, DELETE)
 
-        public async Task<T> HttpGet<T>(string endpoint, string[] id)
-        {
-            var url = endpoint.ToString();
-            if (id != null && id.Length > 0)
-                url += "/" + string.Join("/", id);
-
-            using (var client = CreateHttpClient())
-            {
-                var http = await client.GetAsync(url);
-                var json = await http.Content.ReadAsStringAsync();
-                var response = _serializer.Deserialize<T>(json);
-                var status = (int)http.StatusCode;
-                return response;
-            }
-            }
-
-        public async Task<T> HttpGet<T>(string endpoint, Dictionary<string, string> criteria)
-        {
-            var url = endpoint.ToString() + "?";
-            foreach (var kvp in criteria)
-                url += $"{kvp.Key}={kvp.Value}&";
-
-            using (var client = CreateHttpClient())
-            {
-                var http = await client.GetAsync(url);
-                var json = await http.Content.ReadAsStringAsync();
-
-                if (http.StatusCode != HttpStatusCode.OK)
-                    throw new ApiException($"An unexpected HTTP response was received from {endpoint}: {(int)http.StatusCode} {http.StatusCode}. {http.RequestMessage}");
-
-                try
-                {
-                    var response = _serializer.Deserialize<T>(json);
-
-                    if (http.Headers.TryGetValues(Pagination.HeaderKey, out IEnumerable<string> values))
-                        Pagination = _serializer.Deserialize<Pagination>(values.First());
-
-                    return response;
-                }
-                catch (Exception ex)
-                {
-                    throw new ApiException($"An unexpected JSON deserialization error occurred on the response received from {endpoint}. {ex.Message}. JSON = {json}");
-                }
-            }
-        }
-
-        public async Task<T> HttpGet<T>(string endpoint, string id)
+        public async Task<ApiResult<T>> HttpGet<T>(string endpoint, string id)
             => await HttpGet<T>(endpoint, new[] { id });
 
-        public async Task<T> HttpGet<T>(string endpoint, Guid id)
+        public async Task<ApiResult<T>> HttpGet<T>(string endpoint, Guid id)
             => await HttpGet<T>(endpoint, id.ToString());
 
-        public async Task<T> HttpGet<T>(string endpoint, Guid id1, Guid id2)
+        public async Task<ApiResult<T>> HttpGet<T>(string endpoint, Guid id1, Guid id2)
             => await HttpGet<T>(endpoint, new[] { id1.ToString(), id2.ToString() });
 
-        public async Task<T> HttpGet<T>(string endpoint, Guid id1, Guid id2, Guid id3)
+        public async Task<ApiResult<T>> HttpGet<T>(string endpoint, Guid id1, Guid id2, Guid id3)
             => await HttpGet<T>(endpoint, new[] { id1.ToString(), id2.ToString(), id3.ToString() });
 
-        public async Task<T> HttpGet<T>(string endpoint, Guid id1, Guid id2, int id3)
+        public async Task<ApiResult<T>> HttpGet<T>(string endpoint, Guid id1, Guid id2, int id3)
             => await HttpGet<T>(endpoint, new[] { id1.ToString(), id2.ToString(), id3.ToString() });
 
-        public async Task<T> HttpGet<T>(string endpoint, Guid id1, int id2)
+        public async Task<ApiResult<T>> HttpGet<T>(string endpoint, Guid id1, int id2)
             => await HttpGet<T>(endpoint, new[] { id1.ToString(), id2.ToString() });
 
-        public async Task<T> HttpGet<T>(string endpoint, Guid id1, int id2, Guid id3)
+        public async Task<ApiResult<T>> HttpGet<T>(string endpoint, Guid id1, int id2, Guid id3)
             => await HttpGet<T>(endpoint, new[] { id1.ToString(), id2.ToString(), id3.ToString() });
 
-        public async Task<T> HttpGet<T>(string endpoint, Guid id1, int id2, string id3)
+        public async Task<ApiResult<T>> HttpGet<T>(string endpoint, Guid id1, int id2, string id3)
             => await HttpGet<T>(endpoint, new[] { id1.ToString(), id2.ToString(), id3 });
 
-        public async Task<T> HttpGet<T>(string endpoint, Guid id1, string id2)
+        public async Task<ApiResult<T>> HttpGet<T>(string endpoint, Guid id1, string id2)
             => await HttpGet<T>(endpoint, new[] { id1.ToString(), id2 });
 
-        public async Task<T> HttpGet<T>(string endpoint, Guid id1, string id2, int id3)
+        public async Task<ApiResult<T>> HttpGet<T>(string endpoint, Guid id1, string id2, int id3)
             => await HttpGet<T>(endpoint, new[] { id1.ToString(), id2, id3.ToString() });
 
-        public async Task<T> HttpGet<T>(string endpoint, int id)
+        public async Task<ApiResult<T>> HttpGet<T>(string endpoint, int id)
             => await HttpGet<T>(endpoint, id.ToString());
 
-        public async Task<T> HttpPost<T>(string endpoint, object payload)
-        {
-            var url = endpoint;
-            var data = _serializer.Serialize(payload);
-            var content = new StringContent(data, Encoding.UTF8, "application/json");
-
-            var client = CreateHttpClient();
-            var http = await client.PostAsync(url, content);
-            var json = await http.Content.ReadAsStringAsync();
-
-            try
-            {
-                var response = _serializer.Deserialize<T>(json);
-
-                if (http.Headers.TryGetValues(Pagination.HeaderKey, out IEnumerable<string> values))
-                    Pagination = _serializer.Deserialize<Pagination>(values.First());
-
-                return response;
-            }
-            catch (Exception ex)
-            {
-                throw new ApiException($"An unexpected JSON deserialization error occurred on the response received from {endpoint}. {ex.Message}. JSON = {json}");
-            }
-        }
-
-        public async Task HttpPost(string endpoint, object payload)
-        {
-            var url = endpoint;
-            var data = _serializer.Serialize(payload);
-            var content = new StringContent(data, Encoding.UTF8, "application/json");
-            var client = CreateHttpClient();
-            var http = await client.PostAsync(url, content);
-            await http.Content.ReadAsStringAsync();
-        }
-
-        public async Task<T> HttpPut<T>(string endpoint, string id, object payload)
-        {
-            var url = endpoint + "/" + id;
-            var data = _serializer.Serialize(payload);
-            var content = new StringContent(data, Encoding.UTF8, "application/json");
-            var client = CreateHttpClient();
-            var http = await client.PutAsync(url, content);
-            var json = await http.Content.ReadAsStringAsync();
-            var response = _serializer.Deserialize<T>(json);
-            var status = (int)http.StatusCode;
-            return response;
-        }
-
         public async Task HttpPut(string endpoint, string id, object payload)
-        {
-            var url = endpoint + "/" + id;
-            var data = _serializer.Serialize(payload);
-            var content = new StringContent(data, Encoding.UTF8, "application/json");
-            var client = CreateHttpClient();
-            var http = await client.PutAsync(url, content);
-            await http.Content.ReadAsStringAsync();
-        }
-
-        public async Task HttpPut(string endpoint, string[] id, object payload)
-        {
-            var url = endpoint.ToString();
-            if (id != null && id.Length > 0)
-                url += "/" + string.Join("/", id);
-
-            var data = _serializer.Serialize(payload);
-            var content = new StringContent(data, Encoding.UTF8, "application/json");
-            var client = CreateHttpClient();
-            var http = await client.PutAsync(url, content);
-            await http.Content.ReadAsStringAsync();
-        }
-
-        public async Task<T> HttpPut<T>(string endpoint, Guid id, object payload)
-            => await HttpPut<T>(endpoint, id.ToString(), payload);
+            => await HttpPut(endpoint, new[] { id }, payload);
 
         public async Task HttpPut(string endpoint, int id, object payload)
             => await HttpPut(endpoint, id.ToString(), payload);
@@ -216,17 +278,6 @@ namespace Atom.Common
         public async Task HttpDelete(string endpoint, string id)
             => await HttpDelete(endpoint, new[] { id });
 
-        public async Task HttpDelete(string endpoint, string[] id)
-        {
-            var url = endpoint.ToString();
-            if (id != null && id.Length > 0)
-                url += "/" + string.Join("/", id);
-
-            var client = CreateHttpClient();
-            var http = await client.DeleteAsync(url);
-            await http.Content.ReadAsStringAsync();
-        }
-
         public async Task HttpDelete(string endpoint, Guid id)
             => await HttpDelete(endpoint, id.ToString());
 
@@ -256,37 +307,236 @@ namespace Atom.Common
 
         #endregion
 
-        #region HTTP Request Wrappers (Assert, Count)
+        #region Wrappers (Assert, Count)
 
-        public async Task<bool> Assert(string endpoint, Guid id)
+        public async Task<ApiResult<bool>> Assert(string endpoint, Guid id)
             => await HttpGet<bool>(endpoint, id.ToString());
 
-        public async Task<bool> Assert(string endpoint, Guid id1, Guid id2)
+        public async Task<ApiResult<bool>> Assert(string endpoint, Guid id1, Guid id2)
             => await HttpGet<bool>(endpoint, new string[] { id1.ToString(), id2.ToString() });
 
-        public async Task<bool> Assert(string endpoint, Guid id1, Guid id2, Guid id3)
+        public async Task<ApiResult<bool>> Assert(string endpoint, Guid id1, Guid id2, Guid id3)
             => await HttpGet<bool>(endpoint, new string[] { id1.ToString(), id2.ToString(), id3.ToString() });
 
-        public async Task<bool> Assert(string endpoint, Guid id1, int id2)
+        public async Task<ApiResult<bool>> Assert(string endpoint, Guid id1, int id2)
             => await HttpGet<bool>(endpoint, new string[] { id1.ToString(), id2.ToString() });
 
-        public async Task<bool> Assert(string endpoint, Guid id1, int id2, Guid id3)
+        public async Task<ApiResult<bool>> Assert(string endpoint, Guid id1, int id2, Guid id3)
             => await HttpGet<bool>(endpoint, new string[] { id1.ToString(), id2.ToString(), id3.ToString() });
 
-        public async Task<bool> Assert(string endpoint, Guid id1, int id2, string id3)
+        public async Task<ApiResult<bool>> Assert(string endpoint, Guid id1, int id2, string id3)
             => await HttpGet<bool>(endpoint, new string[] { id1.ToString(), id2.ToString() });
 
-        public async Task<bool> Assert(string endpoint, Guid id1, string id2)
+        public async Task<ApiResult<bool>> Assert(string endpoint, Guid id1, string id2)
             => await HttpGet<bool>(endpoint, new string[] { id1.ToString(), id2 });
 
-        public async Task<bool> Assert(string endpoint, int id)
+        public async Task<ApiResult<bool>> Assert(string endpoint, int id)
             => await HttpGet<bool>(endpoint, id);
 
-        public async Task<bool> Assert(string endpoint, string id)
+        public async Task<ApiResult<bool>> Assert(string endpoint, string id)
             => await HttpGet<bool>(endpoint, id);
 
-        public async Task<int> Count(string endpoint, Dictionary<string, string> criteria)
-            => await HttpGet<int>(endpoint, criteria);
+        public async Task<ApiResult<int>> Count(string endpoint, Dictionary<string, string> parameters)
+            => await HttpGet<int>(endpoint, null, parameters);
+
+        #endregion
+    }
+
+    public class ApiClientSynchronous : ApiClientBase
+    {
+        public ApiClientSynchronous(IHttpClientFactory httpClientFactory, IJsonSerializer serializer)
+            : base(httpClientFactory, serializer)
+        {
+
+        }
+
+        #region Requests (GET, POST, PUT, DELETE)
+
+        public ApiResult<T> HttpGet<T>(string endpoint, string[] segments = null, Dictionary<string, string> parameters = null)
+        {
+            return Task.Run(() =>
+            {
+                var client = new ApiClient(_httpClientFactory, _serializer);
+
+                return client.HttpGet<T>(endpoint, segments, parameters);
+
+            }).GetAwaiter().GetResult();
+        }
+
+        public ApiResult<T> HttpPost<T>(string endpoint, object payload)
+        {
+            return Task.Run(() =>
+            {
+                var client = new ApiClient(_httpClientFactory, _serializer);
+              
+                return client.HttpPost<T>(endpoint, payload);
+
+            }).GetAwaiter().GetResult();
+        }
+
+        public ApiResult HttpPost(string endpoint, object payload)
+        {
+            return Task.Run(() =>
+            {
+                var client = new ApiClient(_httpClientFactory, _serializer);
+
+                return client.HttpPost(endpoint, payload);
+
+            }).GetAwaiter().GetResult();
+        }
+
+        public ApiResult HttpPut(string endpoint, string[] segments, object payload)
+        {
+            return Task.Run(() =>
+            {
+                var client = new ApiClient(_httpClientFactory, _serializer);
+
+                return client.HttpPut(endpoint, segments, payload);
+
+            }).GetAwaiter().GetResult();
+        }
+
+        public ApiResult HttpDelete(string endpoint, string[] segments)
+        {
+            return Task.Run(() =>
+            {
+                var client = new ApiClient(_httpClientFactory, _serializer);
+
+                return client.HttpDelete(endpoint, segments);
+
+            }).GetAwaiter().GetResult();
+        }
+
+        #endregion
+
+        #region Wrappers (GET, PUT, DELETE)
+
+        public ApiResult<T> HttpGet<T>(string endpoint, string id)
+            => HttpGet<T>(endpoint, new[] { id });
+
+        public ApiResult<T> HttpGet<T>(string endpoint, Guid id)
+            => HttpGet<T>(endpoint, id.ToString());
+
+        public ApiResult<T> HttpGet<T>(string endpoint, Guid id1, Guid id2)
+            => HttpGet<T>(endpoint, new[] { id1.ToString(), id2.ToString() });
+
+        public ApiResult<T> HttpGet<T>(string endpoint, Guid id1, Guid id2, Guid id3)
+            => HttpGet<T>(endpoint, new[] { id1.ToString(), id2.ToString(), id3.ToString() });
+
+        public ApiResult<T> HttpGet<T>(string endpoint, Guid id1, Guid id2, int id3)
+            => HttpGet<T>(endpoint, new[] { id1.ToString(), id2.ToString(), id3.ToString() });
+
+        public ApiResult<T> HttpGet<T>(string endpoint, Guid id1, int id2)
+            => HttpGet<T>(endpoint, new[] { id1.ToString(), id2.ToString() });
+
+        public ApiResult<T> HttpGet<T>(string endpoint, Guid id1, int id2, Guid id3)
+            => HttpGet<T>(endpoint, new[] { id1.ToString(), id2.ToString(), id3.ToString() });
+
+        public ApiResult<T> HttpGet<T>(string endpoint, Guid id1, int id2, string id3)
+            => HttpGet<T>(endpoint, new[] { id1.ToString(), id2.ToString(), id3 });
+
+        public ApiResult<T> HttpGet<T>(string endpoint, Guid id1, string id2)
+            => HttpGet<T>(endpoint, new[] { id1.ToString(), id2 });
+
+        public ApiResult<T> HttpGet<T>(string endpoint, Guid id1, string id2, int id3)
+            => HttpGet<T>(endpoint, new[] { id1.ToString(), id2, id3.ToString() });
+
+        public ApiResult<T> HttpGet<T>(string endpoint, int id)
+            => HttpGet<T>(endpoint, id.ToString());
+
+        public void HttpPut(string endpoint, string id, object payload)
+            => HttpPut(endpoint, new[] { id }, payload);
+
+        public void HttpPut(string endpoint, int id, object payload)
+            => HttpPut(endpoint, id.ToString(), payload);
+
+        public void HttpPut(string endpoint, Guid id, object payload)
+            => HttpPut(endpoint, id.ToString(), payload);
+
+        public void HttpPut(string endpoint, Guid id1, Guid id2, object payload)
+            => HttpPut(endpoint, new[] { id1.ToString(), id2.ToString() }, payload);
+
+        public void HttpPut(string endpoint, Guid id1, Guid id2, Guid id3, object payload)
+            => HttpPut(endpoint, new[] { id1.ToString(), id2.ToString(), id3.ToString() }, payload);
+
+        public void HttpPut(string endpoint, Guid id1, Guid id2, int id3, object payload)
+            => HttpPut(endpoint, new[] { id1.ToString(), id2.ToString(), id3.ToString() }, payload);
+
+        public void HttpPut(string endpoint, Guid id1, int id2, object payload)
+            => HttpPut(endpoint, new[] { id1.ToString(), id2.ToString() }, payload);
+
+        public void HttpPut(string endpoint, Guid id1, int id2, string id3, object payload)
+            => HttpPut(endpoint, new[] { id1.ToString(), id2.ToString(), id3 }, payload);
+
+        public void HttpPut(string endpoint, Guid id1, string id2, object payload)
+            => HttpPut(endpoint, new[] { id1.ToString(), id2 }, payload);
+
+        public void HttpPut(string endpoint, Guid id1, string id2, int id3, object payload)
+            => HttpPut(endpoint, new[] { id1.ToString(), id2, id3.ToString() }, payload);
+
+        public void HttpDelete(string endpoint, string id)
+            => HttpDelete(endpoint, new[] { id });
+
+        public void HttpDelete(string endpoint, Guid id)
+            => HttpDelete(endpoint, id.ToString());
+
+        public void HttpDelete(string endpoint, Guid id1, Guid id2)
+            => HttpDelete(endpoint, new[] { id1.ToString(), id2.ToString() });
+
+        public void HttpDelete(string endpoint, Guid id1, Guid id2, Guid id3)
+            => HttpDelete(endpoint, new[] { id1.ToString(), id2.ToString(), id3.ToString() });
+
+        public void HttpDelete(string endpoint, Guid id1, Guid id2, int id3)
+            => HttpDelete(endpoint, new[] { id1.ToString(), id2.ToString(), id3.ToString() });
+
+        public void HttpDelete(string endpoint, Guid id1, int id2)
+            => HttpDelete(endpoint, new[] { id1.ToString(), id2.ToString() });
+
+        public void HttpDelete(string endpoint, Guid id1, int id2, string id3)
+            => HttpDelete(endpoint, new[] { id1.ToString(), id2.ToString(), id3 });
+
+        public void HttpDelete(string endpoint, Guid id1, string id2)
+            => HttpDelete(endpoint, new[] { id1.ToString(), id2 });
+
+        public void HttpDelete(string endpoint, Guid id1, string id2, int id3)
+            => HttpDelete(endpoint, new[] { id1.ToString(), id2, id3.ToString() });
+
+        public void HttpDelete(string endpoint, int id)
+            => HttpDelete(endpoint, id.ToString());
+
+        #endregion
+
+        #region Wrappers (Assert, Count)
+
+        public ApiResult<bool> Assert(string endpoint, Guid id)
+            => HttpGet<bool>(endpoint, id.ToString());
+
+        public ApiResult<bool> Assert(string endpoint, Guid id1, Guid id2)
+            => HttpGet<bool>(endpoint, new string[] { id1.ToString(), id2.ToString() });
+
+        public ApiResult<bool> Assert(string endpoint, Guid id1, Guid id2, Guid id3)
+            => HttpGet<bool>(endpoint, new string[] { id1.ToString(), id2.ToString(), id3.ToString() });
+
+        public ApiResult<bool> Assert(string endpoint, Guid id1, int id2)
+            => HttpGet<bool>(endpoint, new string[] { id1.ToString(), id2.ToString() });
+
+        public ApiResult<bool> Assert(string endpoint, Guid id1, int id2, Guid id3)
+            => HttpGet<bool>(endpoint, new string[] { id1.ToString(), id2.ToString(), id3.ToString() });
+
+        public ApiResult<bool> Assert(string endpoint, Guid id1, int id2, string id3)
+            => HttpGet<bool>(endpoint, new string[] { id1.ToString(), id2.ToString() });
+
+        public ApiResult<bool> Assert(string endpoint, Guid id1, string id2)
+            => HttpGet<bool>(endpoint, new string[] { id1.ToString(), id2 });
+
+        public ApiResult<bool> Assert(string endpoint, int id)
+            => HttpGet<bool>(endpoint, id);
+
+        public ApiResult<bool> Assert(string endpoint, string id)
+            => HttpGet<bool>(endpoint, id);
+
+        public ApiResult<int> Count(string endpoint, Dictionary<string, string> parameters)
+            => HttpGet<int>(endpoint, null, parameters);
 
         #endregion
     }

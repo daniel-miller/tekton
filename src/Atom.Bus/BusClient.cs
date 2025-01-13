@@ -15,21 +15,21 @@ namespace Atom.Bus
             _serializer = serializer;
         }
 
-        public async Task ExecuteCommand<TResult>(ICommand command)
+        public async Task<ApiResult> ExecuteCommand(ICommand command)
         {
             var serialized = _serializer.Serialize(command);
-            await _client.HttpPost("commands/execute", serialized);
+            return await _client.HttpPost("commands/execute", serialized);
         }
 
-        public async Task<TResult> RunQuery<TResult>(IQuery<TResult> query)
+        public async Task<ApiResult<QueryResult>> RunQuery<QueryResult>(IQuery<QueryResult> query)
         {
-            return await _client.HttpPost<TResult>("queries/run", query);
+            return await _client.HttpPost<QueryResult>("queries/run", query);
         }
 
-        public async Task PublishEvent<TResult>(IEvent @event)
+        public async Task<ApiResult> PublishEvent(IEvent @event)
         {
             var serialized = _serializer.Serialize(@event);
-            await _client.HttpPost("events/publish", serialized);
+            return await _client.HttpPost("events/publish", serialized);
         }
     }
 }
