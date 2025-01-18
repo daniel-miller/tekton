@@ -84,7 +84,7 @@ IHost BuildHost(AtomSettings settings)
 
             services.AddSingleton<Atom.Terminal.ILog, Atom.Terminal.Log>();
             services.AddSingleton<IMonitor, Atom.Terminal.Monitor>();
-            services.AddSingleton<IJsonSerializer, Atom.Utility.JsonSerializer>();
+            services.AddSingleton<IJsonSerializer, Atom.Common.Extension.JsonSerializer>();
 
             services.AddTransient<Application>();
 

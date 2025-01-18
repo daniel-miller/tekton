@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +9,8 @@ namespace Atom.Common
 {
     public abstract class ApiClientBase
     {
+        protected string HttpRequestFailure = "The status code in the HTTP response is outside the 200-299 range.";
+
         protected string JsonDeserializationError = "The content in the API response cannot be deserialized to the requested type.";
 
         protected readonly IHttpClientFactory _httpClientFactory;
@@ -27,7 +28,7 @@ namespace Atom.Common
         {
             var error = new Error(summary)
             {
-                Description = ex.Message
+                Description = ex?.Message
             };
 
             error.Data["Endpoint"] = endpoint;
@@ -42,29 +43,34 @@ namespace Atom.Common
         protected string CreateUrl(string endpoint, string[] segments = null, Dictionary<string, string> parameters = null)
         {
             var url = endpoint.ToString();
-            if (segments == null || segments.Length == 0)
-                return url;
 
-            if (!url.EndsWith("/"))
-                url += "/";
-
-            url += string.Join("/", segments);
-
-            if (parameters == null || parameters.Count == 0)
-                return url;
-
-            url += "?";
-
-            var index = 0;
-
-            foreach (var parameter in parameters)
+            if (segments != null && segments.Length > 0)
             {
-                if (index > 0)
-                    url += "&";
+                if (!url.EndsWith("/"))
+                {
+                    url += "/";
+                }
 
-                url += $"{parameter.Key}={parameter.Value}";
+                url += string.Join("/", segments);
+            }
 
-                index++;
+            if (parameters != null && parameters.Count > 0)
+            {
+                url += "?";
+
+                var index = 0;
+
+                foreach (var parameter in parameters)
+                {
+                    if (index > 0)
+                    {
+                        url += "&";
+                    }
+
+                    url += $"{parameter.Key}={parameter.Value}";
+
+                    index++;
+                }
             }
 
             return url;
@@ -77,7 +83,10 @@ namespace Atom.Common
         }
 
         public Dictionary<string, string> ToDictionary(object criteria)
-            => Inspector.CreateDictionary(criteria);
+        {
+            var reflector = new Reflector();
+            return reflector.CreateDictionary(criteria);
+        }
     }
 
     public class ApiClient : ApiClientBase
@@ -116,6 +125,14 @@ namespace Atom.Common
 
                         status.Errors.Add(error);
                     }
+                }
+                else
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+
+                    var error = CreateError(HttpRequestFailure, null, endpoint, responseContent);
+
+                    status.Errors.Add(error);
                 }
 
                 return status;
@@ -325,7 +342,7 @@ namespace Atom.Common
             => await HttpGet<bool>(endpoint, new string[] { id1.ToString(), id2.ToString(), id3.ToString() });
 
         public async Task<ApiResult<bool>> Assert(string endpoint, Guid id1, int id2, string id3)
-            => await HttpGet<bool>(endpoint, new string[] { id1.ToString(), id2.ToString() });
+            => await HttpGet<bool>(endpoint, new string[] { id1.ToString(), id2.ToString(), id3 });
 
         public async Task<ApiResult<bool>> Assert(string endpoint, Guid id1, string id2)
             => await HttpGet<bool>(endpoint, new string[] { id1.ToString(), id2 });
@@ -354,57 +371,52 @@ namespace Atom.Common
 
         public ApiResult<T> HttpGet<T>(string endpoint, string[] segments = null, Dictionary<string, string> parameters = null)
         {
-            return Task.Run(() =>
+            return TaskRunner.RunSync(() =>
             {
                 var client = new ApiClient(_httpClientFactory, _serializer);
 
                 return client.HttpGet<T>(endpoint, segments, parameters);
-
-            }).GetAwaiter().GetResult();
+            });
         }
 
         public ApiResult<T> HttpPost<T>(string endpoint, object payload)
         {
-            return Task.Run(() =>
+            return TaskRunner.RunSync(() =>
             {
                 var client = new ApiClient(_httpClientFactory, _serializer);
               
                 return client.HttpPost<T>(endpoint, payload);
-
-            }).GetAwaiter().GetResult();
+            });
         }
 
         public ApiResult HttpPost(string endpoint, object payload)
         {
-            return Task.Run(() =>
+            return TaskRunner.RunSync(() =>
             {
                 var client = new ApiClient(_httpClientFactory, _serializer);
 
                 return client.HttpPost(endpoint, payload);
-
-            }).GetAwaiter().GetResult();
+            });
         }
 
         public ApiResult HttpPut(string endpoint, string[] segments, object payload)
         {
-            return Task.Run(() =>
+            return TaskRunner.RunSync(() =>
             {
                 var client = new ApiClient(_httpClientFactory, _serializer);
 
                 return client.HttpPut(endpoint, segments, payload);
-
-            }).GetAwaiter().GetResult();
+            });
         }
 
         public ApiResult HttpDelete(string endpoint, string[] segments)
         {
-            return Task.Run(() =>
+            return TaskRunner.RunSync(() =>
             {
                 var client = new ApiClient(_httpClientFactory, _serializer);
 
                 return client.HttpDelete(endpoint, segments);
-
-            }).GetAwaiter().GetResult();
+            });
         }
 
         #endregion
@@ -524,7 +536,7 @@ namespace Atom.Common
             => HttpGet<bool>(endpoint, new string[] { id1.ToString(), id2.ToString(), id3.ToString() });
 
         public ApiResult<bool> Assert(string endpoint, Guid id1, int id2, string id3)
-            => HttpGet<bool>(endpoint, new string[] { id1.ToString(), id2.ToString() });
+            => HttpGet<bool>(endpoint, new string[] { id1.ToString(), id2.ToString(), id3 });
 
         public ApiResult<bool> Assert(string endpoint, Guid id1, string id2)
             => HttpGet<bool>(endpoint, new string[] { id1.ToString(), id2 });

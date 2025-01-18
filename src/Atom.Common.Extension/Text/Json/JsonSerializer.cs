@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using Atom.Common;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Atom.Utility
+namespace Atom.Common.Extension
 {
     public class JsonSerializer : IJsonSerializer
     {

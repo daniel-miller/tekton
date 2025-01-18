@@ -19,7 +19,6 @@ namespace Atom.Common
         /// <summary>
         /// The interfaces to which this lockout applies.
         /// </summary>
-
         public string[] Interfaces { get; set; }
 
         /// <summary>

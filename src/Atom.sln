@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atom.Common.Test", "Atom.Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atom.Terminal", "Atom.Terminal\Atom.Terminal.csproj", "{52FE122D-F620-402C-80BA-925B44261281}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atom.Utility", "Atom.Utility\Atom.Utility.csproj", "{802F9DD4-518E-4903-B9CA-4D26CDBEDBD9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atom.Common.Extension", "Atom.Common.Extension\Atom.Common.Extension.csproj", "{802F9DD4-518E-4903-B9CA-4D26CDBEDBD9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Timeline", "Common.Timeline\Common.Timeline.csproj", "{FEC162E8-9CF8-4982-8462-F57992D2AF3A}"
 EndProject

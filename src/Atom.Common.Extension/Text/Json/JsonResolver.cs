@@ -5,7 +5,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Atom.Utility
+namespace Atom.Common.Extension
 {
     internal sealed class JsonResolver : DefaultContractResolver
     {

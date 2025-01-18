@@ -27,7 +27,7 @@ public class WeatherCommand : AsyncCommand<WeatherSettings>
 
         var client = new ApiClient(clientFactory, _serializer);
 
-        var serializer = new Utility.JsonSerializer();
+        var serializer = new Atom.Common.Extension.JsonSerializer();
 
         var api = new ApiClient(clientFactory, serializer);
 
