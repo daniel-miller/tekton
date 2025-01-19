@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Atom.Common
 {
@@ -83,5 +84,22 @@ namespace Atom.Common
 
             return list;
         }
+
+        public static string Sanitize(this string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return null;
+            }
+
+            // Regular expression to match allowed characters (letters, digits, underscores, hyphens)
+            string pattern = "[^a-zA-Z0-9_.-]";
+
+            // Replace disallowed characters with an empty string
+            string sanitized = Regex.Replace(input, pattern, "-");
+
+            return sanitized;
+        }
+
     }
 }
