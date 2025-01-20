@@ -30,12 +30,18 @@ public class Application
                 location.AddCommand<WeatherCommand>("weather");
             });
 
+            config.AddBranch("metadata", metadata =>
+            {
+                metadata.AddCommand<DropDatabaseCommand>("drop-database");
+                metadata.AddCommand<UpgradeDatabaseCommand>("upgrade-database");
+            });
+
             config.AddBranch("random", random =>
             {
                 random.AddCommand<RandomGuidCommand>("guid");
             });
 
-            config.SetApplicationName("Atom.Terminal");
+            config.SetApplicationName("Tek.Terminal");
             config.SetApplicationVersion(_settings.Version);
         });
 

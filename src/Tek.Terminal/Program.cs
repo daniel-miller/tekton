@@ -47,10 +47,12 @@ IConfigurationRoot BuildConfiguration()
         .Build();
 }
 
-AtomSettings GetSettings(IConfigurationRoot configuration)
+TektonSettings GetSettings(IConfigurationRoot configuration)
 {
-    var atomSection = configuration.GetRequiredSection("Atom");
-    return atomSection.Get<AtomSettings>()!;
+    var atomSection = configuration.GetRequiredSection("Tekton");
+    var atomSettings = atomSection.Get<TektonSettings>()!;
+    atomSettings.Release.Directory = AppContext.BaseDirectory;
+    return atomSettings;
 }
 
 Serilog.ILogger ConfigureLogging(string path)
@@ -62,7 +64,7 @@ Serilog.ILogger ConfigureLogging(string path)
         .CreateLogger();
 }
 
-IHost BuildHost(AtomSettings settings)
+IHost BuildHost(TektonSettings settings)
 {
     var builder = Host.CreateDefaultBuilder(args)
 
@@ -82,7 +84,7 @@ IHost BuildHost(AtomSettings settings)
 
             services.AddMonitoringServices(settings.Kernel.Telemetry.Monitoring);
 
-            services.AddSingleton<Tek.Terminal.ILog, Tek.Terminal.Log>();
+            services.AddSingleton<ILog, Tek.Terminal.Log>();
             services.AddSingleton<IMonitor, Tek.Terminal.Monitor>();
             services.AddSingleton<IJsonSerializer, Tek.Toolbox.JsonSerializer>();
 

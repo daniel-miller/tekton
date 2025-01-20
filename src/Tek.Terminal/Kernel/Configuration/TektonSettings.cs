@@ -2,7 +2,7 @@
 
 namespace Tek.Terminal
 {
-    public class AtomSettings
+    public class TektonSettings
     {
         public ReleaseSettings Release { get; set; } = null!;
         public KernelSettings Kernel { get; set; } = null!;
