@@ -12,7 +12,7 @@ namespace Tek.Bus
 
         public EventTypeInfo(Type t, IAggregateTypeInfo agg)
         {
-            ID = GuidFactory.Create();
+            ID = UuidFactory.Create();
             Type = t;
             Aggregate = agg;
         }

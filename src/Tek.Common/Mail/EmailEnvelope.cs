@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Tek.Common
 {
     /// <remarks>
     /// This interface represents the destination address for an email message sent to one specific
-    /// recipient, which might be cc'd and/or bcc'd to other addresses.
+    /// recipient email address (and is optionally carbon-copied to other email addresses).
     /// </remarks>
     public interface IEmailEnvelope<T>
     {
@@ -79,7 +78,7 @@ namespace Tek.Common
         private string ResolveIdentifierToEmail(Guid identifier)
         {
             var item = _resolve(identifier);
-            
+
             return item;
         }
 

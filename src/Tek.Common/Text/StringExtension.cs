@@ -44,8 +44,11 @@ namespace Tek.Common
         /// <summary>
         /// Returns true if a string has one or more matches in an array of other strings.
         /// </summary>
-        public static bool MatchesAny(this string value, string[] others)
+        public static bool MatchesAny(this string value, IEnumerable<string> others)
         {
+            if (value.IsEmpty())
+                return false;
+
             foreach (var other in others)
                 if (Matches(value, other))
                     return true;
@@ -56,7 +59,7 @@ namespace Tek.Common
         /// <summary>
         /// Returns true if a string has zero matches in an array of other strings.
         /// </summary>
-        public static bool MatchesNone(this string value, string[] others)
+        public static bool MatchesNone(this string value, IEnumerable<string> others)
         {
             return !MatchesAny(value, others);
         }

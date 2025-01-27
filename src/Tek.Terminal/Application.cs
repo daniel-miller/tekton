@@ -1,12 +1,11 @@
-﻿using Tek.Common;
-
-using Spectre.Console.Cli;
+﻿using Spectre.Console.Cli;
 
 namespace Tek.Terminal;
 
 public class Application
 {
     private readonly ITypeRegistrar _registrar;
+
     private readonly ReleaseSettings _settings;
 
     public Application(ITypeRegistrar registrar, ReleaseSettings settings)
@@ -33,6 +32,7 @@ public class Application
             config.AddBranch("metadata", metadata =>
             {
                 metadata.AddCommand<DropDatabaseCommand>("drop-database");
+                metadata.AddCommand<ResetDatabaseCommand>("reset-database");
                 metadata.AddCommand<UpgradeDatabaseCommand>("upgrade-database");
             });
 

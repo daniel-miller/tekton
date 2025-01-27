@@ -1,5 +1,4 @@
-﻿using Tek.Common;
-using Tek.Terminal;
+﻿using Tek.Terminal;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +18,7 @@ var settings = GetSettings(configuration);
 // diagnosing startup issues, monitoring initialization steps, and providing consistent, centralized
 // logging throughout the application lifecycle.
 
-Serilog.Log.Logger = ConfigureLogging(settings.Kernel.Telemetry.Logging.Path);
+Log.Logger = ConfigureLogging(settings.Kernel.Telemetry.Logging.Path);
 
 // Step 3. Build the application host with all services registered in the DI container.
 
@@ -84,9 +83,9 @@ IHost BuildHost(TektonSettings settings)
 
             services.AddMonitoringServices(settings.Kernel.Telemetry.Monitoring);
 
-            services.AddSingleton<ILog, Tek.Terminal.Log>();
-            services.AddSingleton<IMonitor, Tek.Terminal.Monitor>();
-            services.AddSingleton<IJsonSerializer, Tek.Toolbox.JsonSerializer>();
+            services.AddSingleton<ILog, Tek.Service.Log>();
+            services.AddSingleton<IMonitor, Tek.Service.Monitor>();
+            services.AddSingleton<IJsonSerializer, JsonSerializer>();
 
             services.AddTransient<Application>();
 
@@ -115,5 +114,5 @@ async Task Shutdown(IHost host)
 
     monitor.Information("Shutting down.");
 
-    await monitor.Flush();
+    await monitor.FlushAsync();
 }

@@ -5,6 +5,8 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
+using Tek.Contract;
+
 namespace Tek.Common
 {
     public abstract class ApiClientBase

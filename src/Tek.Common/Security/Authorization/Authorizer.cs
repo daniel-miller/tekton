@@ -2,90 +2,272 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Tek.Contract;
+
 namespace Tek.Common
 {
     public class Authorizer
     {
         private readonly List<Permission> _permissions = new List<Permission>();
-        private readonly Guid _root;
 
-        public Authorizer(Guid root)
+        public string Domain { get; set; }
+
+        public Guid NamespaceId { get; set; }
+
+        public Authorizer(string domain)
         {
-            _root = root;
+            Domain = domain;
+
+            NamespaceId = UuidFactory.CreateV5ForDns(domain);
         }
 
-        public void Add(Function function, Resource resource, Guid role)
+        public List<Permission> Add(PermissionBundle bundle)
         {
-            if (IsGranted(function.Identifier, resource.Identifier, role))
-                return;
+            var list = new List<Permission>();
 
-            var permission = new Permission
+            if (Enum.TryParse(bundle.Type, out AccessType parsedAccessType))
             {
-                Function = function,
-                Resource = resource,
-                Role = new Role { Identifier = role }
+                var access = new Access();
+
+                access.Type = parsedAccessType;
+
+                switch (parsedAccessType)
+                {
+                    case AccessType.Basic:
+                        if (Enum.TryParse(bundle.Access, out BasicAccess basic))
+                            access.Basic = basic;
+                            break;
+
+                    case AccessType.Data:
+                        if (Enum.TryParse(bundle.Access, out DataAccess data))
+                            access.Data = data;
+                        break;
+
+                    case AccessType.Http:
+                        if (Enum.TryParse(bundle.Access, out HttpAccess http))
+                            access.Http = http;
+                        break;
+
+                }
+
+                foreach (var resource in bundle.Resources)
+                {
+                    foreach (var role in bundle.Roles)
+                    {
+                        var item = Add(resource, role);
+
+                        item.Access = access;
+
+                        list.Add(item);
+                    }
+                }
+            }
+
+            return list;
+        }
+
+        public Permission Add(string resourceName, string roleName)
+        {
+            var resource = new Resource
+            {
+                Identifier = UuidFactory.CreateV5(NamespaceId, resourceName),
+                Name = resourceName,
             };
 
-            _permissions.Add(permission);
+            var role = new Role
+            {
+                Identifier = UuidFactory.CreateV5(NamespaceId, roleName),
+                Name = roleName,
+            };
+
+            return Add(resource, role);
         }
 
-        public void Add(Function function, Guid resource, Guid role)
+        public Permission Add(Resource resource, Role role)
         {
-            Add(function, new Resource { Identifier = resource }, role);
+            var permission = GetOptional(resource.Identifier, role.Identifier);
+
+            if (permission == null)
+            {
+                permission = new Permission
+                {
+                    Access = new Access(),
+                    Resource = resource,
+                    Role = role
+                };
+
+                _permissions.Add(permission);
+            }
+
+            return permission;
         }
 
-        public void Add(Guid function, Guid resource, Guid role)
+        public bool Contains(Guid resource, Guid role)
+            => GetOptional(resource, role) != null;
+
+        public bool Contains(string resource, string role)
         {
-            Add(new Function { Identifier = function }, resource, role);
+            var resourceId = UuidFactory.CreateV5(NamespaceId, resource);
+
+            var roleId = UuidFactory.CreateV5(NamespaceId, role);
+
+            return Contains(resourceId, roleId);
         }
 
-        public bool IsGranted(string function, string resource, IEnumerable<Guid> roles)
+        private Permission GetOptional(Guid resource, Guid role)
         {
-            if (IsRoot(roles))
-                return true;
-
-            return _permissions.Any(rule => rule.Function.Slug == function && rule.Resource.Slug == resource && roles.Any(role => rule.Role.Identifier == role));
+            return _permissions.SingleOrDefault(
+              p => p.Resource.Identifier == resource
+                && p.Role.Identifier == role);
         }
 
-        public bool IsGranted(string function, string resource, Guid role)
+        private Permission GetOptional(string resource, string role)
         {
-            if (IsRoot(role))
-                return true;
+            var resourceId = UuidFactory.CreateV5(NamespaceId, resource);
 
-            return _permissions.Any(rule => rule.Function.Slug == function && rule.Resource.Slug == resource && rule.Role.Identifier == role);
+            var roleId = UuidFactory.CreateV5(NamespaceId, role);
+
+            return GetOptional(resourceId, roleId);
         }
 
-        public bool IsGranted(Guid function, Guid resource, Guid role)
+        private Permission GetOptional(string resource, Model role)
         {
-            if (IsRoot(role))
-                return true;
+            var resourceId = UuidFactory.CreateV5(NamespaceId, resource);
 
-            return _permissions.Any(rule => rule.Function.Identifier == function && rule.Resource.Identifier == resource && rule.Role.Identifier == role);
+            return GetOptional(resourceId, role.Identifier);
         }
 
-        public bool IsGranted(Guid function, Guid resource, IEnumerable<Guid> roles)
+        private Permission GetRequired(Guid resource, Guid role)
         {
-            if (IsRoot(roles))
-                return true;
+            var permission = GetOptional(resource, role);
 
-            if (!_permissions.Any(rule => rule.Resource.Identifier == resource && rule.Function.Identifier == function))
-                return false;
+            if (permission == null)
+                throw new ArgumentException($"Resource {resource} and Role {role} must be added before granting access.");
 
-            var grants = _permissions
-                .Where(rule => rule.Resource.Identifier == resource && rule.Function.Identifier == function)
-                .Select(rule => rule.Role.Identifier);
-
-            return roles.Intersect(grants).Any();
+            return permission;
         }
 
-        private bool IsRoot(Guid role)
+        public void Grant(Guid resource, Guid role, BasicAccess access)
         {
-            return role == _root;
+            var permission = GetRequired(resource, role);
+
+            permission.Access.Type = AccessType.Basic;
+            permission.Access.Basic = access;
+            permission.Access.Data = DataAccess.None;
+            permission.Access.Http = HttpAccess.None;
         }
 
-        private bool IsRoot(IEnumerable<Guid> roles)
+        public void Grant(Guid resource, Guid role, DataAccess access)
         {
-            return roles.Any(role => role == _root);
+            var permission = GetRequired(resource, role);
+
+            permission.Access.Type = AccessType.Data;
+            permission.Access.Data = access;
+            permission.Access.Basic = BasicAccess.Deny;
+            permission.Access.Http = HttpAccess.None;
         }
+
+        public void Grant(Guid resource, Guid role, HttpAccess access)
+        {
+            var permission = GetRequired(resource, role);
+
+            permission.Access.Type = AccessType.Data;
+            permission.Access.Http = access;
+            permission.Access.Basic = BasicAccess.Deny;
+            permission.Access.Data = DataAccess.None;
+        }
+
+        public bool IsGranted(Guid resource, IEnumerable<Guid> roles, BasicAccess access)
+        {
+            foreach (var role in roles)
+            {
+                var permission = GetOptional(resource, role);
+
+                if (permission == null)
+                    continue;
+
+                var helper = new BasicAccessHelper(permission.Access.Basic);
+                
+                if (helper.IsGranted(access))
+                    return true;
+            }
+
+            return false;
+        }
+
+        public bool IsGranted(Guid resource, IEnumerable<Guid> roles, DataAccess access)
+        {
+            foreach (var role in roles)
+            {
+                var permission = GetOptional(resource, role);
+
+                if (permission == null)
+                    continue;
+
+                var helper = new DataAccessHelper(permission.Access.Data);
+
+                if (helper.IsGranted(access))
+                    return true;
+            }
+
+            return false;
+        }
+
+        public bool IsGranted(Guid resource, IEnumerable<Guid> roles, HttpAccess access)
+        {
+            foreach (var role in roles)
+            {
+                var permission = GetOptional(resource, role);
+
+                if (permission == null)
+                    continue;
+
+                var helper = new HttpAccessHelper(permission.Access.Http);
+
+                if (helper.IsGranted(access))
+                    return true;
+            }
+
+            return false;
+        }
+
+        public bool IsGranted(string resource, IEnumerable<Model> roles, HttpAccess access)
+        {
+            foreach (var role in roles)
+            {
+                var permission = GetOptional(resource, role);
+
+                if (permission == null)
+                    continue;
+
+                var helper = new HttpAccessHelper(permission.Access.Http);
+
+                if (helper.IsGranted(access))
+                    return true;
+            }
+
+            return false;
+        }
+
+        public bool IsGranted(string resource, IEnumerable<string> roles, HttpAccess access)
+        {
+            foreach (var role in roles)
+            {
+                var permission = GetOptional(resource, role);
+
+                if (permission == null)
+                    continue;
+
+                var helper = new HttpAccessHelper(permission.Access.Http);
+
+                if (helper.IsGranted(access))
+                    return true;
+            }
+
+            return false;
+        }
+
+        public List<Permission> ToList()
+            => _permissions;
     }
 }

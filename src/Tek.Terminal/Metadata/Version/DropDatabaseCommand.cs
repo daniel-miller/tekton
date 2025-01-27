@@ -4,8 +4,6 @@ using Npgsql;
 
 using Spectre.Console.Cli;
 
-using Tek.Common;
-
 public class DropDatabaseCommand : BaseDatabaseCommand
 {
     public DropDatabaseCommand(ReleaseSettings releaseSettings, DatabaseSettings upgradeSettings)

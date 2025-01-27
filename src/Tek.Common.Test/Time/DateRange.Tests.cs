@@ -7,8 +7,8 @@ public class DateRangeTests
     {
         var range = new DateRange();
 
-        Assert.Equal(BoundType.Inclusive, range.LowerBound);
-        Assert.Equal(BoundType.Exclusive, range.UpperBound);
+        Assert.Equal(Bound.Inclusive, range.LowerBound);
+        Assert.Equal(Bound.Exclusive, range.UpperBound);
     }
 
     [Fact]
@@ -22,8 +22,8 @@ public class DateRangeTests
 
         range.Set(DateRangeType.ThisMonth, MarchThird2024);
 
-        Assert.Equal(BoundType.Inclusive, range.LowerBound);
-        Assert.Equal(BoundType.Exclusive, range.UpperBound);
+        Assert.Equal(Bound.Inclusive, range.LowerBound);
+        Assert.Equal(Bound.Exclusive, range.UpperBound);
 
         Assert.Equal(DateRangeType.ThisMonth, range.Type);
 
@@ -55,7 +55,7 @@ public class DateRangeTests
         var JanuaryFirst2024 = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero);
         var JanuaryFirst2025 = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
-        var range = new DateRange(BoundType.Exclusive, BoundType.Exclusive);
+        var range = new DateRange(Bound.Exclusive, Bound.Exclusive);
 
         range.Set(DateRangeType.ThisYear, MarchTwentyThird2024);
 
@@ -71,7 +71,7 @@ public class DateRangeTests
         var MarchTwentyThird2024 = new DateTimeOffset(2024, 3, 22, 0, 0, 0, TimeSpan.Zero);
         var SeptemberNinth2024 = new DateTimeOffset(2024, 9, 9, 0, 0, 0, TimeSpan.Zero);
 
-        var range = new DateRange(BoundType.Inclusive, BoundType.Inclusive);
+        var range = new DateRange(Bound.Inclusive, Bound.Inclusive);
 
         range.Set(MarchTwentyThird2024, SeptemberNinth2024);
 

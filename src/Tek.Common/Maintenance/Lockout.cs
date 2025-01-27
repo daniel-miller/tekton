@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Tek.Contract;
+
 namespace Tek.Common
 {
     public class Lockout : Model
@@ -89,8 +91,8 @@ namespace Tek.Common
             var errors = Interval.Validate().ToList();
 
             foreach (var i in Environments)
-                if (i.MatchesNone(Common.Environments.Names))
-                    errors.Add(new ValidationError { Property = nameof(Environments), Summary = $"Environments can contain only items in this list: {string.Join("; ", Common.Environments.Names)}" });
+                if (i.MatchesNone(Contract.Environments.Names))
+                    errors.Add(new ValidationError { Property = nameof(Environments), Summary = $"Environments can contain only items in this list: {string.Join("; ", Contract.Environments.Names)}" });
 
             foreach (var i in Interfaces)
                 if (i.MatchesNone(new[] { "api", "ui" }))

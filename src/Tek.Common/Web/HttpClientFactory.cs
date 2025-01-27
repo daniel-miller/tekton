@@ -2,21 +2,10 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
 
+using Tek.Contract;
+
 namespace Tek.Common
 {
-    public interface IHttpClientFactory
-    {
-        HttpClient Create();
-
-        Uri GetBaseAddress();
-
-        string GetSecret();
-
-        string GetAuthorizationParameter();
-
-        void SetAuthenticationHeader(string scheme, string parameter);
-    }
-
     public class HttpClientFactory : IHttpClientFactory
     {
         private readonly Uri _baseAddress;

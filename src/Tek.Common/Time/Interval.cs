@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
+using Tek.Contract;
+
 namespace Tek.Common
 {
     /// <summary>

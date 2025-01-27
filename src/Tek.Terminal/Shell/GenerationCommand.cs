@@ -1,13 +1,11 @@
-﻿using Tek.Common;
-
-using Spectre.Console.Cli;
+﻿using Spectre.Console.Cli;
 
 public class RandomGuidCommand : Command<RandomSettings>
 {
     public override int Execute(CommandContext context, RandomSettings settings)
     {
         for (var i = 0; i < settings.Count; i++)
-            Console.WriteLine(GuidFactory.Create());
+            Console.WriteLine(UuidFactory.Create());
         
         return 0;
     }

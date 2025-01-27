@@ -32,6 +32,11 @@ namespace Tek.Common
             return result;
         }
 
+        public void FindConstants(Type type, Dictionary<string, string> dictionary)
+        {
+            FindConstants(type, "*", dictionary);
+        }
+
         public void FindConstants(Type type, IEnumerable<string> constants, Dictionary<string, string> dictionary)
         {
             foreach (var constant in constants)
@@ -46,7 +51,7 @@ namespace Tek.Common
 
             foreach (var field in fields)
             {
-                if (field != null && field.Name == constant && field.IsLiteral)
+                if (field != null && (constant == "*" || constant == field.Name) && field.IsLiteral)
                 {
                     var fieldType = field.DeclaringType?.FullName;
 
@@ -65,6 +70,48 @@ namespace Tek.Common
             {
                 FindConstants(nestedType, constant, dictionary);
             }
+        }
+
+        public Dictionary<string, string> FindRelativeUrls(Type type)
+        {
+            var relativeUrls = new Dictionary<string, string>();
+
+            var constantUrls = new Dictionary<string, string>();
+
+            FindConstants(type, constantUrls);
+
+            foreach (var constantName in constantUrls.Keys)
+            {
+                var constantValue = constantUrls[constantName];
+
+                relativeUrls.Add(constantValue, constantName);
+            }
+
+            var parentUrls = new Dictionary<string, string>();
+
+            foreach (var relativeUrl in relativeUrls.Keys)
+            {
+                var url = new RelativeUrl(relativeUrl);
+
+                while (url.HasSegments())
+                {
+                    url.RemoveLastSegment();
+
+                    if (!parentUrls.ContainsKey(url.Path))
+                    {
+                        parentUrls.Add(url.Path, $"Parent path derived from {relativeUrl}");
+                    }
+                }
+            }
+
+            foreach (var parentUrl in parentUrls.Keys)
+            {
+                var derivedValue = parentUrl;
+
+                relativeUrls.Add(derivedValue, parentUrls[parentUrl]);
+            }
+
+            return relativeUrls;
         }
 
         /// <summary>

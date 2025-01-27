@@ -18,11 +18,10 @@
   <ItemGroup>
     <PackageReference Include="Bogus" Version="35.6.1" />
     <PackageReference Include="Dapper" Version="2.1.35" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.1" />
     <PackageReference Include="Npgsql" Version="9.0.2" />
     <PackageReference Include="Sentry" Version="5.0.1" />
-    <PackageReference Include="Sentry.Profiling" Version="5.0.1" />
     <PackageReference Include="Serilog" Version="4.2.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
@@ -33,6 +32,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Tek.Common\Tek.Common.csproj" />
+    <ProjectReference Include="..\Tek.Contract\Tek.Contract.csproj" />
+    <ProjectReference Include="..\Tek.Service\Tek.Service.csproj" />
     <ProjectReference Include="..\Tek.Toolbox\Tek.Toolbox.csproj" />
   </ItemGroup>
 
@@ -43,10 +44,16 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Metadata\Version\v10.2025.0107.1552.sql">
+    <None Update="Metadata\Version\v10.2025.0122.1000.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Metadata\Version\v10.2025.0120.1341.sql">
+    <None Update="Metadata\Version\v10.2025.0122.1100.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Metadata\Version\v10.2025.0122.1200.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Metadata\Version\v10.2025.0122.1300.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

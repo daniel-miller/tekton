@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
+using Tek.Contract;
+
 namespace Tek.Common
 {
     public delegate void MemoryCacheHandler<TKey, TData>(object sender, MemoryCacheArgs<TKey, TData> args);

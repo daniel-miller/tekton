@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 
 using Tek.Common;
+using Tek.Contract;
 
 namespace Tek.Bus
 {

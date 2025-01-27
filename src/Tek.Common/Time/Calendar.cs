@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Tek.Contract;
+
 namespace Tek.Common
 {
     public class Calendar

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-using Tek.Common;
+using Tek.Contract;
 
 namespace Tek.Toolbox
 {

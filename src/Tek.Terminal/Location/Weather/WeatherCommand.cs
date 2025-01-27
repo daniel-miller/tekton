@@ -1,6 +1,4 @@
-﻿using Tek.Common;
-
-using Spectre.Console.Cli;
+﻿using Spectre.Console.Cli;
 
 namespace Tek.Terminal;
 
@@ -51,5 +49,5 @@ public class WeatherCommand : AsyncCommand<WeatherSettings>
 
 public class WeatherSettings : CommandSettings
 {
-    
+
 }

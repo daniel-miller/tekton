@@ -1,5 +1,7 @@
 ﻿using System;
 
+using Tek.Contract;
+
 namespace Tek.Common
 {
     public class DateRange
@@ -15,11 +17,11 @@ namespace Tek.Common
         /// </remarks>
         public DateRange() 
         {
-            LowerBound = BoundType.Inclusive;
-            UpperBound = BoundType.Exclusive;
+            LowerBound = Bound.Inclusive;
+            UpperBound = Bound.Exclusive;
         }
 
-        public DateRange(BoundType lower, BoundType upper)
+        public DateRange(Bound lower, Bound upper)
         {
             LowerBound = lower;
             UpperBound = upper;
@@ -35,16 +37,16 @@ namespace Tek.Common
 
         public void Set(DateTimeOffset? a, DateTimeOffset? b)
         {
-            if (LowerBound == BoundType.Exclusive)
+            if (LowerBound == Bound.Exclusive)
                 After = a;
 
-            else if (LowerBound == BoundType.Inclusive)
+            else if (LowerBound == Bound.Inclusive)
                 Since = a;
 
-            if (UpperBound == BoundType.Exclusive)
+            if (UpperBound == Bound.Exclusive)
                 Before = b;
 
-            else if (UpperBound == BoundType.Inclusive)
+            else if (UpperBound == Bound.Inclusive)
                 Until = b;
         }
 
@@ -110,7 +112,7 @@ namespace Tek.Common
         public DateTimeOffset? Since { get; set; }
         public DateTimeOffset? Until { get; set; }
 
-        public BoundType LowerBound { get; set; }
-        public BoundType UpperBound { get; set; }
+        public Bound LowerBound { get; set; }
+        public Bound UpperBound { get; set; }
     }
 }

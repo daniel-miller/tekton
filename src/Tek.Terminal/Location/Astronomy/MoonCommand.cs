@@ -1,6 +1,4 @@
-﻿using Tek.Common;
-
-using Spectre.Console.Cli;
+﻿using Spectre.Console.Cli;
 
 namespace Tek.Terminal;
 

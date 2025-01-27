@@ -2,8 +2,6 @@
 
 using Spectre.Console.Cli;
 
-using Tek.Common;
-
 public class BaseDatabaseCommand : AsyncCommand<DatabaseSettings>
 {
     protected readonly ReleaseSettings _releaseSettings;

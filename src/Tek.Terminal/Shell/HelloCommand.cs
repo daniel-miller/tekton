@@ -1,7 +1,5 @@
 ﻿using System.ComponentModel;
 
-using Tek.Common;
-
 using Spectre.Console.Cli;
 
 [Description("Say hello to the terminal.")]

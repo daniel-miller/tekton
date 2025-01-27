@@ -1,46 +1,55 @@
-﻿using System;
-using System.Security.Principal;
+﻿using System.Collections.Generic;
+using System.Linq;
+
+using Tek.Contract;
 
 namespace Tek.Common
 {
-    public class Principal: IIdentity, IPrincipal
+    public class Principal : IPrincipal
     {
-        public Actor Actor { get; set; }
-        public Actor Impersonator { get; set; }
+        public Actor User { get; set; }
+        public Actor Proxy { get; set; }
 
-        public Model Enterprise { get; set; }
-        public Model Organization { get; set; }
-        public Model[] Roles { get; set; }
-
-        public JsonWebToken Token { get; set; }
-
-        public string Language { get; set; }
-        public string TimeZone { get; set; }
-
-        public string Phone { get; set; }
         public string IPAddress { get; set; }
+
+        public Model Organization { get; set; }
+        public Model Partition { get; set; }
+        public List<Role> Roles { get; set; }
+
+        public IJwt Claims { get; set; }
 
         public Principal()
         {
-            Token = new JsonWebToken();
+            Claims = new Jwt();
+            Roles = new List<Role>();
         }
 
         #region IIdentity and IPrincipal
 
         public string AuthenticationType { get; set; }
 
-        IIdentity IPrincipal.Identity => this;
+        System.Security.Principal.IIdentity System.Security.Principal.IPrincipal.Identity => this;
 
         public bool IsAuthenticated { get; set; }
-        
-        public string Name => Actor.Email;
-        
+
+        public string Name => User.Email;
+
         public bool IsInRole(string role)
         {
-            if (Roles == null || Roles.Length == 0)
+            if (Roles == null || Roles.Count == 0)
                 return false;
 
-            return Array.Exists(Roles, r => r.Name == role);
+            var names = Roles.Select(x => x.Name).ToArray();
+
+            if (role.MatchesAny(names))
+                return true;
+
+            var identifiers = Roles.Select(x => x.Identifier.ToString()).ToArray();
+
+            if (role.MatchesAny(identifiers))
+                return true;
+
+            return false;
         }
 
         #endregion

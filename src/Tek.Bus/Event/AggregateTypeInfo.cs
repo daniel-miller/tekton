@@ -16,7 +16,7 @@ namespace Tek.Bus
         {
             const string postfix = "Aggregate";
 
-            ID = GuidFactory.Create();
+            ID = UuidFactory.Create();
             Type = t;
             Name = t.Name.EndsWith(postfix)
                 ? t.Name.Substring(0, t.Name.Length - postfix.Length)

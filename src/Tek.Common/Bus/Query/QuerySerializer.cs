@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using Tek.Contract;
+
 namespace Tek.Common
 {
     /// <summary>

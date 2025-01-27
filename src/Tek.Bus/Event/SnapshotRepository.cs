@@ -2,6 +2,7 @@
 using System.Linq;
 
 using Tek.Common;
+using Tek.Contract;
 
 namespace Tek.Bus
 {

@@ -25,7 +25,7 @@ namespace Tek.Bus
         
         public Command() 
         {
-            CommandIdentifier = GuidFactory.Create(); 
+            CommandIdentifier = UuidFactory.Create(); 
         }
     }
 }

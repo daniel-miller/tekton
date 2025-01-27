@@ -2,6 +2,8 @@
 using System.IO;
 using System.Text.RegularExpressions;
 
+using Tek.Contract;
+
 namespace Tek.Common
 {
     public class FilePath
