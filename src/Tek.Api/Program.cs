@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 
 using Serilog;
 
+using Tek.Service;
+
 // Step 1. Load configuration settings (from appsettings.json) before doing anything else.
 
 var configuration = BuildConfiguration();
@@ -13,7 +15,7 @@ var settings = GetSettings(configuration);
 // diagnosing startup issues, monitoring initialization steps, and providing consistent, centralized
 // logging throughout the application lifecycle.
 
-Log.Logger = ConfigureLogging(settings.Kernel.Telemetry.Logging.Path);
+Serilog.Log.Logger = ConfigureLogging(settings.Kernel.Telemetry.Logging.Path);
 
 // Step 3. Build the application host with all services registered in the DI container.
 
@@ -66,6 +68,7 @@ WebApplication BuildHost(TektonSettings settings)
     {
         services.AddSingleton(settings);
         services.AddSingleton(settings.Release);
+        services.AddSingleton(settings.Kernel.Database);
         services.AddSingleton(settings.Plugin.Integration);
         services.AddSingleton(settings.Plugin.Integration.AstronomyApi);
         services.AddSingleton(settings.Plugin.Integration.VisualCrossing);
@@ -85,8 +88,6 @@ WebApplication BuildHost(TektonSettings settings)
         services.AddSingleton<IJsonSerializer, JsonSerializer>();
     }
 
-    ConfigureSecurity(services, settings.Security);
-
     services.AddControllers().AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
@@ -97,6 +98,12 @@ WebApplication BuildHost(TektonSettings settings)
 
     services.AddDocumentationServices();
 
+    services.AddQueryServices();
+
+    ConfigureSecurity(services, settings.Security);
+
+    services.AddTransient<TestDbContext, TestDbContext>();
+
     var host = builder.Build();
 
     host.UseDocumentation();
@@ -106,7 +113,6 @@ WebApplication BuildHost(TektonSettings settings)
     host.UseAuthorization();
 
     host.UseMiddleware<ExceptionHandlingMiddleware>();
-    // host.UseMiddleware<ValidationMappingMiddleware>();
 
     host.MapControllers();
 
@@ -140,20 +146,26 @@ void ConfigureSecurity(IServiceCollection services, SecuritySettings security)
 
     services.AddSingleton(typeof(Authorizer), provider =>
     {
-        var permissions = new Authorizer(security.Domain);
+        var authorizer = new Authorizer(security.Domain);
 
         if (security.Permissions != null)
         {
             foreach (var bundle in security.Permissions)
             {
-                permissions.Add(bundle);
+                authorizer.Add(bundle);
             }
         }
 
-        return permissions;
+        var queryTypes = provider.GetRequiredService<QueryTypeCollection>();
+        
+        var queryResources = queryTypes.GetResources();
+        
+        authorizer.AddResources(queryResources);
+
+        return authorizer;
     });
 
-    services.AddTransient<IPrincipalAdapter, PrincipalAdapter>();
+    services.AddTransient<IClaimConverter, ClaimConverter>();
 
     services.AddTransient<IPrincipalSearch, PrincipalSearch>();
 }

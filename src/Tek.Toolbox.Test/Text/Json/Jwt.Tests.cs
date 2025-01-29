@@ -21,7 +21,7 @@ public class JwtTests
         {
             { "Name", ["John"] },
             { "Email", ["john@example.com"] },
-            { "Roles", ["Developer", "Administrator"] }
+            { "User_Role", ["Developer", "Administrator"] }
         };
 
         var claims = new Jwt(dictionary);
@@ -36,7 +36,7 @@ public class JwtTests
 
         // The iat and nbf claims are always present in every JWT Claims object.
 
-        Assert.Equal(2, claims.Count());
+        Assert.Equal(2, claims.CountClaims());
 
         var dictionary = claims.ToDictionary();
 
@@ -52,7 +52,7 @@ public class JwtTests
 
         // Expected claims in alphabetical order = email, iat, name, nbf
 
-        Assert.Equal(2 + 2, claims.Count());
+        Assert.Equal(2 + 2, claims.CountClaims());
 
         var keys = claims.ToDictionary().Keys.ToList();
 
@@ -70,9 +70,9 @@ public class JwtTests
     {
         var claims = CreateBasicClaims();
 
-        Assert.Equal("John", claims.GetValue("name"));
+        Assert.Equal("John", claims.GetClaimValue("name"));
 
-        Assert.Equal("john@example.com", claims.GetValue("email"));
+        Assert.Equal("john@example.com", claims.GetClaimValue("email"));
     }
 
     [Fact]
@@ -80,7 +80,7 @@ public class JwtTests
     {
         var claims = CreateBasicClaims();
 
-        var values = claims.GetValues("name");
+        var values = claims.GetClaimValues("name");
 
         Assert.Single(values);
         
@@ -88,18 +88,18 @@ public class JwtTests
     }
 
     [Fact]
-    public void HasClaims_CaseInsensitiveKey()
+    public void ContainsClaim_CaseInsensitiveKey()
     {
         var claims = CreateBasicClaims();
 
-        Assert.True(claims.Contains("Name"));
-        Assert.True(claims.Contains("name"));
-        Assert.True(claims.Contains("NAME"));
+        Assert.True(claims.ContainsClaim("Name"));
+        Assert.True(claims.ContainsClaim("name"));
+        Assert.True(claims.ContainsClaim("NAME"));
 
-        Assert.True(claims.Contains("Email"));
-        Assert.True(claims.Contains("email"));
-        Assert.True(claims.Contains("EMAIL"));
-        Assert.True(claims.Contains("EmaiL"));
+        Assert.True(claims.ContainsClaim("Email"));
+        Assert.True(claims.ContainsClaim("email"));
+        Assert.True(claims.ContainsClaim("EMAIL"));
+        Assert.True(claims.ContainsClaim("EmaiL"));
     }
 
     [Fact]
@@ -107,11 +107,11 @@ public class JwtTests
     {
         var claims = CreateBasicClaims();
 
-        Assert.True(claims.HasExpectedValue("name", "John"));
+        Assert.True(claims.HasExpectedClaimValue("name", "John"));
 
-        Assert.True(claims.HasExpectedValue("email", "john@example.com"));
+        Assert.True(claims.HasExpectedClaimValue("email", "john@example.com"));
 
-        Assert.False(claims.HasExpectedValue("e-mail", "john@example.com"));
+        Assert.False(claims.HasExpectedClaimValue("e-mail", "john@example.com"));
     }
 
     [Fact]
@@ -124,11 +124,11 @@ public class JwtTests
         // There are two roles, so we should have six claims in total (i.e., there are five distinct
         // keys and last key has two values).
 
-        Assert.Equal(6, claims.Count());
+        Assert.Equal(6, claims.CountClaims());
 
         var keys = claims.ToDictionary().Keys.ToList();
 
-        Assert.Equal("roles", keys.Last());
+        Assert.Equal("user_role", keys.Last());
 
         var roles = claims.Roles;
 

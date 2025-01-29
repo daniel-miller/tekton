@@ -1,4 +1,6 @@
-﻿namespace Tek.Common
+﻿using System.Collections.Generic;
+
+namespace Tek.Common
 {
     public class RelativeUrl
     {
@@ -16,7 +18,7 @@
         }
 
         public bool HasSegments()
-            => !string.IsNullOrEmpty(Path) && Path.Contains("/");
+            => Path.IsNotEmpty() && Path.Contains("/");
 
         public void RemoveLastSegment()
         {
@@ -29,6 +31,36 @@
 
             if (lastSlashIndex > -1)
                 Path = trimmedUrl.Substring(0, lastSlashIndex);
+        }
+    }
+
+    public class RelativeUrlCollection
+    {
+        public static void AddParents(Dictionary<string, string> relativeUrls)
+        {
+            var parentUrls = new Dictionary<string, string>();
+
+            foreach (var relativeUrl in relativeUrls.Keys)
+            {
+                var url = new RelativeUrl(relativeUrl);
+
+                while (url.HasSegments())
+                {
+                    url.RemoveLastSegment();
+
+                    if (!parentUrls.ContainsKey(url.Path))
+                    {
+                        parentUrls.Add(url.Path, $"Parent path derived from {relativeUrl}");
+                    }
+                }
+            }
+
+            foreach (var parentUrl in parentUrls.Keys)
+            {
+                var derivedValue = parentUrl;
+
+                relativeUrls.Add(derivedValue, parentUrls[parentUrl]);
+            }
         }
     }
 }

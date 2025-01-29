@@ -87,29 +87,7 @@ namespace Tek.Common
                 relativeUrls.Add(constantValue, constantName);
             }
 
-            var parentUrls = new Dictionary<string, string>();
-
-            foreach (var relativeUrl in relativeUrls.Keys)
-            {
-                var url = new RelativeUrl(relativeUrl);
-
-                while (url.HasSegments())
-                {
-                    url.RemoveLastSegment();
-
-                    if (!parentUrls.ContainsKey(url.Path))
-                    {
-                        parentUrls.Add(url.Path, $"Parent path derived from {relativeUrl}");
-                    }
-                }
-            }
-
-            foreach (var parentUrl in parentUrls.Keys)
-            {
-                var derivedValue = parentUrl;
-
-                relativeUrls.Add(derivedValue, parentUrls[parentUrl]);
-            }
+            RelativeUrlCollection.AddParents(relativeUrls);
 
             return relativeUrls;
         }

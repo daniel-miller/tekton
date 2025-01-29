@@ -36,7 +36,7 @@ namespace Tek.Common
                         }
                     }
                 }
-
+                
                 return queryObject;
             }
             catch (InvalidCastException ex)

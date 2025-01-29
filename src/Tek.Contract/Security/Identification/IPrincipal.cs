@@ -6,7 +6,7 @@ namespace Tek.Contract
     {
         Actor User { get; set; }
 
-        Actor Proxy { get; set; }
+        Proxy Proxy { get; set; }
 
         string IPAddress { get; set; }
         

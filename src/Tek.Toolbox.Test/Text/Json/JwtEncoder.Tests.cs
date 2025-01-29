@@ -23,7 +23,7 @@ public class JwtEncoderTests
     {
         var original = CreateAdvancedClaims();
 
-        Assert.Equal(2 + 7, original.Count());
+        Assert.Equal(2 + 7, original.CountClaims());
 
         var encoder = new JwtEncoder();
 
@@ -31,8 +31,8 @@ public class JwtEncoderTests
 
         var decoded = encoder.Decode(token);
 
-        Assert.Equal(original.Count(), decoded.Count());
-        Assert.Equal(original.GetValue("Name"), decoded.GetValue("Name"));
-        Assert.Equal(original.GetValue("Email"), decoded.GetValue("Email"));
+        Assert.Equal(original.CountClaims(), decoded.CountClaims());
+        Assert.Equal(original.GetClaimValue("Name"), decoded.GetClaimValue("Name"));
+        Assert.Equal(original.GetClaimValue("Email"), decoded.GetClaimValue("Email"));
     }
 }

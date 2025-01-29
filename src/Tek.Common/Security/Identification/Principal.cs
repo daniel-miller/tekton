@@ -8,7 +8,7 @@ namespace Tek.Common
     public class Principal : IPrincipal
     {
         public Actor User { get; set; }
-        public Actor Proxy { get; set; }
+        public Proxy Proxy { get; set; }
 
         public string IPAddress { get; set; }
 

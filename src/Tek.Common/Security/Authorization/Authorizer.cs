@@ -9,6 +9,7 @@ namespace Tek.Common
     public class Authorizer
     {
         private readonly List<Permission> _permissions = new List<Permission>();
+        private readonly Dictionary<Guid, Resource> _resources = new Dictionary<Guid, Resource>();
 
         public string Domain { get; set; }
 
@@ -99,7 +100,27 @@ namespace Tek.Common
                 _permissions.Add(permission);
             }
 
+            if (!_resources.ContainsKey(resource.Identifier))
+                _resources.Add(resource.Identifier, resource);
+
             return permission;
+        }
+
+        public void AddResources(Dictionary<string, string> resources)
+        {
+            RelativeUrlCollection.AddParents(resources);
+
+            foreach (var resourceName in resources.Keys)
+            {
+                var resource = new Resource
+                {
+                    Identifier = UuidFactory.CreateV5(NamespaceId, resourceName),
+                    Name = resourceName
+                };
+
+                if (!_resources.ContainsKey(resource.Identifier))
+                    _resources.Add(resource.Identifier, resource);
+            }
         }
 
         public bool Contains(Guid resource, Guid role)
@@ -195,6 +216,24 @@ namespace Tek.Common
             return false;
         }
 
+        public bool IsGranted(string resource, IEnumerable<Role> roles, BasicAccess access)
+        {
+            foreach (var role in roles)
+            {
+                var permission = GetOptional(resource, role);
+
+                if (permission == null)
+                    continue;
+
+                var helper = new BasicAccessHelper(permission.Access.Basic);
+
+                if (helper.IsGranted(access))
+                    return true;
+            }
+
+            return false;
+        }
+
         public bool IsGranted(Guid resource, IEnumerable<Guid> roles, DataAccess access)
         {
             foreach (var role in roles)
@@ -267,7 +306,10 @@ namespace Tek.Common
             return false;
         }
 
-        public List<Permission> ToList()
+        public List<Permission> GetPermissions()
             => _permissions;
+
+        public List<Resource> GetResources()
+            => _resources.Values.OrderBy(x => x.Name).ToList();
     }
 }

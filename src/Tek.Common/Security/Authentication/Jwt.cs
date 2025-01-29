@@ -82,14 +82,14 @@ namespace Tek.Common
 
         #region Interrogation
 
-        public bool Contains(string name)
+        public bool ContainsClaim(string name)
         {
             var key = GetClaimKey(name);
 
             return _claims.ContainsKey(key);
         }
 
-        public int Count()
+        public int CountClaims()
         {
             var n = 0;
 
@@ -104,7 +104,7 @@ namespace Tek.Common
             return n;
         }
 
-        public string GetValue(string name)
+        public string GetClaimValue(string name)
         {
             var key = GetClaimKey(name);
 
@@ -116,7 +116,7 @@ namespace Tek.Common
             return values.First();
         }
 
-        public List<string> GetValues(string name)
+        public List<string> GetClaimValues(string name)
         {
             var key = GetClaimKey(name);
 
@@ -131,7 +131,7 @@ namespace Tek.Common
         /// <summary>
         /// Checks for the existence of a claim with a specific value.
         /// </summary>
-        public bool HasExpectedValue(string name, string expectedValue)
+        public bool HasExpectedClaimValue(string name, string expectedValue)
         {
             var key = GetClaimKey(name);
 
@@ -188,7 +188,7 @@ namespace Tek.Common
         {
             get
             {
-                var aud = GetValue("aud");
+                var aud = GetClaimValue("aud");
 
                 if (aud.IsEmpty())
                     return null;
@@ -208,7 +208,7 @@ namespace Tek.Common
         {
             get
             {
-                var exp = GetValue("exp");
+                var exp = GetClaimValue("exp");
 
                 if (exp == null)
                     return null;
@@ -228,7 +228,7 @@ namespace Tek.Common
         {
             get
             {
-                var iss = GetValue("iss");
+                var iss = GetClaimValue("iss");
 
                 if (iss.IsEmpty())
                     return null;
@@ -248,7 +248,7 @@ namespace Tek.Common
         {
             get
             {
-                var ttl = GetValue("ttl");
+                var ttl = GetClaimValue("ttl");
 
                 if (ttl == null)
                     return null;
@@ -268,7 +268,7 @@ namespace Tek.Common
         {
             get
             {
-                var sub = GetValue("sub");
+                var sub = GetClaimValue("sub");
 
                 if (sub.IsEmpty())
                     return null;
@@ -288,7 +288,7 @@ namespace Tek.Common
         {
             get
             {
-                return GetValues("user_role");
+                return GetClaimValues("user_role");
             }
             set
             {

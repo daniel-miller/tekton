@@ -13,5 +13,9 @@ namespace Tek.Contract
         public int? Lifetime { get; set; }
         
         public Guid? Organization { get; set; }
+
+        public Guid? Agent { get; set; }
+
+        public Guid? Subject { get; set; }
     }
 }

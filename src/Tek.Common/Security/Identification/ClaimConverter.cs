@@ -8,13 +8,24 @@ using Tek.Contract;
 
 namespace Tek.Common
 {
-    public class PrincipalAdapter : IPrincipalAdapter
+    public class ClaimConverter : IClaimConverter
     {
         public const string DefaultLanguage = "en";
 
         public const string DefaultTimeZone = "UTC";
 
-        public IEnumerable<SecurityClaim> ToClaims(IPrincipal principal, string ipAddress)
+        private readonly SecuritySettings _settings;
+
+        public Guid NamespaceId { get; set; }
+
+        public ClaimConverter(SecuritySettings securitySettings)
+        {
+            _settings = securitySettings;
+
+            NamespaceId = UuidFactory.CreateV5ForDns(securitySettings.Domain);
+        }
+
+        public IEnumerable<SecurityClaim> ToClaims(IPrincipal principal)
         {
             var claims = new List<SecurityClaim>
             {
@@ -40,11 +51,17 @@ namespace Tek.Common
             if (lifetime != null)
                 claims.Add(new SecurityClaim("ttl", lifetime.Value.ToString()));
 
-            if (ipAddress.IsNotEmpty())
-                claims.Add(new SecurityClaim("user_ip", ipAddress));
+            if (principal.IPAddress.IsNotEmpty())
+                claims.Add(new SecurityClaim("user_ip", principal.IPAddress));
 
             if (principal.Organization != null)
                 claims.Add(new SecurityClaim("organization", principal.Organization.Identifier.ToString()));
+
+            if (principal.Proxy?.Agent != null && principal.Proxy?.Subject != null)
+            {
+                claims.Add(new SecurityClaim("proxy_agent", principal.Proxy.Agent.Identifier.ToString()));
+                claims.Add(new SecurityClaim("proxy_subject", principal.Proxy.Subject.Identifier.ToString()));
+            }
 
             if (principal.Roles != null)
             {
@@ -73,11 +90,6 @@ namespace Tek.Common
             return dictionary;
         }
 
-        public IPrincipal ToPrincipal(Dictionary<string, string> claims)
-        {
-            return ToPrincipal(claims.Select(x => new SecurityClaim(x.Key, x.Value)));
-        }
-
         public IPrincipal ToPrincipal(IJwt jwt)
         {
             var list = new List<SecurityClaim>();
@@ -94,6 +106,11 @@ namespace Tek.Common
             return ToPrincipal(list);
         }
 
+        public IPrincipal ToPrincipal(Dictionary<string, string> claims)
+        {
+            return ToPrincipal(claims.Select(x => new SecurityClaim(x.Key, x.Value)));
+        }
+
         public IPrincipal ToPrincipal(IEnumerable<SecurityClaim> claims)
         {
             var principal = new Principal
@@ -108,9 +125,11 @@ namespace Tek.Common
                     TimeZone = GetClaim("user_timezone")
                 },
                 Organization = new Model { Identifier = GetClaimAsGuid("organization") },
-                Roles = GetRoles(),
+                Roles = GetRoles("user_role"),
                 IPAddress = GetClaim("user_ip"),
             };
+
+            principal.Proxy = GetProxy("proxy_agent", "proxy_subject");
 
             principal.Claims.Lifetime = GetClaimAsInt("ttl");
 
@@ -141,11 +160,11 @@ namespace Tek.Common
                 return 0;
             }
 
-            List<Role> GetRoles()
+            List<Role> GetRoles(string type)
             {
                 var list = new List<Role>();
 
-                var roleClaims = claims.Where(x => "user_role" == x.Type);
+                var roleClaims = claims.Where(x => type == x.Type);
 
                 foreach (var roleClaim in roleClaims)
                 {
@@ -159,32 +178,105 @@ namespace Tek.Common
 
                 return list;
             }
+
+            Proxy GetProxy(string typeAgent, string typeSubject)
+            {
+                var agent = GetClaimAsGuid(typeAgent);
+                var subject = GetClaimAsGuid(typeSubject);
+                if (agent != Guid.Empty && subject != Guid.Empty)
+                    return new Proxy(agent, subject);
+                return null;
+            }
         }
 
-        public IPrincipal ToPrincipal(IPrincipal principal, string ipAddress, int? requestedTokenLifetime, int? defaultTokenLifetime)
+        public IPrincipal ToSentinel(JwtRequest request)
         {
-            principal.IPAddress = ipAddress;
+            if (_settings.Sentinels == null || _settings.Sentinels.Count() == 0)
+                return null;
 
-            principal.Claims.Lifetime = CalculateTokenLifetime(principal.Claims.Lifetime, requestedTokenLifetime, defaultTokenLifetime);
+            var sentinel = _settings.Sentinels.SingleOrDefault(x => x.Actor.Secret == request.Secret);
+
+            if (sentinel == null)
+                return null;
+
+            var principal = new Principal();
+
+            var actor = sentinel.Actor;
+
+            principal.User = new Actor
+            {
+                Email = actor.Email,
+                Name = actor.Name,
+                Language = actor.Language ?? DefaultLanguage,
+                TimeZone = actor.TimeZone ?? DefaultTimeZone
+            };
+
+            if (actor.Identifier != Guid.Empty)
+                principal.User.Identifier = actor.Identifier;
+            else
+                principal.User.Identifier = UuidFactory.CreateV5(NamespaceId, actor.Email);
+
+            if (request.Organization.HasValue)
+                principal.Organization = new Model { Identifier = request.Organization.Value };
+
+            // The meaning of a request that explicitly specifies both a proxy agent and a proxy
+            // subject is ambiguous, and therefore disallowed, because the security implications are
+            // significant. For example, both these statements cannot be true at the same time in
+            // the same context:
+            //   * Alice (Proxy Agent)   acts on behalf of  John (Proxy Subject).
+            //   * Alice (Proxy Subject) is impersonated by John (Proxy Agent).
+            
+            if (request.Agent.HasValue && request.Subject.HasValue)
+                throw new ArgumentException($"This is an invalid JWT request because it specifies a Proxy Agent {request.Agent} and a Proxy Subject {request.Subject}. A JWT request is permitted to specify one or the other (or neither), but not both.");
+            
+            else if (request.Agent.HasValue)
+                principal.Proxy = new Proxy
+                {
+                    Agent = new Actor { Identifier = request.Agent.Value },
+                    Subject = new Actor { Identifier = principal.User.Identifier }
+                }; 
+            
+            else if (request.Subject.HasValue)
+                principal.Proxy = new Proxy
+                {
+                    Agent = new Actor { Identifier = principal.User.Identifier },
+                    Subject = new Actor { Identifier = request.Subject.Value }
+                };
+
+            if (sentinel.Roles != null && sentinel.Roles.Length > 0)
+                principal.Roles = sentinel.Roles.Select(CreateRole).ToList();
+
+            principal.Roles.Add(CreateRole(actor.Email));
 
             return principal;
         }
 
-        private static int CalculateTokenLifetime(int? assigned, int? requested, int? @default)
+        public int CalculateLifetime(int? assigned, int? requested, int? @default)
         {
-            // If the token has a lifetime already assigned to it, and if a lifetime is explicitly requested, then use
-            // the smaller of the two values. Otherwise, use the default lifetime.
+            // If the token has a lifetime already assigned to it, and if a lifetime is explicitly
+            // requested, then use the smaller of the two values. Otherwise, use the default.
 
             if (requested.HasValue && requested.Value > 0)
             {
                 if (assigned.HasValue && assigned.Value > 0)
-                    return Math.Min(requested.Value, assigned.Value);
+                    return Math.Min(assigned.Value, requested.Value);
 
                 if (@default.HasValue && @default.Value > 0 && requested < @default)
                     return requested.Value;
             }
 
             return @default ?? JwtRequest.DefaultLifetimeLimit;
+        }
+
+        private Role CreateRole(string name)
+        {
+            var role = new Role
+            {
+                Identifier = UuidFactory.CreateV5(NamespaceId, name),
+                Name = name
+            };
+
+            return role;
         }
     }
 }

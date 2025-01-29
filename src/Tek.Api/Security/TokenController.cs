@@ -5,24 +5,24 @@ namespace Tek.Api;
 
 [ApiController]
 [ApiExplorerSettings(GroupName = "Security: Authentication")]
-public class AuthenticationController : ControllerBase
+public class TokenController : ControllerBase
 {
     private readonly ReleaseSettings _releaseSettings;
     private readonly TokenSettings _tokenSettings;
 
-    private readonly IPrincipalAdapter _principalAdapter;
+    private readonly IClaimConverter _principalAdapter;
     private readonly IPrincipalSearch _principalSearch;
-    private readonly Authorizer _permissionSet;
+    private readonly Authorizer _authorizer;
 
-    public AuthenticationController(ReleaseSettings releaseSettings, TokenSettings tokenSettings,
-        IPrincipalAdapter principalAdapter, IPrincipalSearch principalSearch, 
+    public TokenController(ReleaseSettings releaseSettings, TokenSettings tokenSettings,
+        IClaimConverter principalAdapter, IPrincipalSearch principalSearch, 
         Authorizer permissionSet)
     {
         _releaseSettings = releaseSettings;
         _tokenSettings = tokenSettings;
 
         _principalSearch = principalSearch;
-        _permissionSet = permissionSet;
+        _authorizer = permissionSet;
         _principalAdapter = principalAdapter;
     }
 
@@ -37,12 +37,12 @@ public class AuthenticationController : ControllerBase
         if (request.Secret.IsEmpty())
             return Unauthorized("Missing secret");
 
-        var principal = _principalSearch.GetPrincipal(request, ip, _tokenSettings.Whitelist, _tokenSettings.Lifetime);
+        var errors = new List<string>();
+
+        var principal = _principalSearch.GetPrincipal(request, ip, _tokenSettings.Whitelist, _tokenSettings.Lifetime, errors);
 
         if (principal == null)
         {
-            var errors = _principalSearch.Errors;
-
             return errors.Count > 0
                 ? Unauthorized(string.Join(". ", errors))
                 : Unauthorized("Invalid secret");
@@ -56,7 +56,7 @@ public class AuthenticationController : ControllerBase
     [HttpGet("api/version")]
     public IActionResult GetVersion()
     {
-        var version = typeof(AuthenticationController).Assembly.GetName().Version;
+        var version = typeof(TokenController).Assembly.GetName().Version;
 
         return Ok(version);
     }
@@ -116,9 +116,24 @@ public class AuthenticationController : ControllerBase
     {
         var result = new
         {
-            _permissionSet.Domain,
-            _permissionSet.NamespaceId,
-            List = _permissionSet.ToList()
+            _authorizer.Domain,
+            _authorizer.NamespaceId,
+            Permissions = _authorizer.GetPermissions()
+        };
+
+        return Ok(result);
+    }
+
+    [HttpGet(Endpoints.Debug.Resources)]
+    [Authorize(Endpoints.Debug.Resources)]
+    [ApiExplorerSettings(GroupName = "Metadata: Debug")]
+    public IActionResult DebugResources()
+    {
+        var result = new
+        {
+            _authorizer.Domain,
+            _authorizer.NamespaceId,
+            Resources = _authorizer.GetResources()
         };
 
         return Ok(result);
@@ -148,7 +163,7 @@ public class AuthenticationController : ControllerBase
 
     private string CreateToken(IPrincipal principal, string ip, bool debug)
     {
-        var securityClaims = _principalAdapter.ToClaims(principal, ip);
+        var securityClaims = _principalAdapter.ToClaims(principal);
 
         var principalClaims = _principalAdapter.ToDictionary(securityClaims);
 

@@ -6,7 +6,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class SwaggerExtensions
 {
-    public static void AddDocumentationServices(this IServiceCollection services)
+    public static void AddDocumentation(this IServiceCollection services)
     {
         services.AddEndpointsApiExplorer();
         

@@ -9,7 +9,19 @@
         {
             public const string Paths = "api/debug/paths";
             public const string Permissions = "api/debug/permissions";
+            public const string Resources = "api/debug/resources";
             public const string Token = "api/debug/token";
+        }
+
+        public static class Location
+        {
+            public const string Countries = "api/location/countries";
+        }
+
+        public static class React
+        {
+            public const string Commands = "api/react/commands";
+            public const string Queries = "api/react/queries";
         }
     }
 }

@@ -11,6 +11,7 @@ namespace Tek.Common
     {
         private readonly Dictionary<string, Type> _queries;
         private readonly Dictionary<Type, Type> _results;
+        private readonly Dictionary<string, string> _resources;
 
         public QueryTypeCollection(Assembly assembly)
         {
@@ -37,6 +38,23 @@ namespace Tek.Common
 
                 _results.Add(query, resultType);
             }
+
+            _resources = CreateResources(_queries);
+        }
+
+        private Dictionary<string, string> CreateResources(Dictionary<string, Type> queries)
+        {
+            var list = new Dictionary<string, string>();
+
+            foreach (var key in queries.Keys)
+            {
+                var className = queries[key].FullName;
+                var title = className.Replace(".", "/");
+                var kebab = title.ToKebabCase();
+                list.Add(kebab, className);
+            }
+
+            return list;
         }
 
         private bool IsSubclassOfRawGeneric(Type generic, Type type)
@@ -108,5 +126,8 @@ namespace Tek.Common
 
             return null;
         }
+
+        public Dictionary<string, string> GetResources()
+            => _resources;
     }
 }

@@ -88,12 +88,17 @@ namespace Tek.Common
             return list;
         }
 
+        /// <summary>
+        /// Returns a string that contains only letters, digits, underscores, periods, and hyphens.
+        /// </summary>
+        /// <remarks>
+        /// Characters outside the permitted set of characters are replaced with hyphens. This 
+        /// return value is web-url-friendly and file-system-friendly.
+        /// </remarks>
         public static string Sanitize(this string input)
         {
-            if (string.IsNullOrWhiteSpace(input))
-            {
+            if (input.IsEmpty())
                 return null;
-            }
 
             // Regular expression to match allowed characters (letters, digits, underscores, hyphens)
             string pattern = "[^a-zA-Z0-9_.-]";
@@ -104,5 +109,22 @@ namespace Tek.Common
             return sanitized;
         }
 
+        /// <summary>
+        /// Converts a string value from title case to kebab case.
+        /// </summary>
+        /// <example>
+        /// ToKebabCase("ThisIsAnExample") => "this-is-an-example"
+        /// </example>
+        public static string ToKebabCase(this string input)
+        {
+            if (input.IsEmpty())
+                return null;
+
+            // Use a regex to find the boundaries between uppercase letters and other letters.
+            string kebabCase = Regex.Replace(input, "([a-z])([A-Z])", "$1-$2");
+
+            // Convert the entire string to lowercase.
+            return kebabCase.ToLower();
+        }
     }
 }

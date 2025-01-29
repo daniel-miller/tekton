@@ -6,9 +6,9 @@ public class JwtAuthorizationHandler : AuthorizationHandler<JwtAuthorizationRequ
 {
     private readonly Authorizer _authorizer;
 
-    private readonly IPrincipalAdapter _principalAdapter;
+    private readonly IClaimConverter _principalAdapter;
 
-    public JwtAuthorizationHandler(Authorizer authorizer, IPrincipalAdapter principalAdapter)
+    public JwtAuthorizationHandler(Authorizer authorizer, IClaimConverter principalAdapter)
     {
         _authorizer = authorizer;
 

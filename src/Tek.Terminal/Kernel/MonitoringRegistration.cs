@@ -4,7 +4,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class SentryRegistration
 {
-    public static IServiceCollection AddMonitoringServices(this IServiceCollection services, MonitorSettings sentry)
+    public static IServiceCollection AddMonitoringServices(this IServiceCollection services, MonitoringSettings sentry)
     {
         SentrySdk.Init(options =>
         {

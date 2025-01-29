@@ -15,15 +15,16 @@ namespace Tek.Contract
         DateTimeOffset? Expiry { get; set; }
         int? Lifetime { get; set; }
 
-        int Count();
+        int CountClaims();
 
-        bool Contains(string claim);
-        string GetValue(string claim);
-        List<string> GetValues(string claim);
-        bool HasExpectedValue(string claim, string value);
-        Dictionary<string, List<string>> ToDictionary();
-
+        bool ContainsClaim(string claim);
+        string GetClaimValue(string claim);
+        List<string> GetClaimValues(string claim);
+        bool HasExpectedClaimValue(string claim, string value);
+        
         bool IsExpired();
         double GetMinutesUntilExpiry();
+
+        Dictionary<string, List<string>> ToDictionary();
     }
 }
