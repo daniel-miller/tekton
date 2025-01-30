@@ -50,7 +50,7 @@ Notice the JSON serialization library referenced by this library is [Newtonsoft.
 
 This high-level class library implements application features required by Tek.API and Tek.UI projects. It is tightly coupled to the [PostgreSQL](https://www.postgresql.org) database platform, and depends directly on the schema of the tekton database hosted in PostgreSQL. The Service library:
 
-* Targets .NET Core 9.0 for maximum power and flexibility.
+* Targets .NET 9 (Core) for maximum power and flexibility.
 * Contain dependencies on third-party libraries.
 
 ## Tek.Terminal
