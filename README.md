@@ -29,3 +29,26 @@ Ideally, classes in this library are plain old class objects (POCO) and data tra
 The code here is bare-metal by design, and the intent is to have zero third-party references, and also to minimize the number of references to Microsoft and/or .NET System libraries. Notice, for example, this library contains no dependencies to any specific database platform, database schema, data access library, or serialization library.
 
 The code targets .NET Standard 2.0 to maximize the potential for reuse, so it can be used in any .NET Standard, .NET Core, or .NET Framework project, including multi-platform Console, Web, and Windows applications.
+
+## Tek.Common
+
+This low-level class library implements basic general-purpose functionality where third-party dependencies are not permitted. The Common library:
+
+* Targets .NET Standard 2.0 for maximum reusability.
+* Contains zero dependencies on third-party libraries.
+
+## Tek.Toolbox
+
+This low-level class library implements more advanced general-purpose functionality with third-party dependencies. The Toolbox library:
+
+* Targets .NET Standard 2.0 for maximum reusability.
+* Contains dependencies on third-party libraries.
+
+Notice the JSON serialization library referenced by this library is [Newtonsoft.JSON](https://www.newtonsoft.com/json). If you might want to use a different library for JSON serialization (e.g. System.Text.Json, for example), then you can replace this reference and revise the dependent code.
+
+## Tek.Service
+
+This high-level class library implements application features required by Tek.API and Tek.UI projects. It is tightly coupled to the PostgreSQL database platform, and depends directly on the schema of the tekton database hosted in PostgreSQL. The Service library:
+
+* Targets .NET Core 9.0 for maximum power and flexibility.
+* Contain dependencies on third-party libraries.
