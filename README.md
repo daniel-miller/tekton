@@ -73,6 +73,6 @@ Use this HTTP request to confirm the API is operational:
 
 `GET /api/version`
 
-Use this HTTP request to obtain an JSON Web Token (JWT) for authorization to send requests to API methods available in the platform:
+Use this HTTP request to obtain an [JSON Web Token](https://jwt.io) (JWT) for authorization to send requests to API methods available in the platform:
 
 `POST /api/token`
