@@ -83,6 +83,11 @@ public class UpgradeDatabaseCommand : BaseDatabaseCommand
 
     public async Task CreateDatabase()
     {
+        if (_settings.Database == null)
+        {
+            throw new ArgumentException($"You must specify a database.");
+        }
+
         using (var connection = new NpgsqlConnection(CreateConnectionString(DefaultDatabase)))
         {
             var query = $"SELECT COUNT(*) FROM pg_database WHERE datname = '{_settings.Database}';";
@@ -120,7 +125,7 @@ script_executed TIMESTAMPTZ NOT NULL
 
     public async Task<bool> IsExecuted(UpgradeScript script)
     {
-        using (var connection = new NpgsqlConnection(CreateConnectionString(_settings.Database)))
+        using (var connection = new NpgsqlConnection(CreateConnectionString(_settings.Database!)))
         {
             var query = $"SELECT COUNT(*) FROM metadata.t_version WHERE version_number = '{script.Version}';";
 
@@ -132,6 +137,11 @@ script_executed TIMESTAMPTZ NOT NULL
 
     public async Task ExecuteScript(UpgradeScript script)
     {
+        if (_settings.Database == null)
+        {
+            throw new ArgumentException($"You must specify a database.");
+        }
+
         using (var connection = new NpgsqlConnection(CreateConnectionString(_settings.Database)))
         {
             using (var command = new NpgsqlCommand())

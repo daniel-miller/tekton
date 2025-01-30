@@ -10,20 +10,18 @@ public class JwtAuthenticationHandler : AuthenticationHandler<JwtAuthenticationO
 {
     public const string DefaultScheme = JwtAuthenticationOptions.DefaultScheme;
 
-    private readonly ReleaseSettings _releaseSettings;
-    private readonly TokenSettings _tokenSettings;
+    private readonly SecuritySettings _securitySettings;
     private readonly IClaimConverter _converter;
 
     public JwtAuthenticationHandler(IOptionsMonitor<JwtAuthenticationOptions> options,
         ILoggerFactory logger, UrlEncoder encoder, IClaimConverter converter,
-        ReleaseSettings releaseSettings, TokenSettings tokenSettings)
+        SecuritySettings securitySettings)
         
         : base(options, logger, encoder)
     {
         _converter = converter;
 
-        _releaseSettings = releaseSettings;
-        _tokenSettings = tokenSettings;
+        _securitySettings = securitySettings;
     }
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -38,7 +36,7 @@ public class JwtAuthenticationHandler : AuthenticationHandler<JwtAuthenticationO
         if (token == null)
             return Task.FromResult(AuthenticateResult.Fail("Invalid Authorization Header"));
 
-        if (!encoder.Validate(token, DefaultScheme, _releaseSettings.Secret, _tokenSettings.Audience, _tokenSettings.Issuer, _converter, out var principal))
+        if (!encoder.Validate(token, DefaultScheme, _securitySettings.Secret, _securitySettings.Token.Audience, _securitySettings.Token.Issuer, _converter, out var principal))
             return Task.FromResult(AuthenticateResult.Fail("Invalid Token"));
 
         var ticket = new AuthenticationTicket(principal, DefaultScheme);

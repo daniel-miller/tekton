@@ -69,7 +69,7 @@ namespace Tek.Toolbox
             return isSignatureVerified && !jwt.IsExpired() && isAudienceVerified && isIssuerVerified;
         }
 
-        public string Encode(IJwt claims, string secret)
+        public string Encode(IJwt jwt, string secret)
         {
             var header = new Dictionary<string, string>
             {
@@ -79,7 +79,7 @@ namespace Tek.Toolbox
 
             string serializedHeader = JsonConvert.SerializeObject(header);
 
-            string serializedClaims = JsonConvert.SerializeObject(claims.ToDictionary(), _settings);
+            string serializedClaims = JsonConvert.SerializeObject(jwt.ToDictionary(), _settings);
 
             var encodedHeader = EncodeBase64(Encoding.UTF8.GetBytes(serializedHeader));
 
@@ -89,9 +89,9 @@ namespace Tek.Toolbox
 
             var encodedSignature = CreateSignature(input, secret);
 
-            var jwt = new EncodedJwt(encodedHeader, encodedPayload, encodedSignature);
+            var encoded = new EncodedJwt(encodedHeader, encodedPayload, encodedSignature);
 
-            return jwt.ToString();
+            return encoded.ToString();
         }
 
         /// <summary>

@@ -20,13 +20,20 @@ namespace Tek.Common
         }
 
         public Jwt(Dictionary<string, string> claims)
+            : this(claims, null, null, null, null) 
+        {
+
+        }
+
+        public Jwt(Dictionary<string, string> claims,
+            string subject, string issuer, string audience, DateTimeOffset? expiry)
         {
             _claims = new Dictionary<string, List<string>>();
 
             foreach (var claim in claims)
                 SetValue(claim.Key, claim.Value, false);
 
-            Initialize(null, null, null, null);
+            Initialize(subject, issuer, audience, expiry);
         }
 
         public Jwt(Dictionary<string, List<string>> claims)

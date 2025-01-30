@@ -6,18 +6,15 @@ namespace Tek.Api;
 [ApiExplorerSettings(GroupName = "Security: Authentication")]
 public class TokenController : ControllerBase
 {
-    private readonly ReleaseSettings _releaseSettings;
-    private readonly TokenSettings _tokenSettings;
+    private readonly SecuritySettings _securitySettings;
 
     private readonly IClaimConverter _claimConverter;
     private readonly IPrincipalSearch _principalSearch;
 
-    public TokenController(ReleaseSettings releaseSettings, TokenSettings tokenSettings,
+    public TokenController(SecuritySettings securitySettings,
         IClaimConverter claimConverter, IPrincipalSearch principalSearch)
     {
-        _releaseSettings = releaseSettings;
-        _tokenSettings = tokenSettings;
-
+        _securitySettings = securitySettings;
         _principalSearch = principalSearch;
         _claimConverter = claimConverter;
     }
@@ -35,7 +32,9 @@ public class TokenController : ControllerBase
 
         var errors = new List<string>();
 
-        var principal = _principalSearch.GetPrincipal(request, ip, _tokenSettings.Whitelist, _tokenSettings.Lifetime, errors);
+        var tokenSettings = _securitySettings.Token;
+
+        var principal = _principalSearch.GetPrincipal(request, ip, tokenSettings.Whitelist, tokenSettings.Lifetime, errors);
 
         if (principal == null)
         {
@@ -71,15 +70,17 @@ public class TokenController : ControllerBase
 
         var jwt = encoder.Decode(token);
 
-        var audience = _tokenSettings.Audience;
+        var tokenSettings = _securitySettings.Token;
 
-        var issuer = _tokenSettings.Issuer;
+        var audience = tokenSettings.Audience;
+
+        var issuer = tokenSettings.Issuer;
 
         var result = new
         {
             jwt.Subject,
 
-            SignatureVerification = encoder.VerifySignature(token, _releaseSettings.Secret) ? "Passed" : "Failed",
+            SignatureVerification = encoder.VerifySignature(token, _securitySettings.Secret) ? "Passed" : "Failed",
 
             ExpiryVerification = !jwt.IsExpired() ? $"Not Expired ({jwt.GetMinutesUntilExpiry():n0} minutes remaining)" : "Expired",
 
@@ -100,13 +101,15 @@ public class TokenController : ControllerBase
         if (debug)
             AddDebugClaims(principal, principalClaims);
 
-        var secret = _releaseSettings.Secret;
+        var secret = _securitySettings.Secret;
 
         var subject = principal.User.Email;
 
-        var audience = _tokenSettings.Audience;
+        var tokenSettings = _securitySettings.Token;
 
-        var issuer = _tokenSettings.Issuer;
+        var audience = tokenSettings.Audience;
+
+        var issuer = tokenSettings.Issuer;
 
         var lifetime = principal.Claims.Lifetime ?? JwtRequest.DefaultLifetimeLimit;
 

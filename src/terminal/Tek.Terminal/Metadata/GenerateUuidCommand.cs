@@ -1,8 +1,8 @@
 ﻿using Spectre.Console.Cli;
 
-public class RandomGuidCommand : Command<RandomSettings>
+public class GenerateUuidCommand : Command<GenerateUuidSettings>
 {
-    public override int Execute(CommandContext context, RandomSettings settings)
+    public override int Execute(CommandContext context, GenerateUuidSettings settings)
     {
         var count = settings.Count > 0 ? settings.Count : 1;
 
@@ -13,7 +13,7 @@ public class RandomGuidCommand : Command<RandomSettings>
     }
 }
 
-public class RandomSettings : CommandSettings
+public class GenerateUuidSettings : CommandSettings
 {
     [CommandOption("--count")]
     public int? Count { get; set; }

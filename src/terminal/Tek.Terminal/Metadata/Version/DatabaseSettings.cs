@@ -2,12 +2,6 @@
 
 public class DatabaseSettings : CommandSettings
 {
-    [CommandOption("--user")]
-    public string? User { get; set; }
-
-    [CommandOption("--password")]
-    public string? Password { get; set; }
-
     [CommandOption("--host")]
     public string? Host { get; set; }
 
@@ -16,4 +10,10 @@ public class DatabaseSettings : CommandSettings
 
     [CommandOption("--database")]
     public string? Database { get; set; }
+
+    [CommandOption("--user")]
+    public string? User { get; set; }
+
+    [CommandOption("--password")]
+    public string? Password { get; set; }
 }

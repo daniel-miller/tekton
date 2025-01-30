@@ -209,17 +209,17 @@ namespace Tek.Common
 
         public IPrincipal ToSentinel(JwtRequest request)
         {
-            if (_settings.Sentinels == null || _settings.Sentinels.Count() == 0)
+            if (_settings.Sentinels == null)
                 return null;
 
-            var sentinel = _settings.Sentinels.SingleOrDefault(x => x.Actor.Secret == request.Secret);
+            var sentinel = _settings.Sentinels.ToArray().FirstOrDefault(s => s?.Secret == request.Secret);
 
             if (sentinel == null)
                 return null;
 
             var principal = new Principal();
 
-            var actor = sentinel.Actor;
+            var actor = sentinel;
 
             principal.User = new Actor
             {

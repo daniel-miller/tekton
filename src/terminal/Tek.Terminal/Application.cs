@@ -34,11 +34,8 @@ public class Application
                 metadata.AddCommand<DropDatabaseCommand>("drop-database");
                 metadata.AddCommand<ResetDatabaseCommand>("reset-database");
                 metadata.AddCommand<UpgradeDatabaseCommand>("upgrade-database");
-            });
-
-            config.AddBranch("utility", utility =>
-            {
-                utility.AddCommand<RandomGuidCommand>("guid");
+            
+                metadata.AddCommand<GenerateUuidCommand>("generate-uuid");
             });
 
             config.SetApplicationName("Tek.Terminal");
