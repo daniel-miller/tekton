@@ -6,6 +6,13 @@ using Microsoft.Extensions.Options;
 
 namespace Tek.Api;
 
+public class JwtAuthenticationOptions : AuthenticationSchemeOptions
+{
+    public const string DefaultScheme = "Bearer";
+    public static string Scheme => DefaultScheme;
+    public static string AuthenticationType => DefaultScheme;
+}
+
 public class JwtAuthenticationHandler : AuthenticationHandler<JwtAuthenticationOptions>
 {
     public const string DefaultScheme = JwtAuthenticationOptions.DefaultScheme;

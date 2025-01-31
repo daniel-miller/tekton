@@ -59,7 +59,8 @@ namespace Tek.Common
             {
                 var derivedValue = parentUrl;
 
-                relativeUrls.Add(derivedValue, parentUrls[parentUrl]);
+                if (!relativeUrls.ContainsKey(derivedValue))
+                    relativeUrls.Add(derivedValue, parentUrls[parentUrl]);
             }
         }
     }

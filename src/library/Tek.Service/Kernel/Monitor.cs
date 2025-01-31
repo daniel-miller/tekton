@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 
-using Tek.Contract;
-
 namespace Tek.Service;
 
 public class Log : ILog

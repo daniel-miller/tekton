@@ -78,12 +78,9 @@ WebApplication BuildHost(TektonSettings settings)
         builder.AddSerilog(dispose: true);
     });
 
-    services.AddMonitoring(settings.Kernel.Telemetry.Monitoring);
+    services.AddMonitoring(settings.Kernel.Telemetry.Monitoring, settings.Kernel.Release);
 
-    services.AddSingleton<ILog, Tek.Service.Log>();
-    services.AddSingleton<IMonitor, Tek.Service.Monitor>();
     services.AddSingleton<IJsonSerializer, JsonSerializer>();
-
     services.AddControllers().AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());

@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 
-using Tek.Service;
-
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class SecurityServiceRegistration
@@ -54,7 +52,7 @@ public static class SecurityServiceRegistration
 
         services.AddTransient<IClaimConverter, ClaimConverter>();
 
-        services.AddTransient<IPrincipalSearch, PrincipalSearch>();
+        services.AddTransient<IPrincipalSearch, Tek.Service.PrincipalSearch>();
 
         return services;
     }

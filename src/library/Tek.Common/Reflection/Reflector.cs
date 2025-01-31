@@ -84,7 +84,8 @@ namespace Tek.Common
             {
                 var constantValue = constantUrls[constantName];
 
-                relativeUrls.Add(constantValue, constantName);
+                if (!relativeUrls.ContainsKey(constantValue))
+                    relativeUrls.Add(constantValue, constantName);
             }
 
             RelativeUrlCollection.AddParents(relativeUrls);
