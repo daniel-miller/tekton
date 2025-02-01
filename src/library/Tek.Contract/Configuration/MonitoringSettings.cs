@@ -7,5 +7,7 @@
         public string Path { get; set; }
         public string Url { get; set; }
         public double? Rate { get; set; }
+
+        public bool Enabled => !Disabled;
     }
 }
