@@ -1,22 +1,27 @@
 ﻿using Spectre.Console.Cli;
 
-public class ResetDatabaseCommand : BaseDatabaseCommand
+public class ResetDatabaseCommand : AsyncCommand<DatabaseSettings>
 {
-    public ResetDatabaseCommand(ReleaseSettings releaseSettings, DatabaseSettings databaseSettings, DatabaseConnectionSettings config)
-        : base(releaseSettings, databaseSettings, config)
-    {
+    private readonly DatabaseCommander _commander;
 
+    public ResetDatabaseCommand(DatabaseCommander commander)
+    {
+        _commander = commander;
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context, DatabaseSettings settings)
     {
-        var drop = new DropDatabaseCommand(_releaseSettings, settings, _config);
+        var drop = new DropDatabaseCommand(_commander);
 
         await drop.ExecuteAsync(context, settings);
 
-        var upgrade = new UpgradeDatabaseCommand(_releaseSettings, settings, _config);
+        var upgradeSettings = new UpgradeDatabaseSettings();
 
-        await upgrade.ExecuteAsync(context, settings);
+        upgradeSettings.Copy(settings);
+
+        var upgrade = new UpgradeDatabaseCommand(_commander);
+
+        await upgrade.ExecuteAsync(context, upgradeSettings);
 
         return 0;
     }

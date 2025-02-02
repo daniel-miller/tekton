@@ -1,8 +1,6 @@
 ﻿using Npgsql;
 
-using Spectre.Console.Cli;
-
-public class BaseDatabaseCommand : AsyncCommand<DatabaseSettings>
+public class DatabaseCommander
 {
     public const string DefaultHost = "localhost";
 
@@ -12,15 +10,21 @@ public class BaseDatabaseCommand : AsyncCommand<DatabaseSettings>
 
     protected readonly ReleaseSettings _releaseSettings;
 
-    protected readonly DatabaseSettings _settings;
+    protected readonly DatabaseSettings _databaseSettings;
 
     protected readonly DatabaseConnectionSettings _config;
 
-    public BaseDatabaseCommand(ReleaseSettings releaseSettings, DatabaseSettings databaseSettings, DatabaseConnectionSettings config)
+    public string Version => _releaseSettings.Version;
+
+    public string Directory => _releaseSettings.Directory;
+
+    public string Database => _databaseSettings.Database!;
+
+    public DatabaseCommander(ReleaseSettings releaseSettings, DatabaseSettings databaseSettings, DatabaseConnectionSettings config)
     {
         _releaseSettings = releaseSettings;
 
-        _settings = databaseSettings;
+        _databaseSettings = databaseSettings;
 
         _config = config;
 
@@ -40,20 +44,18 @@ public class BaseDatabaseCommand : AsyncCommand<DatabaseSettings>
             databaseSettings.Database = _config.Database;
     }
 
-    public override async Task<int> ExecuteAsync(CommandContext context, DatabaseSettings settings)
-    {
-        return await Task.FromResult(0);
-    }
+    public string CreateConnectionString()
+        => CreateConnectionString(DefaultDatabase);
 
     public string CreateConnectionString(string database)
     {
         var builder = new NpgsqlConnectionStringBuilder
         {
-            Host = _settings.Host ?? DefaultHost,
-            Port = _settings.Port ?? DefaultPort,
+            Host = _databaseSettings.Host ?? DefaultHost,
+            Port = _databaseSettings.Port ?? DefaultPort,
             Database = database ?? DefaultDatabase,
-            Username = _settings.User,
-            Password = _settings.Password,
+            Username = _databaseSettings.User,
+            Password = _databaseSettings.Password,
             SslMode = SslMode.Disable,
             IncludeErrorDetail = true
         };
@@ -61,7 +63,7 @@ public class BaseDatabaseCommand : AsyncCommand<DatabaseSettings>
         return builder.ConnectionString;
     }
 
-    protected void Output(string line)
+    public void Output(string line)
     {
         Spectre.Console.AnsiConsole.WriteLine(line);
     }

@@ -4,31 +4,27 @@ using Npgsql;
 
 using Spectre.Console.Cli;
 
-public class DropDatabaseCommand : BaseDatabaseCommand
+public class DropDatabaseCommand : AsyncCommand<DatabaseSettings>
 {
-    public DropDatabaseCommand(ReleaseSettings releaseSettings, DatabaseSettings databaseSettings, DatabaseConnectionSettings config)
-        : base(releaseSettings, databaseSettings, config)
-    {
+    private readonly DatabaseCommander _commander;
 
+    public DropDatabaseCommand(DatabaseCommander commander)
+    {
+        _commander = commander;
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context, DatabaseSettings settings)
     {
-        await DropDatabase(settings.Database!);
-        
-        return 0;
-    }
+        var database = settings.Database;
 
-    public async Task DropDatabase(string database)
-    {
-        if (database == DefaultDatabase)
+        if (database == DatabaseCommander.DefaultDatabase)
         {
             throw new ArgumentException($"The default database ({database}) cannot be dropped.");
         }
 
-        using (var connection = new NpgsqlConnection(CreateConnectionString(DefaultDatabase)))
+        using (var connection = new NpgsqlConnection(_commander.CreateConnectionString()))
         {
-            var query = $"SELECT COUNT(*) FROM pg_database WHERE datname = '{_settings.Database}';";
+            var query = $"SELECT COUNT(*) FROM pg_database WHERE datname = '{database}';";
 
             var count = await connection.ExecuteScalarAsync<int>(query);
 
@@ -36,17 +32,19 @@ public class DropDatabaseCommand : BaseDatabaseCommand
             {
                 var sql = @$"
                     SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity 
-                    WHERE pg_stat_activity.datname = '{_settings.Database}' AND pid <> pg_backend_pid();
+                    WHERE pg_stat_activity.datname = '{database}' AND pid <> pg_backend_pid();
                 ";
 
                 connection.Execute(sql);
 
                 sql = @$"
-                    DROP DATABASE {_settings.Database};
+                    DROP DATABASE {database};
                 ";
 
                 connection.Execute(sql);
             }
         }
+
+        return 0;
     }
 }

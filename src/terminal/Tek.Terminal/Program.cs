@@ -39,17 +39,42 @@ await Shutdown(host);
 IConfigurationRoot BuildConfiguration()
 {
     var basePath = AppContext.BaseDirectory;
-    
-    var localAppSettings = Path.Combine(basePath, "..", "..", "..", "appsettings.local.json");
 
-    Console.WriteLine("Path to local app settings is " + localAppSettings);
-
-    return new ConfigurationBuilder()
-        .SetBasePath(AppContext.BaseDirectory)
-        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-        .AddJsonFile(localAppSettings, optional: true, reloadOnChange: true)
+    var builder = new ConfigurationBuilder()
         .AddEnvironmentVariables()
+        .SetBasePath(basePath)
+        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+    AddLocalSettings(builder);
+
+    return builder
         .Build();
+
+    void AddLocalSettings(IConfigurationBuilder builder)
+    {
+        if (AddLocalFile(builder, basePath))
+            return;
+
+        if (AddLocalFile(builder, Path.Combine(basePath, "..")))
+            return;
+
+        if (AddLocalFile(builder, Path.Combine(basePath, "..", "..")))
+            return;
+
+        AddLocalFile(builder, Path.Combine(basePath, "..", "..", ".."));
+    }
+
+    bool AddLocalFile(IConfigurationBuilder builder, string folder)
+    {
+        var file = Path.Combine(folder, "appsettings.local.json");
+     
+        if (!File.Exists(file))
+            return false;
+
+        builder = builder.AddJsonFile(file);
+
+        return true;
+    }
 }
 
 TektonSettings GetSettings(IConfigurationRoot configuration)
@@ -93,6 +118,7 @@ IHost BuildHost(TektonSettings settings)
             services.AddSingleton<ILog, Tek.Service.Log>();
             services.AddSingleton<IMonitor, Tek.Service.Monitor>();
             services.AddSingleton<IJsonSerializer, JsonSerializer>();
+            services.AddSingleton<DatabaseCommander>();
 
             services.AddTransient<Application>();
 

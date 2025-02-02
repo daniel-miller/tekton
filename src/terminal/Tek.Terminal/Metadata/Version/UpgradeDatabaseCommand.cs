@@ -12,39 +12,59 @@ using Spectre.Console.Cli;
 /// cased. In addition, Some tools, libraries, and ORMs may not handle quoted identifiers or mixed-
 /// case names well, leading to potential issues.
 /// </remarks>
-public class UpgradeDatabaseCommand : BaseDatabaseCommand
+public class UpgradeDatabaseCommand : AsyncCommand<UpgradeDatabaseSettings>
 {
-    public UpgradeDatabaseCommand(ReleaseSettings releaseSettings, DatabaseSettings databaseSettings, DatabaseConnectionSettings config)
-        : base(releaseSettings, databaseSettings, config) 
+    private readonly DatabaseCommander _commander;
+
+    public UpgradeDatabaseCommand(DatabaseCommander commander)
     {
-        
+        _commander = commander;
     }
 
-    public override async Task<int> ExecuteAsync(CommandContext context, DatabaseSettings settings)
+    public override async Task<int> ExecuteAsync(CommandContext context, UpgradeDatabaseSettings settings)
     {
-        var version = _releaseSettings.Version;
+        var version = _commander.Version;
 
-        var directory = _releaseSettings.Directory;
+        var directory = _commander.Directory;
 
         var path = Path.Combine(directory, "Metadata", "Version");
 
-        Output($"Upgrading the database for release {version} with SQL scripts in {path}.");
+        var database = _commander.Database;
 
-        var executed = await ApplyUpgrade(Path.Combine(path, "Definition"))
-            + await ApplyUpgrade(Path.Combine(path, "Manipulation"))
-            + await ApplyUpgrade(Path.Combine(path, "Randomization"));
+        _commander.Output($"Upgrading the database {database} for release {version} with SQL scripts in {path}.");
 
-        if (executed == 0)
-            Output($"There are no pending upgrade scripts.");
+        if (settings.Definitions)
+        {
+            var definitions = await ApplyUpgrade(database!, Path.Combine(path, "Definition"));
+
+            if (definitions == 0)
+                _commander.Output($"There are no pending data definition scripts.");
+        }
+
+        if (settings.Manipulations)
+        {
+            var manipulations = await ApplyUpgrade(database!, Path.Combine(path, "Manipulation"));
+
+            if (manipulations == 0)
+                _commander.Output($"There are no pending data manipulation scripts.");
+        }
+
+        if (settings.Randomizations)
+        {
+            var randomizations = await ApplyUpgrade(database!, Path.Combine(path, "Randomization"));
+
+            if (randomizations == 0)
+                _commander.Output($"There are no pending data randomization scripts.");
+        }
 
         return 0;
     }
 
-    private async Task<int> ApplyUpgrade(string path)
+    private async Task<int> ApplyUpgrade(string database, string path)
     {
         var scripts = GetScripts(path);
 
-        var executed = await RunScripts(scripts);
+        var executed = await RunScripts(database, scripts);
 
         return executed;
     }
@@ -67,22 +87,22 @@ public class UpgradeDatabaseCommand : BaseDatabaseCommand
         return scripts;
     }
 
-    private async Task<int> RunScripts(List<UpgradeScript> scripts)
+    private async Task<int> RunScripts(string database, List<UpgradeScript> scripts)
     {
         var count = 0;
 
-        await CreateDatabase();
+        await CreateDatabase(database);
 
         foreach (var script in scripts)
         {
-            if (!script.IsLoaded || await IsExecuted(script))
+            if (!script.IsLoaded || await IsExecuted(database, script))
                 continue;
 
-            Output($"  Executing database {script.Type} upgrade {script.Name}.");
+            _commander.Output($"  Executing database {script.Type} upgrade {script.Name}.");
 
-            await ExecuteScript(script);
+            await ExecuteScript(database, script);
 
-            Output($"    Success!");
+            _commander.Output($"    Success!");
 
             count++;
         }
@@ -90,28 +110,28 @@ public class UpgradeDatabaseCommand : BaseDatabaseCommand
         return count;
     }
 
-    public async Task CreateDatabase()
+    public async Task CreateDatabase(string database)
     {
-        if (_settings.Database == null)
+        if (database == null)
         {
             throw new ArgumentException($"You must specify a database.");
         }
 
-        using (var connection = new NpgsqlConnection(CreateConnectionString(DefaultDatabase)))
+        using (var connection = new NpgsqlConnection(_commander.CreateConnectionString()))
         {
-            var query = $"SELECT COUNT(*) FROM pg_database WHERE datname = '{_settings.Database}';";
+            var query = $"SELECT COUNT(*) FROM pg_database WHERE datname = '{database}';";
 
             var count = await connection.ExecuteScalarAsync<int>(query);
 
             if (count == 0)
             {
-                var sql = @$"CREATE DATABASE {_settings.Database};";
+                var sql = @$"CREATE DATABASE {database};";
 
                 connection.Execute(sql);
             }
         }
 
-        using (var connection = new NpgsqlConnection(CreateConnectionString(_settings.Database!)))
+        using (var connection = new NpgsqlConnection(_commander.CreateConnectionString(database!)))
         {
             var query = $"SELECT COUNT(*) FROM pg_catalog.pg_tables WHERE schemaname = 'metadata' and tablename = 't_version';";
 
@@ -135,9 +155,9 @@ script_executed TIMESTAMPTZ NOT NULL
         }
     }
 
-    public async Task<bool> IsExecuted(UpgradeScript script)
+    public async Task<bool> IsExecuted(string database, UpgradeScript script)
     {
-        using (var connection = new NpgsqlConnection(CreateConnectionString(_settings.Database!)))
+        using (var connection = new NpgsqlConnection(_commander.CreateConnectionString(database)))
         {
             var query = $"SELECT COUNT(*) FROM metadata.t_version WHERE version_type = '{script.Type}' and version_name = '{script.Name}';";
 
@@ -147,14 +167,14 @@ script_executed TIMESTAMPTZ NOT NULL
         }
     }
 
-    public async Task ExecuteScript(UpgradeScript script)
+    public async Task ExecuteScript(string database, UpgradeScript script)
     {
-        if (_settings.Database == null)
+        if (database == null)
         {
             throw new ArgumentException($"You must specify a database.");
         }
 
-        using (var connection = new NpgsqlConnection(CreateConnectionString(_settings.Database)))
+        using (var connection = new NpgsqlConnection(_commander.CreateConnectionString(database)))
         {
             using (var command = new NpgsqlCommand())
             {
