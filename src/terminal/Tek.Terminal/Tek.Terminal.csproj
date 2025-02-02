@@ -46,19 +46,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="appsettings.local.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Metadata\Version\v10.2025.0122.1000.sql">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Metadata\Version\v10.2025.0122.1100.sql">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Metadata\Version\v10.2025.0122.1200.sql">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Metadata\Version\v10.2025.0122.1300.sql">
+    <None Update="Metadata\Version\**\*.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

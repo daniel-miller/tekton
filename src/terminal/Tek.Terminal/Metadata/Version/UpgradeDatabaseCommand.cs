@@ -30,14 +30,23 @@ public class UpgradeDatabaseCommand : BaseDatabaseCommand
 
         Output($"Upgrading the database for release {version} with SQL scripts in {path}.");
 
-        var scripts = GetScripts(path);
-
-        var executed = await RunScripts(scripts);
+        var executed = await ApplyUpgrade(Path.Combine(path, "Definition"))
+            + await ApplyUpgrade(Path.Combine(path, "Manipulation"))
+            + await ApplyUpgrade(Path.Combine(path, "Randomization"));
 
         if (executed == 0)
             Output($"There are no pending upgrade scripts.");
 
         return 0;
+    }
+
+    private async Task<int> ApplyUpgrade(string path)
+    {
+        var scripts = GetScripts(path);
+
+        var executed = await RunScripts(scripts);
+
+        return executed;
     }
 
     private List<UpgradeScript> GetScripts(string path)
@@ -69,7 +78,7 @@ public class UpgradeDatabaseCommand : BaseDatabaseCommand
             if (!script.IsLoaded || await IsExecuted(script))
                 continue;
 
-            Output($"  Executing upgrade {script.Version}.");
+            Output($"  Executing database {script.Type} upgrade {script.Name}.");
 
             await ExecuteScript(script);
 
@@ -113,7 +122,10 @@ public class UpgradeDatabaseCommand : BaseDatabaseCommand
                 var sql = @$"
 CREATE SCHEMA metadata;
 CREATE TABLE metadata.t_version (
-version_number VARCHAR(30) NOT NULL PRIMARY KEY,
+version_number SERIAL PRIMARY KEY,
+version_type VARCHAR(20) NOT NULL,
+version_name VARCHAR(100) NOT NULL,
+script_path VARCHAR(300) NOT NULL,
 script_content TEXT NOT NULL,
 script_executed TIMESTAMPTZ NOT NULL
 );
@@ -127,7 +139,7 @@ script_executed TIMESTAMPTZ NOT NULL
     {
         using (var connection = new NpgsqlConnection(CreateConnectionString(_settings.Database!)))
         {
-            var query = $"SELECT COUNT(*) FROM metadata.t_version WHERE version_number = '{script.Version}';";
+            var query = $"SELECT COUNT(*) FROM metadata.t_version WHERE version_type = '{script.Type}' and version_name = '{script.Name}';";
 
             var count = await connection.ExecuteScalarAsync<int>(query);
 
@@ -152,13 +164,15 @@ script_executed TIMESTAMPTZ NOT NULL
                 }
 
                 const string sql = @"
-                    INSERT INTO metadata.t_version (version_number, script_content, script_executed)
-                    VALUES (@version_number, @script_content, @script_executed);
+                    INSERT INTO metadata.t_version (version_type, version_name, script_path, script_content, script_executed)
+                    VALUES (@version_type, @version_name, @script_path, @script_content, @script_executed);
                 ";
 
                 await connection.ExecuteAsync(sql, new
                 {
-                    version_number = script.Version,
+                    version_type = script.Type,
+                    version_name = script.Name,
+                    script_path = script.Path,
                     script_content = script.Content,
                     script_executed = DateTimeOffset.UtcNow
                 });

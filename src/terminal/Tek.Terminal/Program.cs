@@ -38,20 +38,26 @@ await Shutdown(host);
 
 IConfigurationRoot BuildConfiguration()
 {
+    var basePath = AppContext.BaseDirectory;
+    
+    var localAppSettings = Path.Combine(basePath, "..", "..", "..", "appsettings.local.json");
+
+    Console.WriteLine("Path to local app settings is " + localAppSettings);
+
     return new ConfigurationBuilder()
         .SetBasePath(AppContext.BaseDirectory)
         .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-        .AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true)
+        .AddJsonFile(localAppSettings, optional: true, reloadOnChange: true)
         .AddEnvironmentVariables()
         .Build();
 }
 
 TektonSettings GetSettings(IConfigurationRoot configuration)
 {
-    var atomSection = configuration.GetRequiredSection("Tekton");
-    var atomSettings = atomSection.Get<TektonSettings>()!;
-    atomSettings.Kernel.Release.Directory = AppContext.BaseDirectory;
-    return atomSettings;
+    var section = configuration.GetRequiredSection("Tekton");
+    var settings = section.Get<TektonSettings>()!;
+    settings.Kernel.Release.Directory = AppContext.BaseDirectory;
+    return settings;
 }
 
 Serilog.ILogger ConfigureLogging(string path)

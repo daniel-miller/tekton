@@ -1,4 +1,22 @@
-﻿-- Create views for schema, table, and column metadata on base tables.
+﻿-- Create a table to store origin metadata.
+
+CREATE TABLE metadata.t_origin (
+
+    origin_id uuid NOT NULL PRIMARY KEY,
+    
+    origin_when timestamptz NOT NULL,
+    origin_description varchar(1000) NULL,
+    origin_reason varchar(1000) NULL,
+    origin_source varchar(100) NULL,
+
+    user_id uuid NOT NULL,
+    organization_id uuid NOT NULL,
+
+    proxy_agent uuid NULL,  -- User is impersonated by Agent
+    proxy_subject uuid NULL -- User acts on behalf of Subject
+);
+
+-- Create views for schema, table, and column metadata on base tables.
 
 CREATE VIEW metadata.v_schema AS
 SELECT
