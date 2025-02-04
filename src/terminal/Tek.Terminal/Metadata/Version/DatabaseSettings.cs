@@ -1,4 +1,6 @@
 ﻿
+using System.ComponentModel;
+
 using Spectre.Console.Cli;
 
 public class DatabaseSettings : CommandSettings
@@ -21,14 +23,17 @@ public class DatabaseSettings : CommandSettings
 
 public class UpgradeDatabaseSettings : DatabaseSettings
 {
-    [CommandOption("--definitions")]
-    public bool Definitions { get; set; } = true;
+    [Description("Execute pending DDL (definition) scripts to create database objects.")]
+    [CommandOption("-d|--definitions")]
+    public bool Definitions { get; set; }
 
-    [CommandOption("--manipulations")]
-    public bool Manipulations { get; set; } = true;
+    [Description("Execute pending DML (manipulation) scripts to load and/or modify data in the database.")]
+    [CommandOption("-m|--manipulations")]
+    public bool Manipulations { get; set; }
 
-    [CommandOption("--randomizations")]
-    public bool Randomizations { get; set; } = true;
+    [Description("Execute pending randomization scripts to load and/or anonymize data in the database.")]
+    [CommandOption("-r|--randomizations")]
+    public bool Randomizations { get; set; }
 
     internal void Copy(DatabaseSettings settings)
     {

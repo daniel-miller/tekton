@@ -9,12 +9,15 @@ namespace Tek.Common
 {
     public class QueryTypeCollection
     {
+        private readonly Reflector _reflector;
         private readonly Dictionary<string, Type> _queries;
         private readonly Dictionary<Type, Type> _results;
         private readonly Dictionary<string, string> _resources;
 
         public QueryTypeCollection(Assembly assembly)
         {
+            _reflector = new Reflector();
+
             if (assembly == null)
                 throw new ArgumentNullException(nameof(assembly));
 
@@ -48,10 +51,8 @@ namespace Tek.Common
 
             foreach (var key in queries.Keys)
             {
-                var className = queries[key].FullName;
-                var title = className.Replace(".", "/");
-                var kebab = title.ToKebabCase();
-                list.Add(kebab, className);
+                var name = _reflector.GetResourceName(queries[key]);
+                list.Add(name, queries[key].FullName);
             }
 
             return list;

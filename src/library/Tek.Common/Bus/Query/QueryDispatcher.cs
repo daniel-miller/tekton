@@ -13,7 +13,7 @@ namespace Tek.Common
     /// The purpose of the queue is to route queries to handler methods. Query validation is the
     /// responsibility of its subscriber.
     /// </remarks>
-    public class QueryDispatcher 
+    public class QueryDispatcher : IQueryDispatcher
     {
         private readonly IEnumerable<IQueryRunner> _runners;
 

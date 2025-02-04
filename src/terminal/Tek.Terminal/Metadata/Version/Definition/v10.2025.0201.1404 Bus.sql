@@ -1,9 +1,8 @@
 CREATE TABLE bus.t_aggregate (
 
     aggregate_id UUID NOT NULL PRIMARY KEY,
-    
-    aggregate_type VARCHAR(100) NOT NULL,
 
+    aggregate_type VARCHAR(100) NOT NULL,
     aggregate_root UUID NOT NULL
 );
 

@@ -16,7 +16,7 @@ CREATE SCHEMA integration;
 
 CREATE SCHEMA extension;
 
--- Create utility schemas. Assume metadata schema is already created.
+-- Create utility schemas. Assume the metadata schema is already created.
 
 CREATE SCHEMA bus;
 

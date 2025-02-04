@@ -6,7 +6,8 @@ namespace Tek.Contract
     public enum BasicAccess
     {
         Deny  = 0,
-        Allow = 1
+        Allow = 1,
+        All   = Allow
     }
 
     [Flags]

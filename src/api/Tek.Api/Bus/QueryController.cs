@@ -74,8 +74,8 @@ public class QueryController : ControllerBase
 
         var roleNames = principal.Roles.Select(x => x.Name);
 
-        var message = "None of the roles assigned to this API token are granted access to run this"
-            + $" query. Resource = {resourceName}. Roles = {roleNames}.";
+        var message = "None of the roles assigned to this token are granted access to run this"
+            + $" query. Resource = {resourceName}. Roles = {string.Join(", ", roleNames)}.";
 
         throw new AccessDeniedException(message);
     }

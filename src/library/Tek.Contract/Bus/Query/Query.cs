@@ -56,4 +56,16 @@ namespace Tek.Contract
 
         public Dictionary<Guid, string> Texts { get; set; } = new Dictionary<Guid, string>();
     }
+
+    public interface IQueryRunner
+    {
+        TResult Run<TResult>(IQuery<TResult> query);
+
+        bool CanRun(Type queryType);
+    }
+
+    public interface IQueryDispatcher
+    {
+        TResult Dispatch<TResult>(IQuery<TResult> query);
+    }
 }

@@ -100,5 +100,16 @@ namespace Tek.Common
         {
             return $"{type.FullName}, {Assembly.GetAssembly(type).GetName().Name}";
         }
+
+        /// <summary>
+        /// Convert the type name (including namespace) to a kebab-case relative path.
+        /// </summary>
+        public string GetResourceName(Type type)
+        {
+            var className = type.FullName;
+            var title = className.Replace(".", "/");
+            var kebab = title.ToKebabCase();
+            return kebab;
+        }
     }
 }

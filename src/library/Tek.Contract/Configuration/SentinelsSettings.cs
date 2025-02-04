@@ -4,7 +4,7 @@ namespace Tek.Contract
 {
     public class SentinelsSettings
     {
-        public Sentinel React { get; set; }
+        public Sentinel Maintenance { get; set; }
         public Sentinel Root { get; set; }
         public Sentinel Someone { get; set; }
         public Sentinel Test { get; set; }
@@ -13,8 +13,8 @@ namespace Tek.Contract
         {
             var list = new List<Sentinel>();
             
-            if (React != null)
-                list.Add(React);
+            if (Maintenance != null)
+                list.Add(Maintenance);
 
             if (Root != null)
                 list.Add(Root);

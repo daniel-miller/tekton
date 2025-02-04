@@ -5,13 +5,6 @@ using Tek.Contract;
 
 namespace Tek.Common
 {
-    public interface IQueryRunner
-    {
-        TResult Run<TResult>(IQuery<TResult> query);
-
-        bool CanRun(Type queryType);
-    }
-
     public class QueryRunner : IQueryRunner
     {
         private readonly Dictionary<Type, Func<object, object>> _methods;

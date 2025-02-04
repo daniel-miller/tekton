@@ -54,13 +54,13 @@ namespace Tek.Toolbox
             return token;
         }
 
-        public bool Validate(string token, string scheme, string secret, string audience, string issuer, IClaimConverter converter, out ClaimsPrincipal principal)
+        public bool Validate(string scheme, string token, string secret, string audience, string issuer, IClaimConverter converter, out ClaimsPrincipal principal)
         {
             var jwt = Decode(token);
 
             principal = new ClaimsPrincipal(converter.ToClaimsIdentity(jwt, scheme));
 
-            var isSignatureVerified = VerifySignature(token, scheme);
+            var isSignatureVerified = VerifySignature(token, secret);
 
             var isAudienceVerified = jwt.Audience == audience;
 

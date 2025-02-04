@@ -234,6 +234,24 @@ namespace Tek.Common
             return false;
         }
 
+        public bool IsGranted(string resource, IEnumerable<Model> roles, BasicAccess access)
+        {
+            foreach (var role in roles)
+            {
+                var permission = GetOptional(resource, role);
+
+                if (permission == null)
+                    continue;
+
+                var helper = new BasicAccessHelper(permission.Access.Basic);
+
+                if (helper.IsGranted(access))
+                    return true;
+            }
+
+            return false;
+        }
+
         public bool IsGranted(Guid resource, IEnumerable<Guid> roles, DataAccess access)
         {
             foreach (var role in roles)

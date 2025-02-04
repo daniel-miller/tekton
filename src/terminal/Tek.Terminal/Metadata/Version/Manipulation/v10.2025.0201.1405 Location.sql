@@ -6143,3 +6143,8 @@ VALUES
 , ('Zugdidis Raioni', NULL, 'GE', 'acf01f98-4164-4c03-8c0a-f3fd3fa2a4e6')
 , ('Zurrieq', NULL, 'MT', 'b34b6e87-189d-48a8-b932-adf2b8611535')
 ;
+
+UPDATE location.t_province 
+SET    country_id = t_country.country_id
+FROM   location.t_country 
+WHERE  t_province.country_code = t_country.country_code;
