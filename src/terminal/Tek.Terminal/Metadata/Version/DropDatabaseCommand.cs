@@ -17,6 +17,8 @@ public class DropDatabaseCommand : AsyncCommand<DatabaseSettings>
     {
         var database = settings.Database;
 
+        _commander.Output($"Dropping database {database} on {settings.Host}.");
+
         if (database == DatabaseCommander.DefaultDatabase)
         {
             throw new ArgumentException($"The default database ({database}) cannot be dropped.");

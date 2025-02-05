@@ -98,7 +98,7 @@ public class UpgradeDatabaseCommand : AsyncCommand<UpgradeDatabaseSettings>
             if (!script.IsLoaded || await IsExecuted(database, script))
                 continue;
 
-            _commander.Output($"  Executing database {script.Type} upgrade {script.Name}.");
+            _commander.Output($"  Executing database {script.Type!.ToString().ToLower()} upgrade {script.Name}.");
 
             await ExecuteScript(database, script);
 
