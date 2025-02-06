@@ -9,7 +9,7 @@ namespace Tek.Common
         /// <remarks>
         /// By default, a date range is a half-open interval, where the lower bound is inclusive 
         /// (closed) and the upper bound is exclusive (open). The interval notation for this is 
-        /// [lower,upper). The inequality notation is lower &lte; x &lt; upper. We use the term 
+        /// <c>[lower, upper)</c>. The inequality notation is <c>lower &#8804; x &#60; upper</c>. We use the term 
         /// "since" to indicate the closed endpoint for the lower bound on a date range, and we use 
         /// the term "until" to indicate the closed endpoint for the upper bound. We use the terms 
         /// "before" and "after" for the open endpoints on upper and lower bounds, respectively. 

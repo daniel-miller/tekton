@@ -3,32 +3,46 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34511.84
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tek.Common", "library\Tek.Common\Tek.Common.csproj", "{D0E299E1-69D9-4EA1-BCAE-5A4F0DB8FBE7}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tek.Common.Test", "test\Tek.Common.Test\Tek.Common.Test.csproj", "{C606E31B-002F-46A5-BF44-DDE41074A926}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tek.Terminal", "terminal\Tek.Terminal\Tek.Terminal.csproj", "{52FE122D-F620-402C-80BA-925B44261281}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tek.Toolbox", "library\Tek.Toolbox\Tek.Toolbox.csproj", "{802F9DD4-518E-4903-B9CA-4D26CDBEDBD9}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tek.Toolbox.Test", "test\Tek.Toolbox.Test\Tek.Toolbox.Test.csproj", "{212CBFE2-593D-4EB4-8B5A-43E1AF261B1A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tek.Api", "api\Tek.Api\Tek.Api.csproj", "{43951BF0-7811-4222-A53B-D6EBC0B3CAD2}"
-EndProject
+
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tek.Contract", "library\Tek.Contract\Tek.Contract.csproj", "{6A97C17C-D0A5-4EFF-A180-8219ED1D421B}"
 EndProject
+
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tek.Common", "library\Tek.Common\Tek.Common.csproj", "{D0E299E1-69D9-4EA1-BCAE-5A4F0DB8FBE7}"
+EndProject
+
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tek.Common.Test", "test\Tek.Common.Test\Tek.Common.Test.csproj", "{C606E31B-002F-46A5-BF44-DDE41074A926}"
+EndProject
+
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tek.Toolbox", "library\Tek.Toolbox\Tek.Toolbox.csproj", "{802F9DD4-518E-4903-B9CA-4D26CDBEDBD9}"
+EndProject
+
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tek.Toolbox.Test", "test\Tek.Toolbox.Test\Tek.Toolbox.Test.csproj", "{212CBFE2-593D-4EB4-8B5A-43E1AF261B1A}"
+EndProject
+
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tek.Service", "library\Tek.Service\Tek.Service.csproj", "{78693DF9-9D07-4364-9A1D-CDBD2A2CF7C0}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ui", "ui", "{5EFE4F1E-3BB1-4BB6-8A5E-81B517A5BEE5}"
+
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tek.Terminal", "terminal\Tek.Terminal\Tek.Terminal.csproj", "{52FE122D-F620-402C-80BA-925B44261281}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api", "api", "{79685BFF-6537-4AD1-A77A-230CAADB7569}"
+
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tek.Api", "api\Tek.Api\Tek.Api.csproj", "{43951BF0-7811-4222-A53B-D6EBC0B3CAD2}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{4EB9388A-3BE0-410C-8C7B-1AFF51ECD77F}"
-EndProject
+
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "library", "library", "{FA0DCA09-3D3D-4102-8516-B82C233465DE}"
 EndProject
+
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "terminal", "terminal", "{47A14F3E-7B23-4E1F-9895-07BCCF9C798F}"
 EndProject
+
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api", "api", "{79685BFF-6537-4AD1-A77A-230CAADB7569}"
+EndProject
+
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ui", "ui", "{5EFE4F1E-3BB1-4BB6-8A5E-81B517A5BEE5}"
+EndProject
+
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{4EB9388A-3BE0-410C-8C7B-1AFF51ECD77F}"
+EndProject
+
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -9,9 +9,9 @@ namespace Tek.Common
     public class Calendar
     {
         /// <remarks>
-        /// Calculates the current date plus/minus a specific number of business days. For example, if today is Friday, 
-        /// then today plus one business day is the following Monday.
-        /// </remark>
+        /// Calculates the current date plus-or-minus a specific number of business days. For 
+        /// example, if today is Friday, then today plus one business day is the following Monday.
+        /// </remarks>
         public DateTimeOffset AddBusinessDays(DateTimeOffset when, int days, IEnumerable<DateTimeOffset> holidays = null)
         {
             var sign = Math.Sign(days);

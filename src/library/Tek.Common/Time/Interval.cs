@@ -11,12 +11,12 @@ namespace Tek.Common
     /// Implements a half-open interval of date/time values.
     /// </summary>
     /// <remarks>
-    /// An interval contains a date/time value X if X occurs in this range:
-    ///    (Effective) &le; X &lt; (Effective + Duration)
+    /// An interval contains a date/time value x if x occurs in this range:
+    ///    (Effective) &#8804; x &#60; (Effective + Duration)
     /// Please note this class uses DateTimeOffset values rather than DateTime values to guard 
     /// against ambiguities that arise when the time zone offset is unspecified. In addition, it 
     /// uses the MST/MDT time zone to ensure daylight savings is taken into account. For reference,
-    /// see https://www.timeanddate.com/time/zone/canada/calgary
+    /// [Calgary Time Zone](https://www.timeanddate.com/time/zone/canada/calgary).
     /// </remarks>
     /// <example>
     /// A 10-minute interval starting at 9:00 contains values in the range [9:00 AM .. 9:10 PM). In

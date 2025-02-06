@@ -17,11 +17,11 @@ namespace Tek.Contract
 
     /// <remarks>
     /// There are two distinct proxy use cases:
-    //   1. User acts on behalf of a Subject.
-    //   2. User is impersonated by an Agent.
-    // In scenario 1 it is understood the principal is a user who is authorized to act on behalf of
-    // In scenario 2 it is understood the principal is a user who is impersonated by another user.
-    // These two scenarios are mutually exclusive.
+    ///   1. User acts on behalf of a Subject.
+    ///   2. User is impersonated by an Agent.
+    /// In scenario 1 it is understood the principal is a user who is authorized to act on behalf of
+    /// In scenario 2 it is understood the principal is a user who is impersonated by another user.
+    /// These two scenarios are mutually exclusive.
     /// </remarks>
     public class Proxy
     {
