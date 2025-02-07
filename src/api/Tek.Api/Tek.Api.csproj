@@ -11,16 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="appsettings.local.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="appsettings.local.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Scrutor" Version="6.0.1" />
     <PackageReference Include="Sentry" Version="5.0.1" />
     <PackageReference Include="Sentry.AspNetCore" Version="5.0.1" />
