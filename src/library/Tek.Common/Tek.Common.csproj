@@ -13,23 +13,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Sql\**" />
-	  <Compile Remove="Telemetry\Logging\**" />
-	  <Compile Remove="Telemetry\Monitoring\**" />
-	  <EmbeddedResource Remove="Sql\**" />
-	  <EmbeddedResource Remove="Telemetry\Logging\**" />
-	  <EmbeddedResource Remove="Telemetry\Monitoring\**" />
-	  <None Remove="Sql\**" />
-	  <None Remove="Telemetry\Logging\**" />
-	  <None Remove="Telemetry\Monitoring\**" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <ProjectReference Include="..\Tek.Contract\Tek.Contract.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Telemetry\" />
-	</ItemGroup>
-	
 </Project>

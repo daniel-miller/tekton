@@ -6,20 +6,23 @@ namespace Tek.Api;
 [ApiExplorerSettings(GroupName = "Security: Authentication")]
 public class TokenController : ControllerBase
 {
+    private readonly ReleaseSettings _releaseSettings;
     private readonly SecuritySettings _securitySettings;
 
     private readonly IClaimConverter _claimConverter;
     private readonly IPrincipalSearch _principalSearch;
 
-    public TokenController(SecuritySettings securitySettings,
+    public TokenController(ReleaseSettings releaseSettings, SecuritySettings securitySettings,
         IClaimConverter claimConverter, IPrincipalSearch principalSearch)
     {
+        _releaseSettings = releaseSettings;
         _securitySettings = securitySettings;
+
         _principalSearch = principalSearch;
         _claimConverter = claimConverter;
     }
 
-    [HttpPost("api/token")]
+    [HttpPost(Endpoints.Token)]
     public IActionResult GenerateToken([FromBody] JwtRequest request)
     {
         var ip = GetClientIPAddress();
@@ -48,15 +51,7 @@ public class TokenController : ControllerBase
         return Ok(jwt);
     }
 
-    [HttpGet("api/version")]
-    public IActionResult GetVersion()
-    {
-        var version = typeof(TokenController).Assembly.GetName().Version;
-
-        return Ok(version);
-    }
-
-    [HttpPost("api/validate")]
+    [HttpPost(Endpoints.Validate)]
     public async Task<IActionResult> ValidateToken()
     {
         var token = string.Empty;
@@ -90,6 +85,22 @@ public class TokenController : ControllerBase
         };
 
         return Ok(result);
+    }
+
+    [HttpGet(Endpoints.Status)]
+    public IActionResult GetStatus()
+    {
+        var version = typeof(TokenController).Assembly.GetName().Version;
+        var status = $"Tekton API version {version} is online. The {_releaseSettings.Environment} environment says hello.";
+        return Ok(status);
+    }
+
+    [HttpGet(Endpoints.Version)]
+    public IActionResult GetVersion()
+    {
+        var version = typeof(TokenController).Assembly.GetName().Version;
+
+        return Ok(version);
     }
 
     private string CreateToken(IPrincipal principal, string ip, bool debug)

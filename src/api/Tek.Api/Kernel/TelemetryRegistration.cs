@@ -1,13 +1,23 @@
-﻿using Sentry.Infrastructure;
+﻿using Serilog;
+
+using Sentry.Infrastructure;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-public static class MonitorRegistration
+public static class TelemetryRegistration
 {
-    public static IServiceCollection AddMonitoring(this IServiceCollection services, MonitoringSettings monitoring, ReleaseSettings release)
+    public static IServiceCollection AddTelemetry(this IServiceCollection services, TelemetrySettings telemetry, ReleaseSettings release)
     {
         services.AddSingleton<ILog, Tek.Service.Log>();
         services.AddSingleton<IMonitor, Tek.Service.Monitor>();
+
+        services.AddLogging(builder =>
+        {
+            builder.ClearProviders();
+            builder.AddSerilog(dispose: true);
+        });
+
+        var monitoring = telemetry.Monitoring;
 
         SentrySdk.Init(options =>
         {

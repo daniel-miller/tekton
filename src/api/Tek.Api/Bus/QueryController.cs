@@ -45,6 +45,9 @@ public class QueryController : ControllerBase
 
             var resultObject = RunQuery(queryObject, resultType);
 
+            if (resultObject == null)
+                return NotFound();
+
             return Ok(resultObject);
         }
         catch (AccessDeniedException ad)
@@ -67,9 +70,9 @@ public class QueryController : ControllerBase
 
         var principal = _converter.ToPrincipal(User.Claims);
 
-        var resourceName = _reflector.GetClassName(queryType);
+        var resourceName = _reflector.GetResourceName(queryType);
 
-        if (_authorizer.IsGranted(resourceName, principal.Roles, BasicAccess.Allow))
+        if (IsGranted(resourceName, BasicAccess.Allow, principal.Roles))
             return;
 
         var roleNames = principal.Roles.Select(x => x.Name);
@@ -80,7 +83,23 @@ public class QueryController : ControllerBase
         throw new AccessDeniedException(message);
     }
 
-    private IActionResult RunQuery(object queryObject, Type resultType)
+    private bool IsGranted(string resourceName, BasicAccess access, IEnumerable<Model> roles)
+    {
+        var relativeUrl = new RelativeUrl(resourceName);
+
+        var granted = _authorizer.IsGranted(relativeUrl.Path, roles, access);
+
+        while (!granted && relativeUrl.HasSegments())
+        {
+            relativeUrl.RemoveLastSegment();
+
+            granted = _authorizer.IsGranted(relativeUrl.Path, roles, access);
+        }
+
+        return granted;
+    }
+
+    private object? RunQuery(object queryObject, Type resultType)
     {
         var dispatchMethod = typeof(QueryDispatcher).GetMethod(nameof(QueryDispatcher.Dispatch))!;
 
@@ -88,6 +107,6 @@ public class QueryController : ControllerBase
 
         var resultObject = genericDispatchMethod.Invoke(_dispatcher, [queryObject]);
 
-        return Ok(resultObject);
+        return resultObject;
     }
 }

@@ -10,6 +10,6 @@
             => new EnvironmentModel(Environment);
 
         public bool IsLocal()
-            => GetEnvironment().Name == EnvironmentName.Local;
+            => GetEnvironment().Type == EnvironmentType.Local;
     }
 }

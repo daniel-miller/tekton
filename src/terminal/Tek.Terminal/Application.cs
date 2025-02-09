@@ -21,7 +21,7 @@ public class Application
 
         app.Configure(config =>
         {
-            config.AddCommand<HelloCommand>("hello");
+            config.AddCommand<StatusCommand>("status");
 
             config.AddBranch("location", location =>
             {

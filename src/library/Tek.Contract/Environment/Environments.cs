@@ -16,10 +16,10 @@ namespace Tek.Contract
         {
             All = new[]
             {
-                new EnvironmentModel(EnvironmentName.Local),
-                new EnvironmentModel(EnvironmentName.Development),
-                new EnvironmentModel(EnvironmentName.Sandbox),
-                new EnvironmentModel(EnvironmentName.Production)
+                new EnvironmentModel(EnvironmentType.Local),
+                new EnvironmentModel(EnvironmentType.Development),
+                new EnvironmentModel(EnvironmentType.Sandbox),
+                new EnvironmentModel(EnvironmentType.Production)
             };
         }
     }

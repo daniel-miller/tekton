@@ -11,5 +11,7 @@
         public SecuritySettings Security { get; set; }
 
         public TelemetrySettings Telemetry { get; set; }
+
+        public IntegrationSettings Integration { get; set; }
     }
 }

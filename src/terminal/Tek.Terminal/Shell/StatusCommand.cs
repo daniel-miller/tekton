@@ -3,9 +3,16 @@
 using Spectre.Console.Cli;
 
 [Description("Say hello to the terminal.")]
-public class HelloCommand : Command<HelloSettings>
+public class StatusCommand : Command<StatusSettings>
 {
-    public override int Execute(CommandContext context, HelloSettings settings)
+    private readonly ReleaseSettings _releaseSettings;
+
+    public StatusCommand(ReleaseSettings releaseSettings)
+    {
+        _releaseSettings = releaseSettings;
+    }
+
+    public override int Execute(CommandContext context, StatusSettings settings)
     {
         var hello = new Text();
 
@@ -24,7 +31,11 @@ public class HelloCommand : Command<HelloSettings>
 
         var language = settings.Language ?? Text.DefaultLanguage;
 
-        Output($"{hello[language]}. The terminal can say Hello in {hello.Count} languages: {string.Join(", ", hello.Languages)}.");
+        var version = typeof(StatusCommand).Assembly.GetName().Version;
+        var status = $"Tekton Terminal version {version} is online. The {_releaseSettings.Environment} environment says {hello[language]}."
+            + $" The terminal can say Hello in these {hello.Count} languages: {string.Join(", ", hello.Languages)}.";
+
+        Output(status);
 
         return 0;
     }
@@ -35,7 +46,7 @@ public class HelloCommand : Command<HelloSettings>
     }
 }
 
-public class HelloSettings : CommandSettings
+public class StatusSettings : CommandSettings
 {
     [CommandOption("--language")]
     public string? Language { get; set; }

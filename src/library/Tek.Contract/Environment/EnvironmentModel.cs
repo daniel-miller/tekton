@@ -2,47 +2,49 @@
 
 namespace Tek.Contract
 {
-    public class EnvironmentModel : Model
+    public class EnvironmentModel
     {
-        new public EnvironmentName Name { get; set; }
+        public EnvironmentType Type { get; set; }
+        public string Name { get; set; }
+        public string Slug { get; set; }
 
-        public EnvironmentModel(EnvironmentName name)
+        public EnvironmentModel(EnvironmentType type)
         {
-            Initialize(name);
+            Initialize(type);
         }
 
-        public EnvironmentModel(string name)
+        public EnvironmentModel(string type)
         {
-            if (!Enum.TryParse<EnvironmentName>(name, true, out var environment))
-                throw new ArgumentException($"The environment name {name} is not recognized.", nameof(name));
+            if (!Enum.TryParse<EnvironmentType>(type, true, out var environment))
+                throw new ArgumentException($"The environment type {type} is not recognized.", nameof(type));
 
             Initialize(environment);
         }
 
-        private void Initialize(EnvironmentName name)
+        private void Initialize(EnvironmentType type)
         {
-            Name = name;
+            Type = type;
 
-            switch (Name)
+            switch (Type)
             {
-                case EnvironmentName.Production:
-                    Type = Name.ToString();
+                case EnvironmentType.Production:
+                    Name = Type.ToString();
                     Slug = "prod";
                     break;
 
-                case EnvironmentName.Sandbox:
-                    Type = Name.ToString();
+                case EnvironmentType.Sandbox:
+                    Name = Type.ToString();
                     Slug = "sandbox";
                     break;
 
-                case EnvironmentName.Development:
-                    Type = Name.ToString();
+                case EnvironmentType.Development:
+                    Name = Type.ToString();
                     Slug = "dev";
                     break;
 
-                case EnvironmentName.Local:
+                case EnvironmentType.Local:
                 default:
-                    Type = Name.ToString();
+                    Name = Type.ToString();
                     Slug = "local";
                     break;
             }

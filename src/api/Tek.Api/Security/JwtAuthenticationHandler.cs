@@ -43,7 +43,7 @@ public class JwtAuthenticationHandler : AuthenticationHandler<JwtAuthenticationO
         if (token == null)
             return Task.FromResult(AuthenticateResult.Fail("Invalid Authorization Header"));
 
-        if (!encoder.Validate(token, DefaultScheme, _securitySettings.Secret, _securitySettings.Token.Audience, _securitySettings.Token.Issuer, _converter, out var principal))
+        if (!encoder.Validate(DefaultScheme, token, _securitySettings.Secret, _securitySettings.Token.Audience, _securitySettings.Token.Issuer, _converter, out var principal))
             return Task.FromResult(AuthenticateResult.Fail("Invalid Token"));
 
         var ticket = new AuthenticationTicket(principal, DefaultScheme);

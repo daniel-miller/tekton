@@ -1,6 +1,6 @@
 ﻿namespace Tek.Contract
 {
-    public enum EnvironmentName
+    public enum EnvironmentType
     {
         Local, 
         Development, 
