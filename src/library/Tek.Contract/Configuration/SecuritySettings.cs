@@ -9,5 +9,6 @@ namespace Tek.Contract
         public string Secret { get; set; }
         public SentinelsSettings Sentinels { get; set; }
         public TokenSettings Token { get; set; }
+        public CookieSettings Cookie { get; set; }
     }
 }

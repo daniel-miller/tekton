@@ -2,12 +2,14 @@
 {
     public class TektonSettings
     {
-        public KernelSettings Kernel { get; set; }
+        public ApiSettings Api { get; set; }
 
-        public MetadataSettings Metadata { get; set; }
-        
-        public PluginSettings Plugin { get; set; }
+        public DatabaseSettings Database { get; set; }
+
+        public ReleaseSettings Release { get; set; }
 
         public SecuritySettings Security { get; set; }
+
+        public TelemetrySettings Telemetry { get; set; }
     }
 }

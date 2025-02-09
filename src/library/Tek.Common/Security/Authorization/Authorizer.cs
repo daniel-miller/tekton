@@ -69,17 +69,29 @@ namespace Tek.Common
 
         public Permission Add(string resourceName, string roleName)
         {
-            var resource = new Resource
-            {
-                Identifier = UuidFactory.CreateV5(NamespaceId, resourceName),
-                Name = resourceName,
-            };
+            var resource = Guid.TryParse(resourceName, out Guid resourceId)
+                ? new Resource
+                {
+                    Identifier = resourceId,
+                    Name = resourceName,
+                }
+                : new Resource
+                {
+                    Identifier = UuidFactory.CreateV5(NamespaceId, resourceName),
+                    Name = resourceName,
+                };
 
-            var role = new Role
-            {
-                Identifier = UuidFactory.CreateV5(NamespaceId, roleName),
-                Name = roleName,
-            };
+            var role = Guid.TryParse(roleName, out Guid roleId)
+                ? new Role
+                {
+                    Identifier = roleId,
+                    Name = roleName,
+                }
+                : new Role
+                {
+                    Identifier = UuidFactory.CreateV5(NamespaceId, roleName),
+                    Name = roleName,
+                };
 
             return Add(resource, role);
         }

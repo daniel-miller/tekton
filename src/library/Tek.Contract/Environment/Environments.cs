@@ -10,7 +10,7 @@ namespace Tek.Contract
             => All.Select(x => x.Slug).ToArray();
 
         public static string[] Names
-            => All.Select(x => x.Name).ToArray();
+            => All.Select(x => x.Name.ToString()).ToArray();
 
         static Environments()
         {
