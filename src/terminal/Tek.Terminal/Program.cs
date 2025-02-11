@@ -1,11 +1,11 @@
-﻿using Tek.Terminal;
-
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using Serilog;
+
+using Tek.Terminal;
+using Tek.Service;
 
 // Step 1. Load configuration settings before doing anything else.
 
@@ -18,7 +18,7 @@ settings.Release.Directory = AppContext.BaseDirectory;
 // diagnosing startup issues, monitoring initialization steps, and providing consistent, centralized
 // logging throughout the application lifecycle.
 
-Log.Logger = ConfigureLogging(settings.Telemetry.Logging.Path);
+Serilog.Log.Logger = ConfigureLogging(settings.Telemetry.Logging.Path);
 
 // Step 3. Build the application host with all services registered in the DI container.
 

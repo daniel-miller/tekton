@@ -1,9 +1,6 @@
-﻿using System;
-using System.IO;
+﻿using Microsoft.Extensions.Configuration;
 
-using Microsoft.Extensions.Configuration;
-
-namespace Tek.Toolbox
+namespace Tek.Service
 {
     public static class AppSettingsHelper
     {
@@ -12,7 +9,7 @@ namespace Tek.Toolbox
             var configuration = BuildConfiguration();
             var section = configuration.GetRequiredSection(name);
             var settings = section.Get<T>();
-            return settings;
+            return settings!;
         }
 
         public static IConfigurationRoot BuildConfiguration()
