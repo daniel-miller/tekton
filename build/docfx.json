@@ -1,0 +1,52 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "metadata": [
+    {
+      "src": [
+        {
+          "files": ["Tek.sln"],
+          "exclude": ["**/bin/**","**/obj/**","_site/**","vendor/**"],
+          "src": "../src"
+        }
+      ],
+      "output": "api",
+      "namespaceLayout": "nested",
+      "filter": "filterConfig.yml"
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [
+          "**/*.{md,yml}"
+        ],
+        "exclude": [
+          "_site/**",
+          "**/filterConfig.yml"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "custom.css",
+          "images/**"
+        ]
+      }
+    ],
+    "output": "_site",
+    "template": [
+      "docfx_templates/default",
+      "docfx_templates/modern"
+    ],
+    "postProcessors": [ "ExtractSearchIndex" ],
+    "globalMetadata": {
+      "_appName": "Tekton",
+      "_appTitle": "Tekton",
+      "_appFooter": "Copyright 2025 Daniel Miller",
+      "_disableContribution": true,
+      "_enableSearch": true,
+      "pdf": false
+    }
+  }
+}

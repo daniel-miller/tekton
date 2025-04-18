@@ -1,0 +1,6 @@
+### YamlMime:FilterConfig
+apiRules:
+- exclude:
+    uidRegex: ^Microsoft\.Extensions\.DependencyInjection
+- exclude:
+    uidRegex: ^Tek\.Common\.Test
