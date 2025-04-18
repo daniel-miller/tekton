@@ -31,9 +31,9 @@ public class TEntityAdapter : IEntityAdapter
             ComponentName = create.ComponentName,
             ComponentFeature = create.ComponentFeature,
             EntityName = create.EntityName,
-            EntityId = create.EntityId,
             CollectionSlug = create.CollectionSlug,
-            CollectionKey = create.CollectionKey
+            CollectionKey = create.CollectionKey,
+            EntityId = create.EntityId
         };
         return entity;
     }
@@ -56,9 +56,9 @@ public class TEntityAdapter : IEntityAdapter
             ComponentName = entity.ComponentName,
             ComponentFeature = entity.ComponentFeature,
             EntityName = entity.EntityName,
-            EntityId = entity.EntityId,
             CollectionSlug = entity.CollectionSlug,
-            CollectionKey = entity.CollectionKey
+            CollectionKey = entity.CollectionKey,
+            EntityId = entity.EntityId
         };
 
         return model;

@@ -52,15 +52,44 @@ namespace Tek.Contract
             }
         }
 
-        public static partial class ContactApi
+        public static partial class ContentApi
         {
-            public static partial class Location
+            public static partial class Text
             {
-                public const string Name = "Contact: Location";
+                public const string Name = "Content: Text";
+
+                public static class Translation
+                {
+                    private const string Collection = "content/translations";
+                    private const string Item = "/{translation:guid}";
+
+                    // Queries
+
+                    public const string Assert  = Collection + Item; // HEAD : Check for a single item
+                    public const string Fetch   = Collection + Item; // GET  : Retrieve a single item
+                    
+                    public const string Collect = Collection;             // GET or POST : Retrieve multiple items
+                    public const string Count   = Collection + "/count";  // GET or POST : Count multiple items
+                    public const string Search  = Collection + "/search"; // GET or POST : Find multiple items
+
+                    // Commands
+
+                    public const string Create = Collection;        // POST   : Insert a single item
+                    public const string Delete = Collection + Item; // DELETE : Delete a single item
+                    public const string Modify = Collection + Item; // PUT    : Update a single item
+                }
+            }
+        }
+
+        public static partial class LocationApi
+        {
+            public static partial class Region
+            {
+                public const string Name = "Location: Region";
 
                 public static class Country
                 {
-                    private const string Collection = "contact/countries";
+                    private const string Collection = "location/countries";
                     private const string Item = "/{country:guid}";
 
                     // Queries
@@ -81,37 +110,8 @@ namespace Tek.Contract
 
                 public static class Province
                 {
-                    private const string Collection = "contact/provinces";
+                    private const string Collection = "location/provinces";
                     private const string Item = "/{province:guid}";
-
-                    // Queries
-
-                    public const string Assert  = Collection + Item; // HEAD : Check for a single item
-                    public const string Fetch   = Collection + Item; // GET  : Retrieve a single item
-                    
-                    public const string Collect = Collection;             // GET or POST : Retrieve multiple items
-                    public const string Count   = Collection + "/count";  // GET or POST : Count multiple items
-                    public const string Search  = Collection + "/search"; // GET or POST : Find multiple items
-
-                    // Commands
-
-                    public const string Create = Collection;        // POST   : Insert a single item
-                    public const string Delete = Collection + Item; // DELETE : Delete a single item
-                    public const string Modify = Collection + Item; // PUT    : Update a single item
-                }
-            }
-        }
-
-        public static partial class ContentApi
-        {
-            public static partial class Text
-            {
-                public const string Name = "Content: Text";
-
-                public static class Translation
-                {
-                    private const string Collection = "content/translations";
-                    private const string Item = "/{translation:guid}";
 
                     // Queries
 

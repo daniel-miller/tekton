@@ -8,5 +8,3 @@ Classes in this Data folder implement data access for this feature set. This is 
 
 When time and opportunity permit, the following database schema changes should be considered, to improve alignment with current database naming conventions:
 
-* Rename table from `t_aggregate` to ``.
-* Rename table from `t_event` to ``.

@@ -80,8 +80,11 @@ public class TPartitionReader : IEntityReader
         // if (criteria.PartitionSettings != null)
         //    query = query.Where(x => x.PartitionSettings == criteria.PartitionSettings);
 
-        // if (criteria.PartitionTesters != null)
-        //    query = query.Where(x => x.PartitionTesters == criteria.PartitionTesters);
+        // if (criteria.WhitelistDomains != null)
+        //    query = query.Where(x => x.WhitelistDomains == criteria.WhitelistDomains);
+
+        // if (criteria.WhitelistEmails != null)
+        //    query = query.Where(x => x.WhitelistEmails == criteria.WhitelistEmails);
 
         // if (criteria.ModifiedWhen != null)
         //    query = query.Where(x => x.ModifiedWhen == criteria.ModifiedWhen);

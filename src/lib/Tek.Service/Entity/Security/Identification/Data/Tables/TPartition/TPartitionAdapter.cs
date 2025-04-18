@@ -9,7 +9,8 @@ public class TPartitionAdapter : IEntityAdapter
         entity.PartitionHost = modify.PartitionHost;
         entity.PartitionEmail = modify.PartitionEmail;
         entity.PartitionSettings = modify.PartitionSettings;
-        entity.PartitionTesters = modify.PartitionTesters;
+        entity.WhitelistDomains = modify.WhitelistDomains;
+        entity.WhitelistEmails = modify.WhitelistEmails;
         entity.ModifiedWhen = modify.ModifiedWhen;
 
     }
@@ -24,7 +25,8 @@ public class TPartitionAdapter : IEntityAdapter
             PartitionHost = create.PartitionHost,
             PartitionEmail = create.PartitionEmail,
             PartitionSettings = create.PartitionSettings,
-            PartitionTesters = create.PartitionTesters,
+            WhitelistDomains = create.WhitelistDomains,
+            WhitelistEmails = create.WhitelistEmails,
             ModifiedWhen = create.ModifiedWhen
         };
         return entity;
@@ -45,7 +47,8 @@ public class TPartitionAdapter : IEntityAdapter
             PartitionHost = entity.PartitionHost,
             PartitionEmail = entity.PartitionEmail,
             PartitionSettings = entity.PartitionSettings,
-            PartitionTesters = entity.PartitionTesters,
+            WhitelistDomains = entity.WhitelistDomains,
+            WhitelistEmails = entity.WhitelistEmails,
             ModifiedWhen = entity.ModifiedWhen
         };
 

@@ -20,7 +20,8 @@ namespace Tek.Contract
         public string PartitionName { get; set; }
         public string PartitionSettings { get; set; }
         public string PartitionSlug { get; set; }
-        public string PartitionTesters { get; set; }
+        public string WhitelistDomains { get; set; }
+        public string WhitelistEmails { get; set; }
 
         public DateTime ModifiedWhen { get; set; }
     }
@@ -32,7 +33,8 @@ namespace Tek.Contract
         public string PartitionName { get; set; }
         public string PartitionSettings { get; set; }
         public string PartitionSlug { get; set; }
-        public string PartitionTesters { get; set; }
+        public string WhitelistDomains { get; set; }
+        public string WhitelistEmails { get; set; }
 
         public DateTime ModifiedWhen { get; set; }
     }
@@ -44,7 +46,8 @@ namespace Tek.Contract
         public string PartitionName { get; set; }
         public string PartitionSettings { get; set; }
         public string PartitionSlug { get; set; }
-        public string PartitionTesters { get; set; }
+        public string WhitelistDomains { get; set; }
+        public string WhitelistEmails { get; set; }
 
         public DateTime ModifiedWhen { get; set; }
     }
@@ -58,7 +61,8 @@ namespace Tek.Contract
         string PartitionName { get; set; }
         string PartitionSettings { get; set; }
         string PartitionSlug { get; set; }
-        string PartitionTesters { get; set; }
+        string WhitelistDomains { get; set; }
+        string WhitelistEmails { get; set; }
 
         DateTime ModifiedWhen { get; set; }
     }
@@ -75,7 +79,8 @@ namespace Tek.Contract
         public string PartitionName { get; set; }
         public string PartitionSettings { get; set; }
         public string PartitionSlug { get; set; }
-        public string PartitionTesters { get; set; }
+        public string WhitelistDomains { get; set; }
+        public string WhitelistEmails { get; set; }
 
         public int PartitionNumber { get; set; }
 

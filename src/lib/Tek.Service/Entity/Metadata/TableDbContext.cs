@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 
 using Tek.Service.Bus;
-using Tek.Service.Contact;
 using Tek.Service.Content;
+using Tek.Service.Location;
 using Tek.Service.Metadata;
 using Tek.Service.Security;
 
@@ -14,12 +14,12 @@ public class TableDbContext : DbContext
 
     #region Storage Tables
 
-    // Application: Contact
-    internal DbSet<TCountryEntity> TCountry { get; set; }
-    internal DbSet<TProvinceEntity> TProvince { get; set; }
-
     // Application: Content
     internal DbSet<TTranslationEntity> TTranslation { get; set; }
+
+    // Application: Location
+    internal DbSet<TCountryEntity> TCountry { get; set; }
+    internal DbSet<TProvinceEntity> TProvince { get; set; }
 
     // Utility: Bus
     internal DbSet<TAggregateEntity> TAggregate { get; set; }
@@ -62,12 +62,12 @@ public class TableDbContext : DbContext
 
     private void ApplyConfigurations(ModelBuilder builder)
     {
-        // Application: Contact
-        builder.ApplyConfiguration(new TCountryConfiguration());
-        builder.ApplyConfiguration(new TProvinceConfiguration());
-
         // Application: Content
         builder.ApplyConfiguration(new TTranslationConfiguration());
+
+        // Application: Location
+        builder.ApplyConfiguration(new TCountryConfiguration());
+        builder.ApplyConfiguration(new TProvinceConfiguration());
 
         // Utility: Bus
         builder.ApplyConfiguration(new TAggregateConfiguration());

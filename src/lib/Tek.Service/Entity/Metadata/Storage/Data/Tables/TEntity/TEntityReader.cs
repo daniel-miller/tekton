@@ -89,14 +89,14 @@ public class TEntityReader : IEntityReader
         // if (criteria.EntityName != null)
         //    query = query.Where(x => x.EntityName == criteria.EntityName);
 
-        // if (criteria.EntityId != null)
-        //    query = query.Where(x => x.EntityId == criteria.EntityId);
-
         // if (criteria.CollectionSlug != null)
         //    query = query.Where(x => x.CollectionSlug == criteria.CollectionSlug);
 
         // if (criteria.CollectionKey != null)
         //    query = query.Where(x => x.CollectionKey == criteria.CollectionKey);
+
+        // if (criteria.EntityId != null)
+        //    query = query.Where(x => x.EntityId == criteria.EntityId);
 
         if (criteria.Filter != null)
         {
