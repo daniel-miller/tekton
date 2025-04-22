@@ -4,6 +4,8 @@ using Npgsql;
 
 using Spectre.Console.Cli;
 
+namespace Tek.Terminal;
+
 public class DropDatabaseCommand : AsyncCommand<DatabaseSettings>
 {
     private readonly DatabaseCommander _commander;

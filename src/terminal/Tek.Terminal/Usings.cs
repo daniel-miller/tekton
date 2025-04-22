@@ -1,3 +1,4 @@
-﻿global using Tek.Contract;
-global using Tek.Common;
+﻿global using Tek.Base;
+global using Tek.Service;
+global using Tek.Terminal;
 global using Tek.Toolbox;

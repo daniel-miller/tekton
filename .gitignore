@@ -4,6 +4,7 @@ config/
 
 # Build outputs
 *.obj
+*.log
 *.pdb
 [Dd]ebug/
 [Rr]elease/

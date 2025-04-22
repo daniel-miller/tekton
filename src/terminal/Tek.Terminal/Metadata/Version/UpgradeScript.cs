@@ -1,6 +1,8 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
 
+namespace Tek.Terminal;
+
 public sealed class UpgradeScript
 {
     private const string ScriptFileNamePattern = @"(Definition|Manipulation|Randomization)\\v(\d{2}\.\d{4}\.\d{4}\.\d{4}.*)\.sql$";

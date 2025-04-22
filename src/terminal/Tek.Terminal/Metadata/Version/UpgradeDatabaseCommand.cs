@@ -4,6 +4,8 @@ using Npgsql;
 
 using Spectre.Console.Cli;
 
+namespace Tek.Terminal;
+
 /// <remarks>
 /// It is a best practice to use lowercase names for PostgreSQL table and column names because 
 /// Postgres automatically converts unquoted identifiers to lowercase. Therefore, if you use 

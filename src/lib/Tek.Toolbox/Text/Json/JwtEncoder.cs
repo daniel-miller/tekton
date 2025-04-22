@@ -6,8 +6,7 @@ using System.Text;
 
 using Newtonsoft.Json;
 
-using Tek.Common;
-using Tek.Contract;
+using Tek.Base;
 
 namespace Tek.Toolbox
 {

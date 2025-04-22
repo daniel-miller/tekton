@@ -1,5 +1,7 @@
 ﻿using Npgsql;
 
+namespace Tek.Terminal;
+
 public class DatabaseCommander
 {
     public const string DefaultHost = "localhost";

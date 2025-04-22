@@ -1,4 +1,4 @@
-﻿namespace Tek.Common.Test;
+﻿namespace Tek.Toolbox.Test;
 
 public class JwtTests
 {

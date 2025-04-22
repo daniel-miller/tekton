@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore;
 
 using Serilog;
 
-using Tek.Service;
+using Tek.Integration.Google;
+using Tek.Service.Location;
 
 // Step 1. Load configuration settings before doing anything else.
 
@@ -29,7 +30,7 @@ await Startup(host);
 
 // Step 5. Shut down the application
 
-await Shutdown(host);
+Shutdown(host);
 
 
 // -------------------------------------------------------------------------------------------------
@@ -52,17 +53,25 @@ WebApplication BuildHost(TektonSettings settings)
     services.AddSingleton(settings);
     services.AddSingleton(settings.Database.Connection);
     services.AddSingleton(settings.Integration);
-    services.AddSingleton(settings.Integration.AstronomyApi);
+    services.AddSingleton(settings.Integration.Astronomy);
+    services.AddSingleton(settings.Integration.Google.Translation);
     services.AddSingleton(settings.Integration.VisualCrossing);
     services.AddSingleton(settings.Release);
     services.AddSingleton(settings.Security);
     services.AddSingleton(settings.Security.Token);
+    services.AddSingleton(settings.Telemetry.Throttling);
 
     services.AddTelemetry(settings.Telemetry, settings.Release);
     services.AddQueries(typeof(PrincipalSearch).Assembly);
     services.AddSecurity(settings.Security);
 
     services.AddSingleton<IJsonSerializer, JsonSerializer>();
+
+    // Legacy services from the original Engine API:
+    services.AddScoped<ObsoleteLocationService>();
+    services.AddScoped<ObsoleteTranslationService>();
+    services.AddScoped<ITranslator, Translator>();
+    services.AddRateLimiter(RateLimiterHelper.ConfigureRateLimiter);
 
     AddStorage(services);
 
@@ -85,6 +94,8 @@ WebApplication BuildHost(TektonSettings settings)
     host.UseAuthorization();
 
     host.UseMiddleware<ExceptionHandlingMiddleware>();
+
+    host.UseRateLimiter();
 
     host.MapControllers();
 
@@ -124,11 +135,7 @@ async Task Startup(WebApplication host)
     await host.RunAsync();
 }
 
-async Task Shutdown(WebApplication host)
+void Shutdown(WebApplication host)
 {
-    var monitor = host.Services.GetRequiredService<IMonitor>();
-
-    monitor.Information("Shutting down.");
-
-    await monitor.FlushAsync();
+    
 }

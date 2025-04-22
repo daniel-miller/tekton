@@ -1,6 +1,4 @@
-﻿using Tek.Toolbox;
-
-namespace Tek.Common.Test;
+﻿namespace Tek.Toolbox.Test;
 
 public class JwtEncoderTests
 {

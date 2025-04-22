@@ -13,7 +13,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Tek.Common\Tek.Common.csproj" />
+	  <ProjectReference Include="..\Tek.Base\Tek.Base.csproj" />
 	</ItemGroup>
 
 </Project>

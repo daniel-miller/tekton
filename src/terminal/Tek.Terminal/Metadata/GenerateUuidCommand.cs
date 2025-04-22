@@ -1,5 +1,7 @@
 ﻿using Spectre.Console.Cli;
 
+namespace Tek.Terminal;
+
 public class GenerateUuidCommand : Command<GenerateUuidSettings>
 {
     public override int Execute(CommandContext context, GenerateUuidSettings settings)

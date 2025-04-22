@@ -1,7 +1,8 @@
-﻿
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 using Spectre.Console.Cli;
+
+namespace Tek.Terminal;
 
 public class DatabaseSettings : CommandSettings
 {

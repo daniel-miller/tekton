@@ -2,8 +2,8 @@
 
 insert into metadata.t_entity (component_type,component_name,component_feature,entity_id,entity_name,collection_slug,collection_key,storage_structure,storage_schema,storage_table,storage_key) 
 values
-  ('Utility','Bus','Tracking','9ec19f6c-be6d-4932-a34a-b8694ff2ee76','Aggregate','aggregates','{aggregate:guid}','Table','bus','t_aggregate','aggregate_id')
-, ('Utility','Bus','Tracking','b2298c33-a0ff-4de7-be91-5272306426fb','Event','events','{event:guid}','Table','bus','t_event','event_id')
+  ('Utility','Timeline','Tracking','9ec19f6c-be6d-4932-a34a-b8694ff2ee76','Aggregate','aggregates','{aggregate:guid}','Table','timeline','t_aggregate','aggregate_id')
+, ('Utility','Timeline','Tracking','b2298c33-a0ff-4de7-be91-5272306426fb','Event','events','{event:guid}','Table','timeline','t_event','event_id')
 , ('Application','Content','Text','dcc37f11-65e9-47b3-a271-64faa9047400','Translation','translations','{translation:guid}','Table','content','t_translation','translation_id')
 , ('Application','Location','Region','a76eb82e-ad02-4341-b4eb-386710b4e651','Country','countries','{country:guid}','Table','location','t_country','country_id')
 , ('Application','Location','Region','99e52dba-1c6a-4543-a5f4-1130a3df0748','Province','provinces','{province:guid}','Table','location','t_province','province_id')

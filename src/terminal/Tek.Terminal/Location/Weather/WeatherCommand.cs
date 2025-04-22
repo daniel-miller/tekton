@@ -4,13 +4,13 @@ namespace Tek.Terminal;
 
 public class WeatherCommand : AsyncCommand<WeatherSettings>
 {
-    private VisualCrossingSettings _api;
+    private VisualCrossingApiSettings _api;
 
     private readonly IJsonSerializer _serializer;
 
     private readonly ILog _log;
 
-    public WeatherCommand(VisualCrossingSettings api, IJsonSerializer serializer, ILog log)
+    public WeatherCommand(VisualCrossingApiSettings api, IJsonSerializer serializer, ILog log)
     {
         _api = api;
 

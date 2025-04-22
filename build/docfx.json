@@ -4,7 +4,13 @@
     {
       "src": [
         {
-          "files": ["Tek.sln"],
+          "files": [
+            "lib/Tek.Base/Tek.Base.csproj",
+            "lib/Tek.Timeline/Tek.Timeline.csproj",
+            "lib/Tek.Contract/Tek.Contract.csproj",
+            "lib/Tek.Toolbox/Tek.Toolbox.csproj",
+            "lib/Tek.Service/Tek.Service.csproj"
+          ],
           "exclude": ["**/bin/**","**/obj/**","_site/**","vendor/**"],
           "src": "../src"
         }

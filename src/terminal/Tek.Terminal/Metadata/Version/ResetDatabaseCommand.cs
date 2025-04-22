@@ -1,5 +1,7 @@
 ﻿using Spectre.Console.Cli;
 
+namespace Tek.Terminal;
+
 public class ResetDatabaseCommand : AsyncCommand<DatabaseSettings>
 {
     private readonly DatabaseCommander _commander;

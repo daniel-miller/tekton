@@ -4,9 +4,6 @@ using Microsoft.Extensions.Logging;
 
 using Serilog;
 
-using Tek.Terminal;
-using Tek.Service;
-
 // Step 1. Load configuration settings before doing anything else.
 
 var settings = AppSettingsHelper.GetSettings<TektonSettings>("Tekton");
@@ -55,7 +52,8 @@ IHost BuildHost(TektonSettings settings)
             services.AddSingleton(settings.Release);
             services.AddSingleton(settings.Database.Connection);
             services.AddSingleton(settings.Integration);
-            services.AddSingleton(settings.Integration.AstronomyApi);
+            services.AddSingleton(settings.Integration.Astronomy);
+            services.AddSingleton(settings.Integration.Google);
             services.AddSingleton(settings.Integration.VisualCrossing);
 
             services.AddLogging(builder =>

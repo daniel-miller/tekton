@@ -2,6 +2,8 @@
 
 using Spectre.Console.Cli;
 
+namespace Tek.Terminal;
+
 [Description("Say hello to the terminal.")]
 public class StatusCommand : Command<StatusSettings>
 {

@@ -18,8 +18,12 @@ CREATE SCHEMA extension;
 
 -- Create utility schemas. Assume the metadata schema is already created.
 
-CREATE SCHEMA bus;
+CREATE SCHEMA backup;
 
 CREATE SCHEMA kernel;
 
+CREATE SCHEMA obsolete;
+
 CREATE SCHEMA security;
+
+CREATE SCHEMA timeline;

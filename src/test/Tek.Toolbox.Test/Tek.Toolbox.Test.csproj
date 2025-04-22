@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\lib\Tek.Common\Tek.Common.csproj" />
+    <ProjectReference Include="..\..\lib\Tek.Base\Tek.Base.csproj" />
     <ProjectReference Include="..\..\lib\Tek.Toolbox\Tek.Toolbox.csproj" />
   </ItemGroup>
 

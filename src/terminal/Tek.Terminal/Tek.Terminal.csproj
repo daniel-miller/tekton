@@ -35,8 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\lib\Tek.Common\Tek.Common.csproj" />
-    <ProjectReference Include="..\..\lib\Tek.Contract\Tek.Contract.csproj" />
+    <ProjectReference Include="..\..\lib\Tek.Base\Tek.Base.csproj" />
     <ProjectReference Include="..\..\lib\Tek.Service\Tek.Service.csproj" />
     <ProjectReference Include="..\..\lib\Tek.Toolbox\Tek.Toolbox.csproj" />
   </ItemGroup>

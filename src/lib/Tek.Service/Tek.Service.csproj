@@ -22,9 +22,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Tek.Common\Tek.Common.csproj" />
+		<ProjectReference Include="..\Tek.Base\Tek.Base.csproj" />
 		<ProjectReference Include="..\Tek.Contract\Tek.Contract.csproj" />
-		<ProjectReference Include="..\Tek.Toolbox\Tek.Toolbox.csproj" />
 	</ItemGroup>
 
 </Project>
