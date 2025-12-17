@@ -25,25 +25,25 @@ namespace Tek.Base
 
             switch (Name)
             {
-                case EnvironmentName.Production:
+                case EnvironmentName.Live:
                     Type = Name.ToString();
-                    Slug = "prod";
+                    Slug = "live";
                     break;
 
-                case EnvironmentName.Sandbox:
+                case EnvironmentName.Stage:
                     Type = Name.ToString();
-                    Slug = "sandbox";
+                    Slug = "stage";
+                    break;
+
+                case EnvironmentName.QA:
+                    Type = Name.ToString();
+                    Slug = "qa";
                     break;
 
                 case EnvironmentName.Development:
-                    Type = Name.ToString();
-                    Slug = "dev";
-                    break;
-
-                case EnvironmentName.Local:
                 default:
                     Type = Name.ToString();
-                    Slug = "local";
+                    Slug = "dev";
                     break;
             }
         }

@@ -2,9 +2,9 @@
 {
     public enum EnvironmentName
     {
-        Local, 
-        Development, 
-        Sandbox, 
-        Production
+        Development, // Local (private/individual development and debugging)
+        QA,          // Test  (public/team development)
+        Stage,       // Demo  (public sandbox)
+        Live         // Live  (public production)
     }
 }

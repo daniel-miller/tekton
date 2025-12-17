@@ -9,7 +9,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Tek.Base\Tek.Base.csproj" />
+	  <ProjectReference Include="..\Tek.Base\Festival.Base.csproj" />
 	</ItemGroup>
 
 </Project>

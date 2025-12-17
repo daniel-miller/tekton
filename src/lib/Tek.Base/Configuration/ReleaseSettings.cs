@@ -9,7 +9,7 @@
         public EnvironmentModel GetEnvironment()
             => new EnvironmentModel(Environment);
 
-        public bool IsLocal()
-            => GetEnvironment().Name == EnvironmentName.Local;
+        public bool IsDevelopment()
+            => GetEnvironment().Name == EnvironmentName.Development;
     }
 }

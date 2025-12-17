@@ -16,10 +16,10 @@ namespace Tek.Base
         {
             All = new[]
             {
-                new EnvironmentModel(EnvironmentName.Local),
                 new EnvironmentModel(EnvironmentName.Development),
-                new EnvironmentModel(EnvironmentName.Sandbox),
-                new EnvironmentModel(EnvironmentName.Production)
+                new EnvironmentModel(EnvironmentName.QA),
+                new EnvironmentModel(EnvironmentName.Stage),
+                new EnvironmentModel(EnvironmentName.Live)
             };
         }
     }
